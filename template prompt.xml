@@ -1,0 +1,52 @@
+<task>
+Develop the "Result Summary" dashboard (page.tsx) by integrating real-time database connections and implementing a post-election configuration feature.
+</task>
+
+<context>
+Current Status: The 'page.tsx' is currently a mockup.
+Goal: Transform this mockup into a fully functional page connected to the real Election Event database while maintaining the existing UI/Design.
+</context>
+
+<specifications>
+  <feature name="1. Real-time Integration">
+    - Connect data to the actual Election Event database.
+    - Support Real-time score updates.
+    - **Constraint:** STRICTLY preserve the existing Design and UI of page.tsx.
+  </feature>
+
+  <feature name="2. Post-Election Display (Public Score)">
+    - **Trigger:** Add a "Display Settings" button that appears ONLY after the election event ends.
+    - **UI Placement:** Bottom of the Election Event section.
+    - **Configuration Options:**
+      1. Toggle: Show/Hide Raw Scores.
+      2. Toggle: Show "Winner Only".
+      3. Action: "Skip" displaying specific positions.
+    - **Edge Case Handling:**
+      1. Handle positions with "No Candidates".
+      2. Handle scenarios where "Vote No" (ไม่ประสงค์ลงคะแนน) wins (Scores > Candidates).
+  </feature>
+</specifications>
+
+<development_guidelines>
+  <planning>
+    1. **Implementation Plan:** Before coding, generate a detailed system architect design/plan. Wait for my approval.
+    2. **Code Analysis:** Deeply analyze the existing codebase context before proposing changes.
+    3. **Documentation:** Utilize 'MCP Server Context7' to access the latest project documentation/tools.
+  </planning>
+
+  <quality_control>
+    - **Testing:** Write Unit Tests using **Jest** (store in `__tests__` folder). Install Jest if missing.
+    - **Linting:** Run **ESLint** to check for syntax errors and bugs before finishing every phase.
+    - **Best Practices:** Follow 'vercel-react-best-practices' for Next.js performance and code structure.
+  </quality_control>
+
+  <workflow>
+    - Break complex tasks into phases.
+    - **STOP** and ask for approval after completing the planning phase and after each development phase.
+  </workflow>
+</development_guidelines>
+
+<output_requirements>
+1. Phase 1: Provide the "Implementation Plan" and "System Design" for approval.
+2. Do not generate full code until the plan is approved.
+</output_requirements>
