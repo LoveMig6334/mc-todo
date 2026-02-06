@@ -41,18 +41,18 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ## Feature Implementation Roadmap
 
 ### Feature 1: Task Management (Home Page)
-- [ ] Vertical list view layout
-- [ ] Add task button with modal/popup
-- [ ] Task creation form with all input fields:
-  - [ ] Title input
-  - [ ] Details input
-  - [ ] Category/Topic dropdown (custom, user-manageable)
-  - [ ] Priority slider (0-10)
-  - [ ] Due date picker (single click & drag-and-hold for range)
-  - [ ] Reference links (dynamic add/remove)
-- [ ] Task display and management
-- [ ] Data persistence (local storage)
-- [ ] Unit tests
+- [x] Vertical list view layout
+- [x] Add task button with modal/popup
+- [x] Task creation form with all input fields:
+  - [x] Title input
+  - [x] Details input
+  - [x] Category/Topic dropdown (custom, user-manageable)
+  - [x] Priority slider (0-10)
+  - [x] Due date picker (single click & drag-and-hold for range)
+  - [x] Reference links (dynamic add/remove)
+- [x] Task display and management
+- [x] Data persistence (local storage)
+- [x] Unit tests
 
 ### Feature 2: Linked Calendar View
 - [ ] Calendar grid with month display (English + Thai on hover)
@@ -72,9 +72,9 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - [ ] Unit tests
 
 ### Infrastructure
-- [ ] Floating navigation bar (collapsible)
-- [ ] Jest testing setup
-- [ ] ESLint configuration verified
+- [x] Floating navigation bar (collapsible)
+- [x] Jest testing setup
+- [x] ESLint configuration verified
 
 ---
 

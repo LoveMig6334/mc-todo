@@ -15,7 +15,7 @@ A modern, high-performance To-Do List application built with Next.js featuring:
 - **UI Library:** React 19.2.3
 - **Styling:** Tailwind CSS v4
 - **Language:** TypeScript 5
-- **Testing:** Jest (to be installed)
+- **Testing:** Jest 30
 
 ## Design System
 
@@ -57,7 +57,90 @@ A modern, high-performance To-Do List application built with Next.js featuring:
 
 <!-- New entries should be added below this line -->
 
-*No issues recorded yet. This section will be updated as development progresses.*
+[2026-02-06 12:00] - React Hooks: Avoid setState in useEffect
+
+**Problem:** Next.js ESLint rule `react-hooks/set-state-in-effect` forbids calling setState synchronously within a useEffect. This can cause cascading renders and performance issues.
+
+**Wrong Code:**
+```tsx
+useEffect(() => {
+  if (isOpen) {
+    setFormData(getDefaultFormData()); // ESLint error!
+  }
+}, [isOpen]);
+```
+
+**Correct Code:**
+```tsx
+// Option 1: Use useMemo for derived initial state
+const initialFormData = useMemo(() => {
+  if (editingTask) return taskToFormData(editingTask);
+  return getDefaultFormData();
+}, [editingTask]);
+
+const [formData, setFormData] = useState(initialFormData);
+
+// Option 2: Use a key prop to reset component state
+<ChildComponent key={editingTask?.id ?? 'new'} />
+```
+
+**Context:** Applies when initializing form state based on props (e.g., modal edit vs create).
+
+---
+
+[2026-02-06 12:00] - React: Use useSyncExternalStore for localStorage
+
+**Problem:** Reading from localStorage in useEffect and calling setState triggers ESLint errors and can cause hydration mismatches in Next.js.
+
+**Wrong Code:**
+```tsx
+const [value, setValue] = useState(initialValue);
+
+useEffect(() => {
+  const item = localStorage.getItem(key);
+  if (item) setValue(JSON.parse(item)); // ESLint error!
+}, [key]);
+```
+
+**Correct Code:**
+```tsx
+import { useSyncExternalStore } from 'react';
+
+const getSnapshot = () => {
+  const item = localStorage.getItem(key);
+  return item ? JSON.parse(item) : initialValue;
+};
+
+const value = useSyncExternalStore(
+  subscribe,
+  getSnapshot,
+  () => initialValue // Server snapshot
+);
+```
+
+**Context:** Applies when syncing React state with browser APIs like localStorage.
+
+---
+
+[2026-02-06 12:00] - Jest Config: Use ESM format (.mjs)
+
+**Problem:** ESLint forbids `require()` imports (`@typescript-eslint/no-require-imports`). Jest config files using CommonJS will fail linting.
+
+**Wrong Code:**
+```js
+// jest.config.js
+const nextJest = require('next/jest'); // ESLint error!
+module.exports = createJestConfig(config);
+```
+
+**Correct Code:**
+```js
+// jest.config.mjs
+import nextJest from 'next/jest.js';
+export default createJestConfig(config);
+```
+
+**Context:** Applies to all Jest configuration in TypeScript/ESM projects.
 
 ---
 
