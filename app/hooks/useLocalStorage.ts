@@ -1,16 +1,19 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useSyncExternalStore } from 'react';
-
-function getServerSnapshot<T>(initialValue: T): T {
-  return initialValue;
-}
+import { useCallback, useRef, useSyncExternalStore } from "react";
 
 export function useLocalStorage<T>(
   key: string,
-  initialValue: T
+  initialValue: T,
 ): [T, (value: T | ((prev: T) => T)) => void] {
-  const [internalValue, setInternalValue] = useState<T>(initialValue);
+  // Cache the initial value once so it's stable across renders
+  const initialValueRef = useRef(initialValue);
+
+  // Cache the last raw string and parsed value to avoid creating new references
+  const cacheRef = useRef<{ raw: string | null; parsed: T }>({
+    raw: null,
+    parsed: initialValue,
+  });
 
   const subscribe = useCallback(
     (callback: () => void) => {
@@ -19,55 +22,62 @@ export function useLocalStorage<T>(
           callback();
         }
       };
-      window.addEventListener('storage', handleStorageChange);
-      return () => window.removeEventListener('storage', handleStorageChange);
+      window.addEventListener("storage", handleStorageChange);
+      return () => window.removeEventListener("storage", handleStorageChange);
     },
-    [key]
+    [key],
   );
 
-  const getSnapshot = useCallback(() => {
+  const getSnapshot = useCallback((): T => {
     try {
-      const item = window.localStorage.getItem(key);
-      return item ? (JSON.parse(item) as T) : initialValue;
+      const raw = window.localStorage.getItem(key);
+      if (raw === null) {
+        return initialValueRef.current;
+      }
+      // Only re-parse if the raw string changed
+      if (raw !== cacheRef.current.raw) {
+        cacheRef.current = { raw, parsed: JSON.parse(raw) as T };
+      }
+      return cacheRef.current.parsed;
     } catch {
-      return initialValue;
+      return initialValueRef.current;
     }
-  }, [key, initialValue]);
+  }, [key]);
+
+  const getServerSnapshot = useCallback((): T => {
+    return initialValueRef.current;
+  }, []);
 
   const storedValue = useSyncExternalStore(
     subscribe,
     getSnapshot,
-    () => getServerSnapshot(initialValue)
+    getServerSnapshot,
   );
 
   const setValue = useCallback(
     (value: T | ((prev: T) => T)) => {
       try {
-        const currentValue =
-          typeof window !== 'undefined'
-            ? (() => {
-                const item = window.localStorage.getItem(key);
-                return item ? (JSON.parse(item) as T) : initialValue;
-              })()
-            : initialValue;
+        const raw = window.localStorage.getItem(key);
+        const currentValue: T =
+          raw !== null ? (JSON.parse(raw) as T) : initialValueRef.current;
 
         const valueToStore =
           value instanceof Function ? value(currentValue) : value;
 
-        setInternalValue(valueToStore);
+        const newRaw = JSON.stringify(valueToStore);
+        // Update cache immediately so getSnapshot returns the new value
+        cacheRef.current = { raw: newRaw, parsed: valueToStore };
 
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem(key, JSON.stringify(valueToStore));
-          window.dispatchEvent(
-            new StorageEvent('storage', { key, newValue: JSON.stringify(valueToStore) })
-          );
-        }
+        window.localStorage.setItem(key, newRaw);
+        window.dispatchEvent(
+          new StorageEvent("storage", { key, newValue: newRaw }),
+        );
       } catch (error) {
         console.warn(`Error setting localStorage key "${key}":`, error);
       }
     },
-    [key, initialValue]
+    [key],
   );
 
-  return [storedValue ?? internalValue, setValue];
+  return [storedValue, setValue];
 }
