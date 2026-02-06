@@ -29,6 +29,18 @@
 </specifications>
 
 <development_guidelines>
+  <knowledge_retrieval>
+    - **STEP 0 (MANDATORY):** Before generating any plan or code, YOU MUST READ `CLAUDE.md`.
+    - **Focus:** Pay strict attention to the **"Avoid Common Mistakes"** section to ensure you do
+    not repeat past errors.
+  </knowledge_retrieval>
+
+  <self_learning> - **Rule:** If you encounter a bug, syntax error, or project-specific constraint
+    during development, you MUST update the `CLAUDE.md` file under "Avoid Common Mistakes". -
+    **Entry Format (Strict):** - **Timestamp:** Start with `[YYYY-MM-DD HH:mm]`. - **Problem:**
+    Clearly describe the issue or anti-pattern. - **Code Comparison:** You MUST provide both `<Wrong Code>`
+    and `<Correct Code>` examples. - **Usage/Context:** Briefly explain when this rule applies. </self_learning>
+
   <planning>
     1. **Implementation Plan:** Before coding, generate a detailed system architect design/plan.
     Wait for my approval.
@@ -44,12 +56,6 @@
     - **Best Practices:** Follow 'vercel-react-best-practices' for Next.js performance and code
     structure.
   </quality_control>
-
-  <workflow>
-    - Break complex tasks into phases.
-    - **STOP** and ask for approval after completing the planning phase and after each development
-    phase.
-  </workflow>
 </development_guidelines>
 
 <output_requirements>
