@@ -1,29 +1,29 @@
 <task>
-Develop the "Result Summary" dashboard (page.tsx) by integrating real-time database connections and implementing a post-election configuration feature.
+Develop ....
 </task>
 
 <context>
-Current Status: The 'page.tsx' is currently a mockup.
-Goal: Transform this mockup into a fully functional page connected to the real Election Event database while maintaining the existing UI/Design.
+Current Status: .........
+Goal: ............
 </context>
 
 <specifications>
-  <feature name="1. Real-time Integration">
-    - Connect data to the actual Election Event database.
-    - Support Real-time score updates.
-    - **Constraint:** STRICTLY preserve the existing Design and UI of page.tsx.
+  <feature name="1. ........">
+    - ........
+    - ........
+    - **Constraint:** ........
   </feature>
 
-  <feature name="2. Post-Election Display (Public Score)">
-    - **Trigger:** Add a "Display Settings" button that appears ONLY after the election event ends.
-    - **UI Placement:** Bottom of the Election Event section.
+  <feature name="2. ........">
+    - **Trigger:** ........
+    - **UI Placement:** ........
     - **Configuration Options:**
-      1. Toggle: Show/Hide Raw Scores.
-      2. Toggle: Show "Winner Only".
-      3. Action: "Skip" displaying specific positions.
+      1. Toggle: ........
+      2. Toggle: ........
+      3. Action: ........
     - **Edge Case Handling:**
-      1. Handle positions with "No Candidates".
-      2. Handle scenarios where "Vote No" (ไม่ประสงค์ลงคะแนน) wins (Scores > Candidates).
+      1. ........
+      2. ........
   </feature>
 </specifications>
 
