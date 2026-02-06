@@ -144,6 +144,27 @@ export default createJestConfig(config);
 
 ---
 
+[2026-02-06 12:00] - TypeScript: jest-dom matchers not recognized
+
+**Problem:** TypeScript error `Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'` (TS2339). The `jest.setup.js` imports `@testing-library/jest-dom` at runtime, but TypeScript doesn't pick up the type augmentations from a `.js` setup file.
+
+**Wrong Code:**
+```
+// No type declaration file — TS doesn't know about jest-dom matchers
+// jest.setup.js (runtime only, types not visible to TS)
+import '@testing-library/jest-dom';
+```
+
+**Correct Code:**
+```ts
+// jest-dom.d.ts (at project root, included by tsconfig)
+/// <reference types="@testing-library/jest-dom" />
+```
+
+**Context:** Applies when using `@testing-library/jest-dom` v6+ with TypeScript and Jest. The `.d.ts` file must be within the tsconfig `include` glob.
+
+---
+
 ## Project Conventions
 
 ### File Structure
