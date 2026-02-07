@@ -57,6 +57,42 @@ A modern, high-performance To-Do List application built with Next.js featuring:
 
 <!-- New entries should be added below this line -->
 
+[2026-02-07 12:00] - React Hooks: Cannot assign to ref.current during render
+
+**Problem:** React 19 ESLint rule `react-hooks/refs` forbids assigning to `ref.current` during render. Pattern like `resizeStateRef.current = resizeState;` at the top level of a hook triggers this error.
+
+**Wrong Code:**
+```tsx
+const [state, setState] = useState<State | null>(null);
+const stateRef = useRef<State | null>(null);
+
+// ESLint error: Cannot update ref during render
+stateRef.current = state;
+
+const endAction = useCallback(() => {
+  const current = stateRef.current;
+  // ...
+}, []);
+```
+
+**Correct Code:**
+```tsx
+const [state, setState] = useState<State | null>(null);
+
+const endAction = useCallback(() => {
+  // Use functional updater to access current state without a ref
+  setState((prev) => {
+    if (!prev) return null;
+    // ... do work with prev ...
+    return null;
+  });
+}, []);
+```
+
+**Context:** Applies when you need to read the latest state inside a callback used in a global event listener (e.g., `window.addEventListener("mouseup")`). Instead of syncing a ref, use `setState` functional updater to access the current value.
+
+---
+
 [2026-02-06 12:00] - React Hooks: Avoid setState in useEffect
 
 **Problem:** Next.js ESLint rule `react-hooks/set-state-in-effect` forbids calling setState synchronously within a useEffect. This can cause cascading renders and performance issues.
