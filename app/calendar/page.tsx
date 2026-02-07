@@ -54,7 +54,7 @@ export default function CalendarPage() {
     : undefined;
 
   const dragPreviewDates = useMemo(() => {
-    if (!draggedTask || !dragState || dragState.offsetDays === 0) {
+    if (!draggedTask || !dragState) {
       return undefined;
     }
     return computePreviewDates(draggedTask, dragState.offsetDays);
@@ -68,8 +68,6 @@ export default function CalendarPage() {
 
   const resizePreviewDates = useMemo(() => {
     if (!resizedTask || !resizeState) return undefined;
-    if (resizeState.currentDateStr === resizeState.originalDateStr)
-      return undefined;
     return computeResizePreviewDates(resizedTask, resizeState);
   }, [resizedTask, resizeState]);
 

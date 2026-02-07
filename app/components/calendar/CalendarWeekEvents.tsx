@@ -162,6 +162,12 @@ export default function CalendarWeekEvents({
       {weekEvents.map((eventData) => {
         const { layout, startCol, endCol } = eventData;
         const { task, category } = layout;
+
+        // Hide the original event when a preview is active for it
+        if (previewTask?.id === task.id) {
+          return null;
+        }
+
         const bgColor = category?.color ?? "#71717a";
         const isDragTarget = isDragging && task.id === draggedTaskId;
 
@@ -252,6 +258,7 @@ export default function CalendarWeekEvents({
           )}
           style={{
             gridColumn: `${previewStartCol} / ${previewEndCol}`,
+            gridRow: 1, // Force preview onto same row as events to overlay
             backgroundColor: (previewCategory?.color ?? "#71717a") + "66", // ~40% opacity
           }}
           initial={{ opacity: 0, scale: 0.9 }}
