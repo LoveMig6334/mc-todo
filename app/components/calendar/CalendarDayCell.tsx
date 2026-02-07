@@ -29,6 +29,8 @@ interface CalendarDayCellProps {
   isDragTarget?: boolean;
   draggedTaskId?: string;
   previewData?: DragPreviewData;
+  /** When true, events are rendered in CalendarWeekEvents overlay instead */
+  hideEvents?: boolean;
 }
 
 export default function CalendarDayCell({
@@ -47,6 +49,7 @@ export default function CalendarDayCell({
   isDragTarget,
   draggedTaskId,
   previewData,
+  hideEvents = false,
 }: CalendarDayCellProps) {
   const { date, dayOfMonth, isCurrentMonth, isToday, events } = day;
 
@@ -70,7 +73,7 @@ export default function CalendarDayCell({
   return (
     <motion.div
       className={cn(
-        "relative flex min-h-30 flex-col border border-zinc-800 p-1",
+        "relative flex min-h-30 flex-col border border-zinc-800 pt-1 overflow-visible",
         !isCurrentMonth && "opacity-40",
         isToday && "ring-1 ring-inset ring-orange-500",
         (isResizing || isDragging) && "select-none",
@@ -102,7 +105,7 @@ export default function CalendarDayCell({
       {/* Day number */}
       <span
         className={cn(
-          "mb-1 text-xs font-medium",
+          "mb-1 px-1 text-xs font-medium",
           isToday ? "text-orange-500" : "text-zinc-400",
           !isCurrentMonth && "text-zinc-600",
         )}
@@ -110,61 +113,69 @@ export default function CalendarDayCell({
         {dayOfMonth}
       </span>
 
-      {/* Event slots */}
-      <div className="flex flex-1 flex-col gap-0.5">
-        {/* Drag preview - renders at top when this cell is in preview range */}
-        {previewData && (
-          <DragPreviewEvent
-            task={previewData.task}
-            category={previewData.category}
-            spanStart={previewData.spanStart}
-            spanEnd={previewData.spanEnd}
-            spanMiddle={previewData.spanMiddle}
-          />
-        )}
-
-        {slots.map((slot, idx) =>
-          slot ? (
-            <CalendarEvent
-              key={slot.task.id}
-              layout={slot}
-              onClick={() => onClickEvent(slot.task)}
-              onResizeStart={
-                onResizeStart
-                  ? (taskId, edge) => onResizeStart(taskId, edge, date)
-                  : undefined
-              }
-              onDragStart={
-                onDragStart ? (taskId) => onDragStart(taskId, date) : undefined
-              }
-              isResizing={isResizing}
-              isDragging={isDragging}
-              isDragTarget={isDragging && slot.task.id === draggedTaskId}
+      {/* Event slots - only rendered when not using overlay */}
+      {!hideEvents && (
+        <div className="flex flex-1 flex-col gap-0.5 overflow-visible relative z-0">
+          {/* Drag preview - renders at top when this cell is in preview range */}
+          {previewData && (
+            <DragPreviewEvent
+              task={previewData.task}
+              category={previewData.category}
+              spanStart={previewData.spanStart}
+              spanEnd={previewData.spanEnd}
+              spanMiddle={previewData.spanMiddle}
             />
-          ) : (
-            <div key={`empty-${idx}`} className="h-6" />
-          ),
-        )}
+          )}
 
-        {/* Collapsed events as thin colored lines */}
-        {collapsedEvents.length > 0 && (
-          <div className="mt-0.5 flex flex-col gap-px">
-            {collapsedEvents.map((event) => (
-              <motion.div
-                key={event.task.id}
-                className="h-1.5 rounded-sm"
-                style={{
-                  backgroundColor: (event.category?.color ?? "#71717a") + "cc",
-                }}
-                title={event.task.title}
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          {slots.map((slot, idx) =>
+            slot ? (
+              <CalendarEvent
+                key={slot.task.id}
+                layout={slot}
+                onClick={() => onClickEvent(slot.task)}
+                onResizeStart={
+                  onResizeStart
+                    ? (taskId, edge) => onResizeStart(taskId, edge, date)
+                    : undefined
+                }
+                onDragStart={
+                  onDragStart
+                    ? (taskId) => onDragStart(taskId, date)
+                    : undefined
+                }
+                isResizing={isResizing}
+                isDragging={isDragging}
+                isDragTarget={isDragging && slot.task.id === draggedTaskId}
               />
-            ))}
-          </div>
-        )}
-      </div>
+            ) : (
+              <div key={`empty-${idx}`} className="h-6" />
+            ),
+          )}
+
+          {/* Collapsed events as thin colored lines */}
+          {collapsedEvents.length > 0 && (
+            <div className="mt-0.5 flex flex-col gap-px">
+              {collapsedEvents.map((event) => (
+                <motion.div
+                  key={event.task.id}
+                  className="h-1.5 rounded-sm"
+                  style={{
+                    backgroundColor:
+                      (event.category?.color ?? "#71717a") + "cc",
+                  }}
+                  title={event.task.title}
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Spacer when events are hidden to maintain cell height */}
+      {hideEvents && <div className="flex-1 min-h-16" />}
 
       {/* Overflow indicator */}
       {hasOverflow && (

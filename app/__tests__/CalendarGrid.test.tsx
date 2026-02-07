@@ -133,12 +133,12 @@ describe("CalendarGrid", () => {
       />,
     );
 
-    // Title should appear once (only on spanStart day)
+    // Title should appear once
     const titleElements = screen.getAllByText("Conference");
     expect(titleElements).toHaveLength(1);
 
-    // But there should be 3 event buttons (one per day in the span)
+    // With CSS Grid spanning, there should be 1 event button that spans multiple columns
     const buttons = screen.getAllByTitle("Conference");
-    expect(buttons).toHaveLength(3);
+    expect(buttons).toHaveLength(1);
   });
 });

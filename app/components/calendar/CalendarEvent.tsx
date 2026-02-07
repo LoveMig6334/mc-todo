@@ -26,6 +26,20 @@ export default function CalendarEvent({
   const { task, category, spanStart, spanEnd, spanMiddle } = layout;
   const bgColor = category?.color ?? "#71717a";
 
+  // Calculate span connection styles for multi-day events
+  // Each cell has a 1px border, so events need to extend ~5px to bridge gaps
+  const spanStyles: React.CSSProperties = {};
+  if (!spanEnd) {
+    // Extend past right edge to connect with next cell
+    spanStyles.marginRight = "-5px";
+    spanStyles.paddingRight = "5px";
+  }
+  if (!spanStart) {
+    // Pull in from left to connect with previous cell
+    spanStyles.marginLeft = "-5px";
+    spanStyles.paddingLeft = "5px";
+  }
+
   const handleResizeMouseDown = (e: React.MouseEvent, edge: ResizeEdge) => {
     e.stopPropagation();
     e.preventDefault();
@@ -76,17 +90,17 @@ export default function CalendarEvent({
         damping: 25,
       }}
       className={cn(
-        "group/event relative flex w-full items-center overflow-hidden text-left text-[11px] leading-tight text-white cursor-grab",
+        "group/event relative flex w-full items-center overflow-hidden text-left text-[11px] leading-tight text-white cursor-grab z-10",
         "h-6 px-1.5",
-        spanStart && !spanEnd && "rounded-l-md mr-0",
-        spanEnd && !spanStart && "rounded-r-md ml-0",
+        spanStart && !spanEnd && "rounded-l-md",
+        spanEnd && !spanStart && "rounded-r-md",
         spanStart && spanEnd && "rounded-md",
-        spanMiddle && "rounded-none mx-0",
+        spanMiddle && "rounded-none",
         isResizing && "select-none",
         isDragTarget &&
           "ring-2 ring-orange-400 ring-offset-1 ring-offset-zinc-900",
       )}
-      style={{ backgroundColor: bgColor + "cc" }}
+      style={{ backgroundColor: bgColor + "cc", ...spanStyles }}
     >
       {/* Left resize handle (on start edge) */}
       {spanStart && onResizeStart && (

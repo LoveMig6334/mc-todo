@@ -1,8 +1,13 @@
 "use client";
 
-import { DAYS_OF_WEEK, THAI_DAYS } from "@/app/lib/calendarUtils";
+import {
+  DAYS_OF_WEEK,
+  MAX_VISIBLE_EVENTS,
+  THAI_DAYS,
+} from "@/app/lib/calendarUtils";
 import {
   CalendarDay,
+  CalendarEventLayout,
   DragPreviewData,
   DragState,
   ResizeEdge,
@@ -12,6 +17,7 @@ import { Category, Task } from "@/app/types/task";
 import { useMemo } from "react";
 import CalendarDayCell from "./CalendarDayCell";
 import CalendarEventPopover from "./CalendarEventPopover";
+import CalendarWeekEvents from "./CalendarWeekEvents";
 
 interface CalendarGridProps {
   grid: CalendarDay[][];
@@ -95,44 +101,84 @@ export default function CalendarGrid({
       </div>
 
       {/* Calendar grid rows */}
-      {grid.map((week, weekIdx) => (
-        <div key={weekIdx} className="grid grid-cols-7">
-          {week.map((day) => (
-            <div key={day.date} className="relative">
-              <CalendarDayCell
-                day={day}
-                onDoubleClickDay={onDoubleClickDay}
-                onClickEvent={onClickEvent}
-                isExpanded={expandedDayKey === day.date}
-                onExpandDay={onExpandDay}
-                onResizeStart={onResizeStart}
-                onResizeHover={onResizeHover}
-                onDragStart={onDragStart}
-                onDragHover={onDragHover}
-                isResizing={isResizing}
-                isResizeTarget={
-                  isResizing && resizeState.currentDateStr === day.date
-                }
-                isDragging={isDragging}
-                isDragTarget={isDragging && dragState?.currentDate === day.date}
-                draggedTaskId={dragState?.taskId}
-                previewData={previewMap.get(day.date)}
-              />
-              {/* Popover for expanded day */}
-              {expandedDayKey === day.date &&
-                expandedDay &&
-                !isResizing &&
-                !isDragging && (
-                  <CalendarEventPopover
-                    events={expandedDay.events}
+      {grid.map((week, weekIdx) => {
+        // Build events by lane for this week
+        const eventsByLane = new Map<number, CalendarEventLayout[]>();
+        const weekDays = week.map((d) => d.date);
+
+        // Collect all unique events in this week, grouped by lane
+        const seenTaskIds = new Set<string>();
+        for (const day of week) {
+          for (const event of day.events) {
+            if (!seenTaskIds.has(event.task.id)) {
+              seenTaskIds.add(event.task.id);
+              const lane = event.row;
+              if (!eventsByLane.has(lane)) {
+                eventsByLane.set(lane, []);
+              }
+              eventsByLane.get(lane)!.push(event);
+            }
+          }
+        }
+
+        return (
+          <div key={weekIdx} className="relative">
+            {/* Week events overlay using CSS Grid column spanning */}
+            <CalendarWeekEvents
+              weekDays={weekDays}
+              eventsByLane={eventsByLane}
+              maxLanes={MAX_VISIBLE_EVENTS}
+              onClickEvent={onClickEvent}
+              onResizeStart={onResizeStart}
+              onDragStart={onDragStart}
+              isResizing={isResizing}
+              isDragging={isDragging}
+              draggedTaskId={dragState?.taskId}
+            />
+
+            {/* Day cells (just backgrounds and date numbers) */}
+            <div className="grid grid-cols-7">
+              {week.map((day) => (
+                <div key={day.date} className="relative">
+                  <CalendarDayCell
+                    day={day}
+                    onDoubleClickDay={onDoubleClickDay}
                     onClickEvent={onClickEvent}
-                    onClose={() => onExpandDay(null)}
+                    isExpanded={expandedDayKey === day.date}
+                    onExpandDay={onExpandDay}
+                    onResizeStart={onResizeStart}
+                    onResizeHover={onResizeHover}
+                    onDragStart={onDragStart}
+                    onDragHover={onDragHover}
+                    isResizing={isResizing}
+                    isResizeTarget={
+                      isResizing && resizeState.currentDateStr === day.date
+                    }
+                    isDragging={isDragging}
+                    isDragTarget={
+                      isDragging && dragState?.currentDate === day.date
+                    }
+                    draggedTaskId={dragState?.taskId}
+                    previewData={previewMap.get(day.date)}
+                    hideEvents={true}
                   />
-                )}
+                  {/* Popover for expanded day */}
+                  {expandedDayKey === day.date &&
+                    expandedDay &&
+                    !isResizing &&
+                    !isDragging && (
+                      <CalendarEventPopover
+                        events={expandedDay.events}
+                        onClickEvent={onClickEvent}
+                        onClose={() => onExpandDay(null)}
+                      />
+                    )}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      ))}
+          </div>
+        );
+      })}
     </div>
   );
 }

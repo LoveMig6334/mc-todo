@@ -25,19 +25,34 @@ export default function DragPreviewEvent({
 }: DragPreviewEventProps) {
   const bgColor = category?.color ?? "#71717a";
 
+  // Calculate span connection styles for multi-day events
+  // Each cell has a 1px border, so events need to extend ~5px to bridge gaps
+  const spanStyles: React.CSSProperties = {};
+  if (!spanEnd) {
+    // Extend past right edge to connect with next cell
+    spanStyles.marginRight = "-5px";
+    spanStyles.paddingRight = "5px";
+  }
+  if (!spanStart) {
+    // Pull in from left to connect with previous cell
+    spanStyles.marginLeft = "-5px";
+    spanStyles.paddingLeft = "5px";
+  }
+
   return (
     <motion.div
       className={cn(
-        "flex w-full items-center overflow-hidden text-left text-[11px] leading-tight text-white/70 pointer-events-none",
+        "flex w-full items-center overflow-hidden text-left text-[11px] leading-tight text-white/70 pointer-events-none z-10",
         "h-6 px-1.5",
-        spanStart && !spanEnd && "rounded-l-md mr-0",
-        spanEnd && !spanStart && "rounded-r-md ml-0",
+        spanStart && !spanEnd && "rounded-l-md",
+        spanEnd && !spanStart && "rounded-r-md",
         spanStart && spanEnd && "rounded-md",
-        spanMiddle && "rounded-none mx-0",
+        spanMiddle && "rounded-none",
         "border-2 border-dashed border-white/40",
       )}
       style={{
         backgroundColor: bgColor + "66", // ~40% opacity
+        ...spanStyles,
       }}
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
