@@ -3,11 +3,13 @@
 import { DAYS_OF_WEEK, THAI_DAYS } from "@/app/lib/calendarUtils";
 import {
   CalendarDay,
+  DragPreviewData,
   DragState,
   ResizeEdge,
   ResizeState,
 } from "@/app/types/calendar";
-import { Task } from "@/app/types/task";
+import { Category, Task } from "@/app/types/task";
+import { useMemo } from "react";
 import CalendarDayCell from "./CalendarDayCell";
 import CalendarEventPopover from "./CalendarEventPopover";
 
@@ -23,6 +25,10 @@ interface CalendarGridProps {
   onDragStart?: (taskId: string, dateStr: string) => void;
   onDragHover?: (dateStr: string) => void;
   dragState?: DragState | null;
+  // Preview data for drag operation
+  previewDates?: string[];
+  draggedTask?: Task;
+  draggedCategory?: Category;
 }
 
 export default function CalendarGrid({
@@ -37,9 +43,36 @@ export default function CalendarGrid({
   onDragStart,
   onDragHover,
   dragState,
+  previewDates,
+  draggedTask,
+  draggedCategory,
 }: CalendarGridProps) {
   const isResizing = resizeState !== null;
   const isDragging = dragState !== null;
+
+  // Build preview data map for each date
+  const previewMap = useMemo(() => {
+    const map = new Map<string, DragPreviewData>();
+    if (!previewDates || !draggedTask || previewDates.length === 0) {
+      return map;
+    }
+
+    previewDates.forEach((date, idx) => {
+      const spanStart = idx === 0;
+      const spanEnd = idx === previewDates.length - 1;
+      const spanMiddle = !spanStart && !spanEnd;
+
+      map.set(date, {
+        task: draggedTask,
+        category: draggedCategory,
+        spanStart,
+        spanEnd,
+        spanMiddle,
+      });
+    });
+
+    return map;
+  }, [previewDates, draggedTask, draggedCategory]);
 
   // Find expanded day data
   const expandedDay = expandedDayKey
@@ -83,6 +116,7 @@ export default function CalendarGrid({
                 isDragging={isDragging}
                 isDragTarget={isDragging && dragState?.currentDate === day.date}
                 draggedTaskId={dragState?.taskId}
+                previewData={previewMap.get(day.date)}
               />
               {/* Popover for expanded day */}
               {expandedDayKey === day.date &&

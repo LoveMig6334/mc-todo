@@ -5,11 +5,13 @@ import { cn } from "@/app/lib/utils";
 import {
   CalendarDay,
   CalendarEventLayout,
+  DragPreviewData,
   ResizeEdge,
 } from "@/app/types/calendar";
 import { Task } from "@/app/types/task";
 import { motion } from "motion/react";
 import CalendarEvent from "./CalendarEvent";
+import DragPreviewEvent from "./DragPreviewEvent";
 
 interface CalendarDayCellProps {
   day: CalendarDay;
@@ -26,6 +28,7 @@ interface CalendarDayCellProps {
   isDragging?: boolean;
   isDragTarget?: boolean;
   draggedTaskId?: string;
+  previewData?: DragPreviewData;
 }
 
 export default function CalendarDayCell({
@@ -43,6 +46,7 @@ export default function CalendarDayCell({
   isDragging,
   isDragTarget,
   draggedTaskId,
+  previewData,
 }: CalendarDayCellProps) {
   const { date, dayOfMonth, isCurrentMonth, isToday, events } = day;
 
@@ -108,6 +112,17 @@ export default function CalendarDayCell({
 
       {/* Event slots */}
       <div className="flex flex-1 flex-col gap-0.5">
+        {/* Drag preview - renders at top when this cell is in preview range */}
+        {previewData && (
+          <DragPreviewEvent
+            task={previewData.task}
+            category={previewData.category}
+            spanStart={previewData.spanStart}
+            spanEnd={previewData.spanEnd}
+            spanMiddle={previewData.spanMiddle}
+          />
+        )}
+
         {slots.map((slot, idx) =>
           slot ? (
             <CalendarEvent

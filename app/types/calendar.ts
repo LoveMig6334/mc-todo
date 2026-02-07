@@ -38,3 +38,12 @@ export interface DragState {
   offsetDays: number; // Days moved from original
   isOverTrash: boolean; // Hovering over trash drop zone
 }
+
+/** Data needed to render a drag preview in a cell */
+export interface DragPreviewData {
+  task: Task;
+  category: Category | undefined;
+  spanStart: boolean; // First day of preview span
+  spanEnd: boolean; // Last day of preview span
+  spanMiddle: boolean; // Middle day of preview span
+}

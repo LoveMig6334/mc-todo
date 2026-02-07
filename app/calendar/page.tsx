@@ -7,11 +7,11 @@ import FloatingNav from "@/app/components/layout/FloatingNav";
 import TaskModal from "@/app/components/task/TaskModal";
 import { useCalendarGrid } from "@/app/hooks/useCalendarGrid";
 import { useCategories } from "@/app/hooks/useCategories";
-import { useEventDrag } from "@/app/hooks/useEventDrag";
+import { computePreviewDates, useEventDrag } from "@/app/hooks/useEventDrag";
 import { useEventResize } from "@/app/hooks/useEventResize";
 import { useTaskManager } from "@/app/hooks/useTaskManager";
 import { Task, TaskFormData } from "@/app/types/task";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export default function CalendarPage() {
   const { tasks, addTask, updateTask, deleteTask, getTaskById } =
@@ -43,6 +43,19 @@ export default function CalendarPage() {
   // Ensure resize and drag are mutually exclusive
   const isResizing = resizeState !== null;
   const isDragging = dragState !== null;
+
+  // Compute preview data for drag operation
+  const draggedTask = dragState ? getTaskById(dragState.taskId) : undefined;
+  const draggedCategory = draggedTask
+    ? categories.find((c) => c.id === draggedTask.categoryId)
+    : undefined;
+
+  const previewDates = useMemo(() => {
+    if (!draggedTask || !dragState || dragState.offsetDays === 0) {
+      return undefined;
+    }
+    return computePreviewDates(draggedTask, dragState.offsetDays);
+  }, [draggedTask, dragState]);
 
   // --- Month Navigation ---
   const goToPrevMonth = () => {
@@ -157,6 +170,9 @@ export default function CalendarPage() {
           onDragStart={handleDragStart}
           onDragHover={handleDragHover}
           dragState={dragState}
+          previewDates={previewDates}
+          draggedTask={draggedTask}
+          draggedCategory={draggedCategory}
         />
       </main>
 

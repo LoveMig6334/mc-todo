@@ -49,6 +49,26 @@ function computeNewDueDate(
   return { start: newStart, end: newEnd };
 }
 
+/**
+ * Computes the array of date strings for preview rendering
+ */
+export function computePreviewDates(task: Task, offsetDays: number): string[] {
+  const newDueDate = computeNewDueDate(task, offsetDays);
+  const dates: string[] = [];
+
+  const startDate = new Date(newDueDate.start);
+  const endDate = newDueDate.end ? new Date(newDueDate.end) : startDate;
+
+  // Iterate from start to end date
+  const current = new Date(startDate);
+  while (current <= endDate) {
+    dates.push(current.toISOString().split("T")[0]);
+    current.setDate(current.getDate() + 1);
+  }
+
+  return dates;
+}
+
 export function useEventDrag({
   updateTask,
   deleteTask,

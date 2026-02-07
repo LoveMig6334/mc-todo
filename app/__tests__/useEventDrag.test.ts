@@ -1,4 +1,4 @@
-import { useEventDrag } from "@/app/hooks/useEventDrag";
+import { computePreviewDates, useEventDrag } from "@/app/hooks/useEventDrag";
 import { Task } from "@/app/types/task";
 import { act, renderHook } from "@testing-library/react";
 
@@ -303,5 +303,71 @@ describe("useEventDrag", () => {
         dueDate: { start: "2024-01-10", end: "2024-01-15" },
       });
     });
+  });
+});
+
+describe("computePreviewDates", () => {
+  const mockMultiDayTask: Task = {
+    id: "task-1",
+    title: "Multi-Day Task",
+    details: "",
+    categoryId: "cat-1",
+    priority: 3,
+    status: "pending",
+    dueDate: { start: "2024-01-15", end: "2024-01-18" },
+    referenceLinks: [],
+    completed: false,
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z",
+  };
+
+  const mockSingleDayTask: Task = {
+    ...mockMultiDayTask,
+    id: "task-2",
+    dueDate: { start: "2024-01-15", end: null },
+  };
+
+  it("returns single date for single-day task", () => {
+    const dates = computePreviewDates(mockSingleDayTask, 3);
+    expect(dates).toEqual(["2024-01-18"]);
+  });
+
+  it("returns correct date range for multi-day task", () => {
+    const dates = computePreviewDates(mockMultiDayTask, 0);
+    expect(dates).toEqual([
+      "2024-01-15",
+      "2024-01-16",
+      "2024-01-17",
+      "2024-01-18",
+    ]);
+  });
+
+  it("shifts dates forward with positive offset", () => {
+    const dates = computePreviewDates(mockMultiDayTask, 5);
+    expect(dates).toEqual([
+      "2024-01-20",
+      "2024-01-21",
+      "2024-01-22",
+      "2024-01-23",
+    ]);
+  });
+
+  it("shifts dates backward with negative offset", () => {
+    const dates = computePreviewDates(mockMultiDayTask, -5);
+    expect(dates).toEqual([
+      "2024-01-10",
+      "2024-01-11",
+      "2024-01-12",
+      "2024-01-13",
+    ]);
+  });
+
+  it("handles month boundary correctly", () => {
+    const task: Task = {
+      ...mockSingleDayTask,
+      dueDate: { start: "2024-01-30", end: null },
+    };
+    const dates = computePreviewDates(task, 5);
+    expect(dates).toEqual(["2024-02-04"]);
   });
 });
