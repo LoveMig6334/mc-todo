@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Kodchasan } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const kodchasan = Kodchasan({
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-kodchasan",
+  subsets: ["latin", "thai"],
 });
 
 const geistMono = Geist_Mono({
@@ -26,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${kodchasan.className} ${kodchasan.variable} ${geistMono.variable} antialiased`}
       >
         {children}
       </body>
