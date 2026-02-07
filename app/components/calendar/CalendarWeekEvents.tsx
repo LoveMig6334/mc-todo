@@ -261,7 +261,7 @@ export default function CalendarWeekEvents({
             gridRow: 1, // Force preview onto same row as events to overlay
             backgroundColor: (previewCategory?.color ?? "#71717a") + "66", // ~40% opacity
           }}
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 1, scale: 1 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{
             type: "spring",
