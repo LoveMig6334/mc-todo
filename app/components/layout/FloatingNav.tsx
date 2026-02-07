@@ -89,13 +89,13 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
 
   return (
     <nav
-      className="fixed top-4 left-1/2 -translate-x-1/2 z-50"
+      className="fixed top-0 left-1/2 -translate-x-1/2 z-50 px-10 pt-2 pb-8"
       onMouseEnter={() => setIsExpanded(true)}
       onMouseLeave={() => setIsExpanded(false)}
     >
       <div
         className={cn(
-          "flex items-center gap-1 rounded-full bg-zinc-900 border border-zinc-800 px-2 py-2 shadow-lg transition-all duration-300 ease-out",
+          "flex items-center gap-1 rounded-full bg-zinc-900 border border-zinc-800 px-2 py-2 shadow-lg transition-all duration-500 ease-out",
           isExpanded ? "px-4" : "px-2",
         )}
       >
@@ -106,7 +106,7 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
           </div>
           <span
             className={cn(
-              "text-white font-medium text-sm whitespace-nowrap overflow-hidden transition-all duration-300",
+              "text-white font-medium text-sm whitespace-nowrap overflow-hidden transition-all duration-500",
               isExpanded ? "w-auto opacity-100" : "w-0 opacity-0",
             )}
           >
@@ -117,7 +117,7 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
         {/* Divider */}
         <div
           className={cn(
-            "h-6 w-px bg-zinc-700 transition-opacity duration-300",
+            "h-6 w-px bg-zinc-700 transition-opacity duration-500",
             isExpanded ? "opacity-100" : "opacity-0",
           )}
         />
@@ -131,7 +131,7 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
                 key={item.id}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-200",
+                  "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-500",
                   isActive
                     ? "bg-zinc-800 text-orange-500"
                     : "text-zinc-400 hover:text-white hover:bg-zinc-800",
@@ -140,7 +140,7 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
                 {item.icon}
                 <span
                   className={cn(
-                    "text-sm whitespace-nowrap overflow-hidden transition-all duration-300",
+                    "text-sm whitespace-nowrap overflow-hidden transition-all duration-500",
                     isExpanded ? "w-auto opacity-100" : "w-0 opacity-0",
                   )}
                 >
