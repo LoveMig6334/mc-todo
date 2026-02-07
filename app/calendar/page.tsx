@@ -6,6 +6,7 @@ import FloatingNav from "@/app/components/layout/FloatingNav";
 import TaskModal from "@/app/components/task/TaskModal";
 import { useCalendarGrid } from "@/app/hooks/useCalendarGrid";
 import { useCategories } from "@/app/hooks/useCategories";
+import { useEventDrag } from "@/app/hooks/useEventDrag";
 import { useEventResize } from "@/app/hooks/useEventResize";
 import { useTaskManager } from "@/app/hooks/useTaskManager";
 import { Task, TaskFormData } from "@/app/types/task";
@@ -30,6 +31,15 @@ export default function CalendarPage() {
     updateTask,
     getTaskById,
   });
+
+  const { dragState, startDrag, updateDrag } = useEventDrag({
+    updateTask,
+    getTaskById,
+  });
+
+  // Ensure resize and drag are mutually exclusive
+  const isResizing = resizeState !== null;
+  const isDragging = dragState !== null;
 
   // --- Month Navigation ---
   const goToPrevMonth = () => {
@@ -82,6 +92,32 @@ export default function CalendarPage() {
     }
   };
 
+  // --- Drag Handlers (only if not resizing) ---
+  const handleDragStart = (taskId: string, dateStr: string) => {
+    if (isResizing) return;
+    startDrag(taskId, dateStr);
+  };
+
+  const handleDragHover = (dateStr: string) => {
+    if (isResizing) return;
+    updateDrag(dateStr);
+  };
+
+  // --- Resize Handlers (only if not dragging) ---
+  const handleResizeStart = (
+    taskId: string,
+    edge: "start" | "end",
+    dateStr: string,
+  ) => {
+    if (isDragging) return;
+    startResize(taskId, edge, dateStr);
+  };
+
+  const handleResizeHover = (dateStr: string) => {
+    if (isDragging) return;
+    updateResize(dateStr);
+  };
+
   return (
     <div className="min-h-screen bg-zinc-900">
       <FloatingNav currentPath="/calendar" />
@@ -92,7 +128,7 @@ export default function CalendarPage() {
           <h1 className="text-2xl font-bold text-white">Calendar</h1>
           <p className="mt-1 text-sm text-zinc-400">
             View and manage your tasks on the calendar. Double-click a day to
-            create a new task.
+            create a new task. Drag events to move them.
           </p>
         </div>
 
@@ -112,9 +148,12 @@ export default function CalendarPage() {
           onClickEvent={handleClickEvent}
           expandedDayKey={expandedDayKey}
           onExpandDay={setExpandedDayKey}
-          onResizeStart={startResize}
-          onResizeHover={updateResize}
+          onResizeStart={handleResizeStart}
+          onResizeHover={handleResizeHover}
           resizeState={resizeState}
+          onDragStart={handleDragStart}
+          onDragHover={handleDragHover}
+          dragState={dragState}
         />
       </main>
 

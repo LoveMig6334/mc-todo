@@ -29,3 +29,11 @@ export interface ResizeState {
   originalDateStr: string;
   currentDateStr: string;
 }
+
+/** Active drag (move) state */
+export interface DragState {
+  taskId: string;
+  originalDate: string; // Where drag started
+  currentDate: string; // Current hover target
+  offsetDays: number; // Days moved from original
+}

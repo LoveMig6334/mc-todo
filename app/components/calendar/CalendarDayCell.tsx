@@ -1,9 +1,14 @@
 "use client";
 
-import { cn } from "@/app/lib/utils";
 import { MAX_VISIBLE_EVENTS } from "@/app/lib/calendarUtils";
-import { CalendarDay, CalendarEventLayout, ResizeEdge } from "@/app/types/calendar";
+import { cn } from "@/app/lib/utils";
+import {
+  CalendarDay,
+  CalendarEventLayout,
+  ResizeEdge,
+} from "@/app/types/calendar";
 import { Task } from "@/app/types/task";
+import { motion } from "motion/react";
 import CalendarEvent from "./CalendarEvent";
 
 interface CalendarDayCellProps {
@@ -14,8 +19,13 @@ interface CalendarDayCellProps {
   onExpandDay: (dayKey: string | null) => void;
   onResizeStart?: (taskId: string, edge: ResizeEdge, dateStr: string) => void;
   onResizeHover?: (dateStr: string) => void;
+  onDragStart?: (taskId: string, dateStr: string) => void;
+  onDragHover?: (dateStr: string) => void;
   isResizing?: boolean;
   isResizeTarget?: boolean;
+  isDragging?: boolean;
+  isDragTarget?: boolean;
+  draggedTaskId?: string;
 }
 
 export default function CalendarDayCell({
@@ -26,8 +36,13 @@ export default function CalendarDayCell({
   onExpandDay,
   onResizeStart,
   onResizeHover,
+  onDragStart,
+  onDragHover,
   isResizing,
   isResizeTarget,
+  isDragging,
+  isDragTarget,
+  draggedTaskId,
 }: CalendarDayCellProps) {
   const { date, dayOfMonth, isCurrentMonth, isToday, events } = day;
 
@@ -46,27 +61,39 @@ export default function CalendarDayCell({
     }
   }
 
+  const isActiveTarget = isResizeTarget || isDragTarget;
+
   return (
-    <div
+    <motion.div
       className={cn(
         "relative flex min-h-30 flex-col border border-zinc-800 p-1",
         !isCurrentMonth && "opacity-40",
         isToday && "ring-1 ring-inset ring-orange-500",
-        isResizing && "select-none",
-        isResizeTarget && "bg-orange-500/10",
+        (isResizing || isDragging) && "select-none",
       )}
+      animate={{
+        backgroundColor: isActiveTarget
+          ? "rgba(249, 115, 22, 0.15)"
+          : "transparent",
+        borderColor: isActiveTarget ? "rgb(249, 115, 22)" : "rgb(39, 39, 42)",
+      }}
+      transition={{ duration: 0.15 }}
       onDoubleClick={() => {
-        if (isResizing) return;
+        if (isResizing || isDragging) return;
         onDoubleClickDay(date);
       }}
       onMouseEnter={() => {
         if (isResizing) {
           onResizeHover?.(date);
+        } else if (isDragging) {
+          onDragHover?.(date);
         } else if (hasOverflow) {
           onExpandDay(date);
         }
       }}
-      onMouseLeave={() => isExpanded && !isResizing && onExpandDay(null)}
+      onMouseLeave={() =>
+        isExpanded && !isResizing && !isDragging && onExpandDay(null)
+      }
     >
       {/* Day number */}
       <span
@@ -87,8 +114,17 @@ export default function CalendarDayCell({
               key={slot.task.id}
               layout={slot}
               onClick={() => onClickEvent(slot.task)}
-              onResizeStart={onResizeStart ? (taskId, edge) => onResizeStart(taskId, edge, date) : undefined}
+              onResizeStart={
+                onResizeStart
+                  ? (taskId, edge) => onResizeStart(taskId, edge, date)
+                  : undefined
+              }
+              onDragStart={
+                onDragStart ? (taskId) => onDragStart(taskId, date) : undefined
+              }
               isResizing={isResizing}
+              isDragging={isDragging}
+              isDragTarget={isDragging && slot.task.id === draggedTaskId}
             />
           ) : (
             <div key={`empty-${idx}`} className="h-6" />
@@ -99,13 +135,16 @@ export default function CalendarDayCell({
         {collapsedEvents.length > 0 && (
           <div className="mt-0.5 flex flex-col gap-px">
             {collapsedEvents.map((event) => (
-              <div
+              <motion.div
                 key={event.task.id}
                 className="h-1.5 rounded-sm"
                 style={{
                   backgroundColor: (event.category?.color ?? "#71717a") + "cc",
                 }}
                 title={event.task.title}
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
               />
             ))}
           </div>
@@ -125,6 +164,16 @@ export default function CalendarDayCell({
           +{collapsedEvents.length} more
         </button>
       )}
-    </div>
+
+      {/* Drop target indicator */}
+      {isDragTarget && (
+        <motion.div
+          className="absolute inset-0 pointer-events-none border-2 border-orange-500 rounded-lg"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.15 }}
+        />
+      )}
+    </motion.div>
   );
 }

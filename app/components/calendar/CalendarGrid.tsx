@@ -1,7 +1,12 @@
 "use client";
 
 import { DAYS_OF_WEEK, THAI_DAYS } from "@/app/lib/calendarUtils";
-import { CalendarDay, ResizeEdge, ResizeState } from "@/app/types/calendar";
+import {
+  CalendarDay,
+  DragState,
+  ResizeEdge,
+  ResizeState,
+} from "@/app/types/calendar";
 import { Task } from "@/app/types/task";
 import CalendarDayCell from "./CalendarDayCell";
 import CalendarEventPopover from "./CalendarEventPopover";
@@ -15,6 +20,9 @@ interface CalendarGridProps {
   onResizeStart: (taskId: string, edge: ResizeEdge, dateStr: string) => void;
   onResizeHover: (dateStr: string) => void;
   resizeState: ResizeState | null;
+  onDragStart?: (taskId: string, dateStr: string) => void;
+  onDragHover?: (dateStr: string) => void;
+  dragState?: DragState | null;
 }
 
 export default function CalendarGrid({
@@ -26,8 +34,12 @@ export default function CalendarGrid({
   onResizeStart,
   onResizeHover,
   resizeState,
+  onDragStart,
+  onDragHover,
+  dragState,
 }: CalendarGridProps) {
   const isResizing = resizeState !== null;
+  const isDragging = dragState !== null;
 
   // Find expanded day data
   const expandedDay = expandedDayKey
@@ -62,19 +74,27 @@ export default function CalendarGrid({
                 onExpandDay={onExpandDay}
                 onResizeStart={onResizeStart}
                 onResizeHover={onResizeHover}
+                onDragStart={onDragStart}
+                onDragHover={onDragHover}
                 isResizing={isResizing}
                 isResizeTarget={
                   isResizing && resizeState.currentDateStr === day.date
                 }
+                isDragging={isDragging}
+                isDragTarget={isDragging && dragState?.currentDate === day.date}
+                draggedTaskId={dragState?.taskId}
               />
               {/* Popover for expanded day */}
-              {expandedDayKey === day.date && expandedDay && !isResizing && (
-                <CalendarEventPopover
-                  events={expandedDay.events}
-                  onClickEvent={onClickEvent}
-                  onClose={() => onExpandDay(null)}
-                />
-              )}
+              {expandedDayKey === day.date &&
+                expandedDay &&
+                !isResizing &&
+                !isDragging && (
+                  <CalendarEventPopover
+                    events={expandedDay.events}
+                    onClickEvent={onClickEvent}
+                    onClose={() => onExpandDay(null)}
+                  />
+                )}
             </div>
           ))}
         </div>

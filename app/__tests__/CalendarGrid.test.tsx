@@ -1,7 +1,7 @@
-import { render, screen } from "@testing-library/react";
 import CalendarGrid from "@/app/components/calendar/CalendarGrid";
 import { buildCalendarGrid } from "@/app/lib/calendarUtils";
 import { Category, Task } from "@/app/types/task";
+import { render, screen } from "@testing-library/react";
 
 const mockCategories: Category[] = [
   { id: "work", name: "Work", color: "#f97316" },
@@ -14,6 +14,8 @@ const mockHandlers = {
   onExpandDay: jest.fn(),
   onResizeStart: jest.fn(),
   onResizeHover: jest.fn(),
+  onDragStart: jest.fn(),
+  onDragHover: jest.fn(),
 };
 
 function makeTask(overrides: Partial<Task> & { id: string }): Task {
@@ -45,6 +47,7 @@ describe("CalendarGrid", () => {
         {...mockHandlers}
         expandedDayKey={null}
         resizeState={null}
+        dragState={null}
       />,
     );
 
@@ -65,6 +68,7 @@ describe("CalendarGrid", () => {
         {...mockHandlers}
         expandedDayKey={null}
         resizeState={null}
+        dragState={null}
       />,
     );
 
@@ -80,6 +84,7 @@ describe("CalendarGrid", () => {
         {...mockHandlers}
         expandedDayKey={null}
         resizeState={null}
+        dragState={null}
       />,
     );
 
@@ -94,9 +99,7 @@ describe("CalendarGrid", () => {
   });
 
   it("displays event titles in the grid", () => {
-    const tasks = [
-      makeTask({ id: "1", title: "Buy groceries" }),
-    ];
+    const tasks = [makeTask({ id: "1", title: "Buy groceries" })];
     const grid = buildCalendarGrid(2026, 1, tasks, mockCategories);
     render(
       <CalendarGrid
@@ -104,6 +107,7 @@ describe("CalendarGrid", () => {
         {...mockHandlers}
         expandedDayKey={null}
         resizeState={null}
+        dragState={null}
       />,
     );
 
@@ -125,6 +129,7 @@ describe("CalendarGrid", () => {
         {...mockHandlers}
         expandedDayKey={null}
         resizeState={null}
+        dragState={null}
       />,
     );
 
