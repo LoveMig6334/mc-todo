@@ -1,11 +1,14 @@
 "use client";
 
 import FloatingNav from "@/app/components/layout/FloatingNav";
-import TaskList from "@/app/components/task/TaskList";
+import CategoryBoardView from "@/app/components/task/CategoryBoardView";
+import PriorityListView from "@/app/components/task/PriorityListView";
 import TaskModal from "@/app/components/task/TaskModal";
+import ViewControls from "@/app/components/task/ViewControls";
 import Button from "@/app/components/ui/Button";
 import { useCategories } from "@/app/hooks/useCategories";
 import { useTaskManager } from "@/app/hooks/useTaskManager";
+import { useViewPreference } from "@/app/hooks/useViewPreference";
 import { Task, TaskFormData } from "@/app/types/task";
 import { useState } from "react";
 
@@ -13,6 +16,7 @@ export default function Home() {
   const { tasks, stats, addTask, updateTask, deleteTask, toggleComplete } =
     useTaskManager();
   const { categories, addCategory } = useCategories();
+  const { viewMode, setViewMode } = useViewPreference();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -50,28 +54,43 @@ export default function Home() {
     <div className="min-h-screen bg-zinc-900">
       <FloatingNav currentPath="/" />
 
-      <main className="mx-auto max-w-2xl px-4 pb-8 pt-24">
+      <main
+        className={`mx-auto px-4 pb-8 pt-24 ${viewMode === "board" ? "max-w-6xl" : "max-w-4xl"}`}
+      >
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">My Tasks</h1>
-          <p className="mt-1 text-sm text-zinc-400">
-            {stats.total === 0
-              ? "No tasks yet. Create your first task!"
-              : `${stats.completed} of ${stats.total} tasks completed`}
-            {stats.overdue > 0 && (
-              <span className="text-red-500"> · {stats.overdue} overdue</span>
-            )}
-          </p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-white">My Tasks</h1>
+            <p className="mt-1 text-sm text-zinc-400">
+              {stats.total === 0
+                ? "No tasks yet. Create your first task!"
+                : `${stats.completed} of ${stats.total} tasks completed`}
+              {stats.overdue > 0 && (
+                <span className="text-red-500"> · {stats.overdue} overdue</span>
+              )}
+            </p>
+          </div>
+          <ViewControls viewMode={viewMode} onViewChange={setViewMode} />
         </div>
 
-        {/* Task List */}
-        <TaskList
-          tasks={tasks}
-          categories={categories}
-          onToggleComplete={toggleComplete}
-          onEdit={handleEditTask}
-          onDelete={handleDeleteTask}
-        />
+        {/* Task Views */}
+        {viewMode === "list" ? (
+          <PriorityListView
+            tasks={tasks}
+            categories={categories}
+            onToggleComplete={toggleComplete}
+            onEdit={handleEditTask}
+            onDelete={handleDeleteTask}
+          />
+        ) : (
+          <CategoryBoardView
+            tasks={tasks}
+            categories={categories}
+            onToggleComplete={toggleComplete}
+            onEdit={handleEditTask}
+            onDelete={handleDeleteTask}
+          />
+        )}
 
         {/* Floating Add Button */}
         <div className="fixed bottom-6 right-6">
