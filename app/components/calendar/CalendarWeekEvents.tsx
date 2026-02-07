@@ -2,7 +2,7 @@
 
 import { cn } from "@/app/lib/utils";
 import { CalendarEventLayout, ResizeEdge } from "@/app/types/calendar";
-import { Task } from "@/app/types/task";
+import { Category, Task } from "@/app/types/task";
 import { motion } from "motion/react";
 
 interface WeekEventData {
@@ -30,6 +30,12 @@ interface CalendarWeekEventsProps {
   isDragging?: boolean;
   /** Currently dragged task ID */
   draggedTaskId?: string;
+  /** Preview dates for drag/resize ghost (YYYY-MM-DD format) */
+  previewDates?: string[];
+  /** Task being previewed */
+  previewTask?: Task;
+  /** Category of the previewed task */
+  previewCategory?: Category;
 }
 
 /**
@@ -46,6 +52,9 @@ export default function CalendarWeekEvents({
   isResizing,
   isDragging,
   draggedTaskId,
+  previewDates,
+  previewTask,
+  previewCategory,
 }: CalendarWeekEventsProps) {
   // Build week events with column positions
   const weekEvents: WeekEventData[] = [];
@@ -93,6 +102,27 @@ export default function CalendarWeekEvents({
           endCol: endCol + 2, // CSS Grid end is exclusive
         });
       }
+    }
+  }
+
+  // Compute preview column positions if preview data is provided
+  let previewStartCol: number | null = null;
+  let previewEndCol: number | null = null;
+
+  if (previewDates && previewDates.length > 0 && previewTask) {
+    let startIdx = -1;
+    let endIdx = -1;
+
+    for (let i = 0; i < weekDays.length; i++) {
+      if (previewDates.includes(weekDays[i])) {
+        if (startIdx === -1) startIdx = i;
+        endIdx = i;
+      }
+    }
+
+    if (startIdx !== -1) {
+      previewStartCol = startIdx + 1; // CSS Grid is 1-indexed
+      previewEndCol = endIdx + 2; // CSS Grid end is exclusive
     }
   }
 
@@ -210,6 +240,31 @@ export default function CalendarWeekEvents({
           </motion.button>
         );
       })}
+
+      {/* Ghost preview for drag/resize operations */}
+      {previewStartCol !== null && previewEndCol !== null && previewTask && (
+        <motion.div
+          data-testid="drag-preview"
+          className={cn(
+            "flex items-center text-left text-[11px] leading-tight text-white/70 pointer-events-none",
+            "h-6 px-1.5 rounded-md",
+            "border-2 border-dashed border-white/40",
+          )}
+          style={{
+            gridColumn: `${previewStartCol} / ${previewEndCol}`,
+            backgroundColor: (previewCategory?.color ?? "#71717a") + "66", // ~40% opacity
+          }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{
+            type: "spring",
+            stiffness: 500,
+            damping: 30,
+          }}
+        >
+          <span className="truncate">{previewTask.title}</span>
+        </motion.div>
+      )}
     </div>
   );
 }

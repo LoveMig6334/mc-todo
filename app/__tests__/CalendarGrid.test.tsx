@@ -141,4 +141,75 @@ describe("CalendarGrid", () => {
     const buttons = screen.getAllByTitle("Conference");
     expect(buttons).toHaveLength(1);
   });
+
+  it("renders ghost preview during drag operation", () => {
+    const tasks = [
+      makeTask({
+        id: "1",
+        title: "Team Meeting",
+        dueDate: { start: "2026-02-15", end: null },
+      }),
+    ];
+    const grid = buildCalendarGrid(2026, 1, tasks, mockCategories);
+
+    render(
+      <CalendarGrid
+        grid={grid}
+        {...mockHandlers}
+        expandedDayKey={null}
+        resizeState={null}
+        dragState={{
+          taskId: "1",
+          originalDate: "2026-02-15",
+          currentDate: "2026-02-18",
+          offsetDays: 3,
+          isOverTrash: false,
+        }}
+        previewDates={["2026-02-18"]}
+        draggedTask={tasks[0]}
+        draggedCategory={mockCategories[0]}
+      />,
+    );
+
+    // Ghost preview element should be rendered with test ID
+    const previewElement = screen.getByTestId("drag-preview");
+    expect(previewElement).toBeInTheDocument();
+    expect(previewElement).toHaveClass("border-dashed");
+  });
+
+  it("renders multi-day ghost preview during drag operation", () => {
+    const tasks = [
+      makeTask({
+        id: "1",
+        title: "Multi-Day Event",
+        dueDate: { start: "2026-02-10", end: "2026-02-12" },
+      }),
+    ];
+    const grid = buildCalendarGrid(2026, 1, tasks, mockCategories);
+
+    render(
+      <CalendarGrid
+        grid={grid}
+        {...mockHandlers}
+        expandedDayKey={null}
+        resizeState={null}
+        dragState={{
+          taskId: "1",
+          originalDate: "2026-02-10",
+          currentDate: "2026-02-15",
+          offsetDays: 5,
+          isOverTrash: false,
+        }}
+        previewDates={["2026-02-15", "2026-02-16", "2026-02-17"]}
+        draggedTask={tasks[0]}
+        draggedCategory={mockCategories[0]}
+      />,
+    );
+
+    // Ghost preview should render for multi-day span
+    const previewElement = screen.getByTestId("drag-preview");
+    expect(previewElement).toBeInTheDocument();
+    // Preview should show the task title
+    expect(previewElement).toHaveTextContent("Multi-Day Event");
+  });
 });

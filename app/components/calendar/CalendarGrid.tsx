@@ -134,6 +134,9 @@ export default function CalendarGrid({
               isResizing={isResizing}
               isDragging={isDragging}
               draggedTaskId={dragState?.taskId}
+              previewDates={previewDates}
+              previewTask={draggedTask}
+              previewCategory={draggedCategory}
             />
 
             {/* Day cells (just backgrounds and date numbers) */}
