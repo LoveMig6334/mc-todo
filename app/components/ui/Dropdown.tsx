@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { cn } from '@/app/lib/utils';
-import { useState, useRef, useEffect } from 'react';
+import { cn } from "@/app/lib/utils";
+import { useEffect, useRef, useState } from "react";
 
 interface DropdownOption {
   id: string;
@@ -25,12 +25,12 @@ export default function Dropdown({
   value,
   onChange,
   onAddNew,
-  placeholder = 'Select an option',
+  placeholder = "Select an option",
   allowAdd = false,
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
-  const [newItemName, setNewItemName] = useState('');
+  const [newItemName, setNewItemName] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -38,15 +38,18 @@ export default function Dropdown({
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
         setIsAdding(false);
-        setNewItemName('');
+        setNewItemName("");
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -58,17 +61,17 @@ export default function Dropdown({
   const handleAddNew = () => {
     if (newItemName.trim() && onAddNew) {
       onAddNew(newItemName.trim());
-      setNewItemName('');
+      setNewItemName("");
       setIsAdding(false);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleAddNew();
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       setIsAdding(false);
-      setNewItemName('');
+      setNewItemName("");
     }
   };
 
@@ -84,10 +87,10 @@ export default function Dropdown({
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
-            'w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-left text-sm',
-            'focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500',
-            'transition-colors flex items-center justify-between',
-            selectedOption ? 'text-white' : 'text-zinc-500'
+            "w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-left text-sm",
+            "focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500",
+            "transition-colors flex items-center justify-between",
+            selectedOption ? "text-white" : "text-zinc-500",
           )}
         >
           <span className="flex items-center gap-2">
@@ -109,7 +112,7 @@ export default function Dropdown({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={cn('transition-transform', isOpen && 'rotate-180')}
+            className={cn("transition-transform", isOpen && "rotate-180")}
           >
             <polyline points="6 9 12 15 18 9" />
           </svg>
@@ -126,9 +129,9 @@ export default function Dropdown({
                   setIsOpen(false);
                 }}
                 className={cn(
-                  'w-full px-3 py-2 text-left text-sm flex items-center gap-2',
-                  'hover:bg-zinc-700 transition-colors',
-                  option.id === value ? 'text-orange-500' : 'text-white'
+                  "w-full px-3 py-2 text-left text-sm flex items-center gap-2",
+                  "hover:bg-zinc-700 transition-colors",
+                  option.id === value ? "text-orange-500" : "text-white",
                 )}
               >
                 {option.color && (

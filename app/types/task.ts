@@ -20,7 +20,7 @@ export interface Category {
   color: string; // Hex color for visual distinction
 }
 
-export type TaskFormData = Omit<Task, 'id' | 'createdAt' | 'updatedAt'>;
+export type TaskFormData = Omit<Task, "id" | "createdAt" | "updatedAt">;
 
 export interface DateRange {
   start: string;

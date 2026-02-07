@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import FloatingNav from '@/app/components/layout/FloatingNav';
-import TaskList from '@/app/components/task/TaskList';
-import TaskModal from '@/app/components/task/TaskModal';
-import Button from '@/app/components/ui/Button';
-import { useTaskManager } from '@/app/hooks/useTaskManager';
-import { useCategories } from '@/app/hooks/useCategories';
-import { Task, TaskFormData } from '@/app/types/task';
+import FloatingNav from "@/app/components/layout/FloatingNav";
+import TaskList from "@/app/components/task/TaskList";
+import TaskModal from "@/app/components/task/TaskModal";
+import Button from "@/app/components/ui/Button";
+import { useCategories } from "@/app/hooks/useCategories";
+import { useTaskManager } from "@/app/hooks/useTaskManager";
+import { Task, TaskFormData } from "@/app/types/task";
+import { useState } from "react";
 
 export default function Home() {
   const { tasks, stats, addTask, updateTask, deleteTask, toggleComplete } =
@@ -41,7 +41,7 @@ export default function Home() {
   };
 
   const handleDeleteTask = (id: string) => {
-    if (confirm('Are you sure you want to delete this task?')) {
+    if (confirm("Are you sure you want to delete this task?")) {
       deleteTask(id);
     }
   };
@@ -56,13 +56,10 @@ export default function Home() {
           <h1 className="text-2xl font-bold text-white">My Tasks</h1>
           <p className="mt-1 text-sm text-zinc-400">
             {stats.total === 0
-              ? 'No tasks yet. Create your first task!'
+              ? "No tasks yet. Create your first task!"
               : `${stats.completed} of ${stats.total} tasks completed`}
             {stats.overdue > 0 && (
-              <span className="text-red-500">
-                {' '}
-                · {stats.overdue} overdue
-              </span>
+              <span className="text-red-500"> · {stats.overdue} overdue</span>
             )}
           </p>
         </div>

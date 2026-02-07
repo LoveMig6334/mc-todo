@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { cn } from '@/app/lib/utils';
-import Button from '@/app/components/ui/Button';
+import Button from "@/app/components/ui/Button";
+import { cn } from "@/app/lib/utils";
+import { useState } from "react";
 
 interface ReferenceLinksProps {
   label?: string;
@@ -15,8 +15,8 @@ export default function ReferenceLinks({
   links,
   onChange,
 }: ReferenceLinksProps) {
-  const [newLink, setNewLink] = useState('');
-  const [error, setError] = useState('');
+  const [newLink, setNewLink] = useState("");
+  const [error, setError] = useState("");
 
   const validateUrl = (url: string): boolean => {
     try {
@@ -31,29 +31,32 @@ export default function ReferenceLinks({
     const trimmedLink = newLink.trim();
 
     if (!trimmedLink) {
-      setError('Please enter a URL');
+      setError("Please enter a URL");
       return;
     }
 
     // Add https:// if missing
     let urlToAdd = trimmedLink;
-    if (!trimmedLink.startsWith('http://') && !trimmedLink.startsWith('https://')) {
-      urlToAdd = 'https://' + trimmedLink;
+    if (
+      !trimmedLink.startsWith("http://") &&
+      !trimmedLink.startsWith("https://")
+    ) {
+      urlToAdd = "https://" + trimmedLink;
     }
 
     if (!validateUrl(urlToAdd)) {
-      setError('Please enter a valid URL');
+      setError("Please enter a valid URL");
       return;
     }
 
     if (links.includes(urlToAdd)) {
-      setError('This link already exists');
+      setError("This link already exists");
       return;
     }
 
     onChange([...links, urlToAdd]);
-    setNewLink('');
-    setError('');
+    setNewLink("");
+    setError("");
   };
 
   const handleRemoveLink = (index: number) => {
@@ -61,7 +64,7 @@ export default function ReferenceLinks({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       handleAddLink();
     }
@@ -70,7 +73,7 @@ export default function ReferenceLinks({
   const getDomain = (url: string): string => {
     try {
       const domain = new URL(url).hostname;
-      return domain.replace('www.', '');
+      return domain.replace("www.", "");
     } catch {
       return url;
     }
@@ -91,18 +94,23 @@ export default function ReferenceLinks({
           value={newLink}
           onChange={(e) => {
             setNewLink(e.target.value);
-            setError('');
+            setError("");
           }}
           onKeyDown={handleKeyDown}
           placeholder="https://example.com"
           className={cn(
-            'flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500',
-            'focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500',
-            'transition-colors',
-            error && 'border-red-500'
+            "flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500",
+            "focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500",
+            "transition-colors",
+            error && "border-red-500",
           )}
         />
-        <Button type="button" onClick={handleAddLink} variant="secondary" size="md">
+        <Button
+          type="button"
+          onClick={handleAddLink}
+          variant="secondary"
+          size="md"
+        >
           Add
         </Button>
       </div>
@@ -127,7 +135,7 @@ export default function ReferenceLinks({
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="text-zinc-500 flex-shrink-0"
+                className="text-zinc-500 shrink-0"
               >
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />

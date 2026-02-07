@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useCallback, useMemo } from 'react';
-import { Task, TaskFormData } from '@/app/types/task';
-import { useLocalStorage } from './useLocalStorage';
-import { generateId, isOverdue } from '@/app/lib/utils';
+import { generateId, isOverdue } from "@/app/lib/utils";
+import { Task, TaskFormData } from "@/app/types/task";
+import { useCallback, useMemo } from "react";
+import { useLocalStorage } from "./useLocalStorage";
 
 export function useTaskManager() {
-  const [tasks, setTasks] = useLocalStorage<Task[]>('mc-todo-tasks', []);
+  const [tasks, setTasks] = useLocalStorage<Task[]>("mc-todo-tasks", []);
 
   const addTask = useCallback(
     (formData: TaskFormData): Task => {
@@ -20,7 +20,7 @@ export function useTaskManager() {
       setTasks((prev) => [newTask, ...prev]);
       return newTask;
     },
-    [setTasks]
+    [setTasks],
   );
 
   const updateTask = useCallback(
@@ -29,18 +29,18 @@ export function useTaskManager() {
         prev.map((task) =>
           task.id === id
             ? { ...task, ...updates, updatedAt: new Date().toISOString() }
-            : task
-        )
+            : task,
+        ),
       );
     },
-    [setTasks]
+    [setTasks],
   );
 
   const deleteTask = useCallback(
     (id: string) => {
       setTasks((prev) => prev.filter((task) => task.id !== id));
     },
-    [setTasks]
+    [setTasks],
   );
 
   const toggleComplete = useCallback(
@@ -53,24 +53,26 @@ export function useTaskManager() {
                 completed: !task.completed,
                 updatedAt: new Date().toISOString(),
               }
-            : task
-        )
+            : task,
+        ),
       );
     },
-    [setTasks]
+    [setTasks],
   );
 
   const getTaskById = useCallback(
     (id: string) => {
       return tasks.find((task) => task.id === id);
     },
-    [tasks]
+    [tasks],
   );
 
   const stats = useMemo(() => {
     const total = tasks.length;
     const completed = tasks.filter((t) => t.completed).length;
-    const overdue = tasks.filter((t) => !t.completed && isOverdue(t.dueDate)).length;
+    const overdue = tasks.filter(
+      (t) => !t.completed && isOverdue(t.dueDate),
+    ).length;
 
     return { total, completed, overdue };
   }, [tasks]);
@@ -86,7 +88,10 @@ export function useTaskManager() {
         return b.priority - a.priority;
       }
       // Then by due date
-      return new Date(a.dueDate.start).getTime() - new Date(b.dueDate.start).getTime();
+      return (
+        new Date(a.dueDate.start).getTime() -
+        new Date(b.dueDate.start).getTime()
+      );
     });
   }, [tasks]);
 

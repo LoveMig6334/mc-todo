@@ -14,7 +14,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "MC-Todo | Modern Task Management",
-  description: "A modern, high-performance To-Do List application built with Next.js",
+  description:
+    "A modern, high-performance To-Do List application built with Next.js",
 };
 
 export default function RootLayout({

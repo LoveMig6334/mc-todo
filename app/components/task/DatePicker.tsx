@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useMemo, useRef } from 'react';
-import { cn } from '@/app/lib/utils';
-import { DateRange } from '@/app/types/task';
+import { cn } from "@/app/lib/utils";
+import { DateRange } from "@/app/types/task";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 interface DatePickerProps {
   label?: string;
@@ -10,10 +10,20 @@ interface DatePickerProps {
   onChange: (value: DateRange) => void;
 }
 
-const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 function getDaysInMonth(year: number, month: number): number {
@@ -25,20 +35,24 @@ function getFirstDayOfMonth(year: number, month: number): number {
 }
 
 function formatDateString(year: number, month: number, day: number): string {
-  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
 function parseDate(dateStr: string): Date {
-  return new Date(dateStr + 'T00:00:00');
+  return new Date(dateStr + "T00:00:00");
 }
 
-export default function DatePicker({ label, value, onChange }: DatePickerProps) {
+export default function DatePicker({
+  label,
+  value,
+  onChange,
+}: DatePickerProps) {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(
-    value.start ? parseDate(value.start).getMonth() : today.getMonth()
+    value.start ? parseDate(value.start).getMonth() : today.getMonth(),
   );
   const [currentYear, setCurrentYear] = useState(
-    value.start ? parseDate(value.start).getFullYear() : today.getFullYear()
+    value.start ? parseDate(value.start).getFullYear() : today.getFullYear(),
   );
 
   const [isDragging, setIsDragging] = useState(false);
@@ -92,7 +106,7 @@ export default function DatePicker({ label, value, onChange }: DatePickerProps) 
       const end = parseDate(value.end);
       return date >= start && date <= end;
     },
-    [value]
+    [value],
   );
 
   const isDateInDragRange = useCallback(
@@ -108,7 +122,7 @@ export default function DatePicker({ label, value, onChange }: DatePickerProps) 
 
       return date >= minDate && date <= maxDate;
     },
-    [isDragging, dragStart, hoverDate]
+    [isDragging, dragStart, hoverDate],
   );
 
   const handleMouseDown = (day: number) => {
@@ -135,9 +149,15 @@ export default function DatePicker({ label, value, onChange }: DatePickerProps) 
       const end = parseDate(dateStr);
 
       if (start <= end) {
-        onChange({ start: dragStart, end: dateStr === dragStart ? null : dateStr });
+        onChange({
+          start: dragStart,
+          end: dateStr === dragStart ? null : dateStr,
+        });
       } else {
-        onChange({ start: dateStr, end: dragStart === dateStr ? null : dragStart });
+        onChange({
+          start: dateStr,
+          end: dragStart === dateStr ? null : dragStart,
+        });
       }
     } else {
       // Single click
@@ -270,12 +290,16 @@ export default function DatePicker({ label, value, onChange }: DatePickerProps) 
                 onMouseEnter={() => handleMouseEnter(day)}
                 onMouseLeave={handleMouseLeave}
                 className={cn(
-                  'h-8 rounded text-sm transition-colors select-none',
-                  'hover:bg-zinc-600',
-                  isToday(day) && !showRange && 'ring-1 ring-orange-500',
-                  showRange && 'bg-orange-500/30',
-                  (isStartDate(day) || isEndDate(day)) && 'bg-orange-500 text-white hover:bg-orange-600',
-                  !showRange && !isStartDate(day) && !isEndDate(day) && 'text-zinc-300'
+                  "h-8 rounded text-sm transition-colors select-none",
+                  "hover:bg-zinc-600",
+                  isToday(day) && !showRange && "ring-1 ring-orange-500",
+                  showRange && "bg-orange-500/30",
+                  (isStartDate(day) || isEndDate(day)) &&
+                    "bg-orange-500 text-white hover:bg-orange-600",
+                  !showRange &&
+                    !isStartDate(day) &&
+                    !isEndDate(day) &&
+                    "text-zinc-300",
                 )}
               >
                 {day}
@@ -290,14 +314,14 @@ export default function DatePicker({ label, value, onChange }: DatePickerProps) 
             <p className="text-xs text-zinc-400">
               {value.end && value.start !== value.end ? (
                 <>
-                  <span className="text-orange-500">Range:</span>{' '}
-                  {new Date(value.start + 'T00:00:00').toLocaleDateString()} -{' '}
-                  {new Date(value.end + 'T00:00:00').toLocaleDateString()}
+                  <span className="text-orange-500">Range:</span>{" "}
+                  {new Date(value.start + "T00:00:00").toLocaleDateString()} -{" "}
+                  {new Date(value.end + "T00:00:00").toLocaleDateString()}
                 </>
               ) : (
                 <>
-                  <span className="text-orange-500">Date:</span>{' '}
-                  {new Date(value.start + 'T00:00:00').toLocaleDateString()}
+                  <span className="text-orange-500">Date:</span>{" "}
+                  {new Date(value.start + "T00:00:00").toLocaleDateString()}
                 </>
               )}
             </p>

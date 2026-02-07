@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { cn } from '@/app/lib/utils';
-import { useEffect, useRef } from 'react';
+import { cn } from "@/app/lib/utils";
+import { useEffect, useRef } from "react";
 
 interface ModalProps {
   isOpen: boolean;
@@ -22,19 +22,19 @@ export default function Modal({
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         onClose();
       }
     };
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "unset";
     };
   }, [isOpen, onClose]);
 
@@ -54,9 +54,9 @@ export default function Modal({
       <div
         ref={modalRef}
         className={cn(
-          'relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-zinc-900 p-6 shadow-2xl',
-          'animate-in fade-in zoom-in-95 duration-200',
-          className
+          "relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-zinc-900 p-6 shadow-2xl",
+          "animate-in fade-in zoom-in-95 duration-200",
+          className,
         )}
       >
         {title && (

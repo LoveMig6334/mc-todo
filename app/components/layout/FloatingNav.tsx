@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { cn } from '@/app/lib/utils';
+import { cn } from "@/app/lib/utils";
+import { useState } from "react";
 
 interface NavItem {
   id: string;
@@ -12,9 +12,9 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    id: 'tasks',
-    label: 'Tasks',
-    href: '/',
+    id: "tasks",
+    label: "Tasks",
+    href: "/",
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -33,9 +33,9 @@ const navItems: NavItem[] = [
     ),
   },
   {
-    id: 'calendar',
-    label: 'Calendar',
-    href: '/calendar',
+    id: "calendar",
+    label: "Calendar",
+    href: "/calendar",
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -56,9 +56,9 @@ const navItems: NavItem[] = [
     ),
   },
   {
-    id: 'dashboard',
-    label: 'Dashboard',
-    href: '/dashboard',
+    id: "dashboard",
+    label: "Dashboard",
+    href: "/dashboard",
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -84,7 +84,7 @@ interface FloatingNavProps {
   currentPath?: string;
 }
 
-export default function FloatingNav({ currentPath = '/' }: FloatingNavProps) {
+export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -95,8 +95,8 @@ export default function FloatingNav({ currentPath = '/' }: FloatingNavProps) {
     >
       <div
         className={cn(
-          'flex items-center gap-1 rounded-full bg-zinc-900 border border-zinc-800 px-2 py-2 shadow-lg transition-all duration-300 ease-out',
-          isExpanded ? 'px-4' : 'px-2'
+          "flex items-center gap-1 rounded-full bg-zinc-900 border border-zinc-800 px-2 py-2 shadow-lg transition-all duration-300 ease-out",
+          isExpanded ? "px-4" : "px-2",
         )}
       >
         {/* Logo/Brand */}
@@ -106,8 +106,8 @@ export default function FloatingNav({ currentPath = '/' }: FloatingNavProps) {
           </div>
           <span
             className={cn(
-              'text-white font-medium text-sm whitespace-nowrap overflow-hidden transition-all duration-300',
-              isExpanded ? 'w-auto opacity-100' : 'w-0 opacity-0'
+              "text-white font-medium text-sm whitespace-nowrap overflow-hidden transition-all duration-300",
+              isExpanded ? "w-auto opacity-100" : "w-0 opacity-0",
             )}
           >
             MC-Todo
@@ -117,8 +117,8 @@ export default function FloatingNav({ currentPath = '/' }: FloatingNavProps) {
         {/* Divider */}
         <div
           className={cn(
-            'h-6 w-px bg-zinc-700 transition-opacity duration-300',
-            isExpanded ? 'opacity-100' : 'opacity-0'
+            "h-6 w-px bg-zinc-700 transition-opacity duration-300",
+            isExpanded ? "opacity-100" : "opacity-0",
           )}
         />
 
@@ -131,17 +131,17 @@ export default function FloatingNav({ currentPath = '/' }: FloatingNavProps) {
                 key={item.id}
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-200',
+                  "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-200",
                   isActive
-                    ? 'bg-zinc-800 text-orange-500'
-                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+                    ? "bg-zinc-800 text-orange-500"
+                    : "text-zinc-400 hover:text-white hover:bg-zinc-800",
                 )}
               >
                 {item.icon}
                 <span
                   className={cn(
-                    'text-sm whitespace-nowrap overflow-hidden transition-all duration-300',
-                    isExpanded ? 'w-auto opacity-100' : 'w-0 opacity-0'
+                    "text-sm whitespace-nowrap overflow-hidden transition-all duration-300",
+                    isExpanded ? "w-auto opacity-100" : "w-0 opacity-0",
                   )}
                 >
                   {item.label}

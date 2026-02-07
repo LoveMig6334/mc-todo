@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { Task, Category } from '@/app/types/task';
-import TaskItem from './TaskItem';
+import { Category, Task } from "@/app/types/task";
+import TaskItem from "./TaskItem";
 
 interface TaskListProps {
   tasks: Task[];
@@ -18,7 +18,8 @@ export default function TaskList({
   onEdit,
   onDelete,
 }: TaskListProps) {
-  const getCategoryById = (id: string) => categories.find((cat) => cat.id === id);
+  const getCategoryById = (id: string) =>
+    categories.find((cat) => cat.id === id);
 
   if (tasks.length === 0) {
     return (

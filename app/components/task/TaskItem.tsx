@@ -1,7 +1,13 @@
-'use client';
+"use client";
 
-import { cn, formatDateRange, isOverdue, getPriorityColor, getPriorityLabel } from '@/app/lib/utils';
-import { Task, Category } from '@/app/types/task';
+import {
+  cn,
+  formatDateRange,
+  getPriorityColor,
+  getPriorityLabel,
+  isOverdue,
+} from "@/app/lib/utils";
+import { Category, Task } from "@/app/types/task";
 
 interface TaskItemProps {
   task: Task;
@@ -23,12 +29,12 @@ export default function TaskItem({
   return (
     <div
       className={cn(
-        'group rounded-xl border bg-zinc-900 p-4 transition-all duration-200',
+        "group rounded-xl border bg-zinc-900 p-4 transition-all duration-200",
         task.completed
-          ? 'border-zinc-800 opacity-60'
+          ? "border-zinc-800 opacity-60"
           : overdue
-          ? 'border-red-500/50 bg-red-500/5'
-          : 'border-zinc-800 hover:border-zinc-700'
+            ? "border-red-500/50 bg-red-500/5"
+            : "border-zinc-800 hover:border-zinc-700",
       )}
     >
       <div className="flex items-start gap-3">
@@ -36,11 +42,11 @@ export default function TaskItem({
         <button
           onClick={() => onToggleComplete(task.id)}
           className={cn(
-            'mt-1 h-5 w-5 flex-shrink-0 rounded border-2 transition-all duration-200',
-            'flex items-center justify-center',
+            "mt-1 h-5 w-5 shrink-0 rounded border-2 transition-all duration-200",
+            "flex items-center justify-center",
             task.completed
-              ? 'border-orange-500 bg-orange-500'
-              : 'border-zinc-600 hover:border-orange-500'
+              ? "border-orange-500 bg-orange-500"
+              : "border-zinc-600 hover:border-orange-500",
           )}
         >
           {task.completed && (
@@ -66,8 +72,8 @@ export default function TaskItem({
           <div className="flex items-start justify-between gap-2">
             <h3
               className={cn(
-                'font-medium text-white',
-                task.completed && 'line-through text-zinc-500'
+                "font-medium text-white",
+                task.completed && "line-through text-zinc-500",
               )}
             >
               {task.title}
@@ -122,8 +128,8 @@ export default function TaskItem({
           {task.details && (
             <p
               className={cn(
-                'mt-1 text-sm text-zinc-400 line-clamp-2',
-                task.completed && 'text-zinc-600'
+                "mt-1 text-sm text-zinc-400 line-clamp-2",
+                task.completed && "text-zinc-600",
               )}
             >
               {task.details}
@@ -144,15 +150,17 @@ export default function TaskItem({
             )}
 
             {/* Priority */}
-            <span className={cn('font-medium', getPriorityColor(task.priority))}>
+            <span
+              className={cn("font-medium", getPriorityColor(task.priority))}
+            >
               {getPriorityLabel(task.priority)}
             </span>
 
             {/* Due date */}
             <span
               className={cn(
-                'flex items-center gap-1',
-                overdue ? 'text-red-500' : 'text-zinc-400'
+                "flex items-center gap-1",
+                overdue ? "text-red-500" : "text-zinc-400",
               )}
             >
               <svg
@@ -192,7 +200,8 @@ export default function TaskItem({
                   <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                 </svg>
-                {task.referenceLinks.length} link{task.referenceLinks.length !== 1 && 's'}
+                {task.referenceLinks.length} link
+                {task.referenceLinks.length !== 1 && "s"}
               </span>
             )}
           </div>

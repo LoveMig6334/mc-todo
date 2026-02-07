@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import Modal from '@/app/components/ui/Modal';
-import Input from '@/app/components/ui/Input';
-import Textarea from '@/app/components/ui/Textarea';
-import Button from '@/app/components/ui/Button';
-import Slider from '@/app/components/ui/Slider';
-import Dropdown from '@/app/components/ui/Dropdown';
-import DatePicker from './DatePicker';
-import ReferenceLinks from './ReferenceLinks';
-import { Task, TaskFormData, Category, DateRange } from '@/app/types/task';
+import Button from "@/app/components/ui/Button";
+import Dropdown from "@/app/components/ui/Dropdown";
+import Input from "@/app/components/ui/Input";
+import Modal from "@/app/components/ui/Modal";
+import Slider from "@/app/components/ui/Slider";
+import Textarea from "@/app/components/ui/Textarea";
+import { Category, DateRange, Task, TaskFormData } from "@/app/types/task";
+import { useMemo, useState } from "react";
+import DatePicker from "./DatePicker";
+import ReferenceLinks from "./ReferenceLinks";
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -22,11 +22,11 @@ interface TaskModalProps {
 }
 
 const getDefaultFormData = (prefilledDate?: string): TaskFormData => {
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split("T")[0];
   return {
-    title: '',
-    details: '',
-    categoryId: '',
+    title: "",
+    details: "",
+    categoryId: "",
     priority: 5,
     dueDate: {
       start: prefilledDate || today,
@@ -44,7 +44,7 @@ function TaskModalContent({
   onAddCategory,
   editingTask,
   prefilledDate,
-}: Omit<TaskModalProps, 'isOpen'>) {
+}: Omit<TaskModalProps, "isOpen">) {
   const initialFormData = useMemo(() => {
     if (editingTask) {
       return {
@@ -67,15 +67,15 @@ function TaskModalContent({
     const newErrors: Record<string, string> = {};
 
     if (!formData.title.trim()) {
-      newErrors.title = 'Title is required';
+      newErrors.title = "Title is required";
     }
 
     if (!formData.categoryId) {
-      newErrors.category = 'Please select a category';
+      newErrors.category = "Please select a category";
     }
 
     if (!formData.dueDate.start) {
-      newErrors.dueDate = 'Please select a due date';
+      newErrors.dueDate = "Please select a due date";
     }
 
     setErrors(newErrors);
@@ -93,17 +93,17 @@ function TaskModalContent({
 
   const updateFormData = <K extends keyof TaskFormData>(
     field: K,
-    value: TaskFormData[K]
+    value: TaskFormData[K],
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
   const handleAddCategory = (name: string) => {
     const newCategory = onAddCategory(name);
-    updateFormData('categoryId', newCategory.id);
+    updateFormData("categoryId", newCategory.id);
   };
 
   const categoryOptions = categories.map((cat) => ({
@@ -118,7 +118,7 @@ function TaskModalContent({
       <Input
         label="Title"
         value={formData.title}
-        onChange={(e) => updateFormData('title', e.target.value)}
+        onChange={(e) => updateFormData("title", e.target.value)}
         placeholder="Enter task title"
         error={errors.title}
       />
@@ -127,7 +127,7 @@ function TaskModalContent({
       <Textarea
         label="Details"
         value={formData.details}
-        onChange={(e) => updateFormData('details', e.target.value)}
+        onChange={(e) => updateFormData("details", e.target.value)}
         placeholder="Add more details about this task..."
         rows={3}
       />
@@ -139,7 +139,7 @@ function TaskModalContent({
             label="Category"
             options={categoryOptions}
             value={formData.categoryId}
-            onChange={(value) => updateFormData('categoryId', value)}
+            onChange={(value) => updateFormData("categoryId", value)}
             onAddNew={handleAddCategory}
             placeholder="Select category"
             allowAdd
@@ -152,7 +152,7 @@ function TaskModalContent({
         <Slider
           label="Priority"
           value={formData.priority}
-          onChange={(value) => updateFormData('priority', value)}
+          onChange={(value) => updateFormData("priority", value)}
           min={0}
           max={10}
         />
@@ -163,9 +163,9 @@ function TaskModalContent({
         label="Due Date"
         value={formData.dueDate}
         onChange={(value: DateRange) => {
-          updateFormData('dueDate', value);
+          updateFormData("dueDate", value);
           if (errors.dueDate) {
-            setErrors((prev) => ({ ...prev, dueDate: '' }));
+            setErrors((prev) => ({ ...prev, dueDate: "" }));
           }
         }}
       />
@@ -177,7 +177,7 @@ function TaskModalContent({
       <ReferenceLinks
         label="Reference Links"
         links={formData.referenceLinks}
-        onChange={(links) => updateFormData('referenceLinks', links)}
+        onChange={(links) => updateFormData("referenceLinks", links)}
       />
 
       {/* Actions */}
@@ -186,7 +186,7 @@ function TaskModalContent({
           Cancel
         </Button>
         <Button type="submit" variant="primary">
-          {editingTask ? 'Save Changes' : 'Create Task'}
+          {editingTask ? "Save Changes" : "Create Task"}
         </Button>
       </div>
     </form>
@@ -203,13 +203,13 @@ export default function TaskModal({
   prefilledDate,
 }: TaskModalProps) {
   // Generate a unique key when modal opens with different task
-  const modalKey = isOpen ? (editingTask?.id ?? 'new') : 'closed';
+  const modalKey = isOpen ? (editingTask?.id ?? "new") : "closed";
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={editingTask ? 'Edit Task' : 'Create New Task'}
+      title={editingTask ? "Edit Task" : "Create New Task"}
       className="max-w-xl"
     >
       <TaskModalContent
