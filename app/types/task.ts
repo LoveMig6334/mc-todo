@@ -1,9 +1,16 @@
+export type TaskStatus =
+  | "needs_approval"
+  | "in_progress"
+  | "pending"
+  | "paused";
+
 export interface Task {
   id: string;
   title: string;
   details: string;
   categoryId: string;
   priority: number; // 0-10, where 10 is most urgent
+  status: TaskStatus;
   dueDate: {
     start: string; // ISO date string (YYYY-MM-DD)
     end: string | null; // null for single-day tasks

@@ -68,8 +68,11 @@ export default function PriorityListView({
             <th className="w-12 py-3 pl-4"></th>
             <th className="py-3 pr-4">Subject</th>
             <th className="py-3 pr-4">Description</th>
-            <th className="w-24 py-3 pr-4">Priority</th>
-            <th className="w-36 py-3 pr-4">Time</th>
+            <th className="w-28 py-3 pr-4">Category</th>
+            <th className="w-32 py-3 pr-4">Status</th>
+            <th className="w-20 py-3 pr-4">Priority</th>
+            <th className="w-24 py-3 pr-4">Days Left</th>
+            <th className="w-32 py-3 pr-4">Time</th>
             <th className="w-20 py-3 pr-4">Link</th>
             <th className="w-20 py-3 pr-4"></th>
           </tr>

@@ -1,6 +1,12 @@
 "use client";
 
-import { cn, formatDateRange, getPriorityLabel } from "@/app/lib/utils";
+import {
+  cn,
+  formatDateRange,
+  getDaysLeft,
+  getStatusColor,
+  getStatusLabel,
+} from "@/app/lib/utils";
 import { Category, Task } from "@/app/types/task";
 
 interface TaskTableRowProps {
@@ -18,6 +24,8 @@ export default function TaskTableRow({
   onEdit,
   onDelete,
 }: TaskTableRowProps) {
+  const daysLeft = getDaysLeft(task.dueDate);
+
   return (
     <tr
       className={cn(
@@ -58,22 +66,14 @@ export default function TaskTableRow({
 
       {/* Subject */}
       <td className="py-3 pr-4">
-        <div className="flex items-center gap-2">
-          {category && (
-            <span
-              className="h-2 w-2 shrink-0 rounded-full"
-              style={{ backgroundColor: category.color }}
-            />
+        <span
+          className={cn(
+            "font-medium text-white",
+            task.completed && "line-through text-zinc-500",
           )}
-          <span
-            className={cn(
-              "font-medium text-white",
-              task.completed && "line-through text-zinc-500",
-            )}
-          >
-            {task.title}
-          </span>
-        </div>
+        >
+          {task.title}
+        </span>
       </td>
 
       {/* Description */}
@@ -88,11 +88,44 @@ export default function TaskTableRow({
         </span>
       </td>
 
+      {/* Category */}
+      <td className="w-28 py-3 pr-4">
+        {category ? (
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
+            style={{
+              backgroundColor: `${category.color}20`,
+              color: category.color,
+            }}
+          >
+            <span
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ backgroundColor: category.color }}
+            />
+            {category.name}
+          </span>
+        ) : (
+          <span className="text-xs text-zinc-600">—</span>
+        )}
+      </td>
+
+      {/* Status */}
+      <td className="w-32 py-3 pr-4">
+        <span
+          className={cn(
+            "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+            getStatusColor(task.status),
+          )}
+        >
+          {getStatusLabel(task.status)}
+        </span>
+      </td>
+
       {/* Priority */}
       <td className="w-20 py-3 pr-4">
         <span
           className={cn(
-            "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+            "inline-flex items-center justify-center rounded-full w-7 h-7 text-sm font-bold",
             task.priority >= 8 && "bg-red-500/20 text-red-400",
             task.priority >= 5 &&
               task.priority < 8 &&
@@ -103,7 +136,28 @@ export default function TaskTableRow({
             task.priority < 3 && "bg-zinc-700 text-zinc-400",
           )}
         >
-          {getPriorityLabel(task.priority)}
+          {task.priority}
+        </span>
+      </td>
+
+      {/* Days Left */}
+      <td className="w-24 py-3 pr-4">
+        <span
+          className={cn(
+            "text-xs font-medium",
+            daysLeft < 0 && "text-red-500",
+            daysLeft === 0 && "text-orange-500",
+            daysLeft > 0 && daysLeft <= 3 && "text-yellow-500",
+            daysLeft > 3 && "text-zinc-400",
+          )}
+        >
+          {task.completed
+            ? "Done"
+            : daysLeft < 0
+              ? `${Math.abs(daysLeft)}d overdue`
+              : daysLeft === 0
+                ? "Today"
+                : `${daysLeft}d left`}
         </span>
       </td>
 
@@ -131,9 +185,15 @@ export default function TaskTableRow({
       </td>
 
       {/* Link */}
-      <td className="w-16 py-3 pr-4">
+      <td className="w-20 py-3 pr-4">
         {task.referenceLinks.length > 0 ? (
-          <span className="flex items-center gap-1 text-xs text-zinc-400">
+          <a
+            href={task.referenceLinks[0]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="12"
@@ -148,8 +208,10 @@ export default function TaskTableRow({
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
             </svg>
-            {task.referenceLinks.length}
-          </span>
+            {task.referenceLinks.length > 1
+              ? `${task.referenceLinks.length} links`
+              : "Link"}
+          </a>
         ) : (
           <span className="text-xs text-zinc-600">—</span>
         )}

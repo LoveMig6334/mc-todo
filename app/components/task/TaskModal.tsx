@@ -28,6 +28,7 @@ const getDefaultFormData = (prefilledDate?: string): TaskFormData => {
     details: "",
     categoryId: "",
     priority: 5,
+    status: "pending",
     dueDate: {
       start: prefilledDate || today,
       end: null,
@@ -52,6 +53,7 @@ function TaskModalContent({
         details: editingTask.details,
         categoryId: editingTask.categoryId,
         priority: editingTask.priority,
+        status: editingTask.status,
         dueDate: editingTask.dueDate,
         referenceLinks: editingTask.referenceLinks,
         completed: editingTask.completed,
@@ -132,7 +134,7 @@ function TaskModalContent({
         rows={3}
       />
 
-      {/* Category & Priority Row */}
+      {/* Category & Status Row */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Dropdown
@@ -149,14 +151,30 @@ function TaskModalContent({
           )}
         </div>
 
-        <Slider
-          label="Priority"
-          value={formData.priority}
-          onChange={(value) => updateFormData("priority", value)}
-          min={0}
-          max={10}
+        <Dropdown
+          label="Status"
+          options={[
+            { id: "pending", label: "Pending" },
+            { id: "in_progress", label: "In Progress" },
+            { id: "needs_approval", label: "Needs Approval" },
+            { id: "paused", label: "Paused" },
+          ]}
+          value={formData.status}
+          onChange={(value) =>
+            updateFormData("status", value as TaskFormData["status"])
+          }
+          placeholder="Select status"
         />
       </div>
+
+      {/* Priority */}
+      <Slider
+        label="Priority"
+        value={formData.priority}
+        onChange={(value) => updateFormData("priority", value)}
+        min={0}
+        max={10}
+      />
 
       {/* Due Date */}
       <DatePicker
