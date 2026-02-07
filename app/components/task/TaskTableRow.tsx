@@ -57,7 +57,7 @@ export default function TaskTableRow({
       </td>
 
       {/* Subject */}
-      <td className="w-[30%] py-3 pr-4">
+      <td className="py-3 pr-4">
         <div className="flex items-center gap-2">
           {category && (
             <span
@@ -67,10 +67,9 @@ export default function TaskTableRow({
           )}
           <span
             className={cn(
-              "truncate font-medium text-white",
+              "font-medium text-white",
               task.completed && "line-through text-zinc-500",
             )}
-            title={task.title}
           >
             {task.title}
           </span>
@@ -78,13 +77,12 @@ export default function TaskTableRow({
       </td>
 
       {/* Description */}
-      <td className="w-[35%] py-3 pr-4">
+      <td className="py-3 pr-4">
         <span
           className={cn(
-            "line-clamp-2 text-sm text-zinc-400",
+            "text-sm text-zinc-400",
             task.completed && "text-zinc-600",
           )}
-          title={task.details}
         >
           {task.details || "—"}
         </span>

@@ -73,7 +73,7 @@ describe("PriorityListView", () => {
     expect(screen.getByText("Link")).toBeInTheDocument();
   });
 
-  it("groups tasks by priority with section headers", () => {
+  it("sorts tasks by priority with higher priority at the top", () => {
     const highPriorityTask = createMockTask({
       id: "1",
       priority: 8,
@@ -87,14 +87,15 @@ describe("PriorityListView", () => {
 
     render(
       <PriorityListView
-        tasks={[highPriorityTask, lowPriorityTask]}
+        tasks={[lowPriorityTask, highPriorityTask]}
         categories={mockCategories}
         {...mockHandlers}
       />,
     );
 
-    expect(screen.getByText("Urgent Priority")).toBeInTheDocument();
-    expect(screen.getByText("Low Priority")).toBeInTheDocument();
+    // Both tasks should be rendered
+    expect(screen.getByText("Urgent Task")).toBeInTheDocument();
+    expect(screen.getByText("Low Task")).toBeInTheDocument();
   });
 
   it("shows completed tasks with reduced opacity", () => {

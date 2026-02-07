@@ -12,13 +12,6 @@ interface PriorityListViewProps {
   onDelete: (id: string) => void;
 }
 
-interface PriorityGroup {
-  label: string;
-  minPriority: number;
-  maxPriority: number;
-  tasks: Task[];
-}
-
 export default function PriorityListView({
   tasks,
   categories,
@@ -29,35 +22,14 @@ export default function PriorityListView({
   const getCategoryById = (id: string) =>
     categories.find((cat) => cat.id === id);
 
-  // Group tasks by priority and sort completed to bottom within each group
-  const priorityGroups = useMemo(() => {
-    const groups: PriorityGroup[] = [
-      { label: "Urgent", minPriority: 8, maxPriority: 10, tasks: [] },
-      { label: "High", minPriority: 5, maxPriority: 7, tasks: [] },
-      { label: "Medium", minPriority: 3, maxPriority: 4, tasks: [] },
-      { label: "Low", minPriority: 0, maxPriority: 2, tasks: [] },
-    ];
-
-    tasks.forEach((task) => {
-      const group = groups.find(
-        (g) => task.priority >= g.minPriority && task.priority <= g.maxPriority,
-      );
-      if (group) {
-        group.tasks.push(task);
+  // Sort all tasks: incomplete first, then by priority (higher first)
+  const sortedTasks = useMemo(() => {
+    return [...tasks].sort((a, b) => {
+      if (a.completed !== b.completed) {
+        return a.completed ? 1 : -1;
       }
+      return b.priority - a.priority;
     });
-
-    // Sort tasks within each group: incomplete first, then by priority
-    groups.forEach((group) => {
-      group.tasks.sort((a, b) => {
-        if (a.completed !== b.completed) {
-          return a.completed ? 1 : -1;
-        }
-        return b.priority - a.priority;
-      });
-    });
-
-    return groups.filter((g) => g.tasks.length > 0);
   }, [tasks]);
 
   if (tasks.length === 0) {
@@ -90,54 +62,30 @@ export default function PriorityListView({
 
   return (
     <div className="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900">
-      <table className="w-full min-w-[700px]">
+      <table className="w-full">
         <thead>
           <tr className="border-b border-zinc-800 text-left text-xs font-medium uppercase tracking-wider text-zinc-400">
             <th className="w-12 py-3 pl-4"></th>
-            <th className="w-[30%] py-3 pr-4">Subject</th>
-            <th className="w-[35%] py-3 pr-4">Description</th>
-            <th className="w-20 py-3 pr-4">Priority</th>
-            <th className="w-32 py-3 pr-4">Time</th>
-            <th className="w-16 py-3 pr-4">Link</th>
+            <th className="py-3 pr-4">Subject</th>
+            <th className="py-3 pr-4">Description</th>
+            <th className="w-24 py-3 pr-4">Priority</th>
+            <th className="w-36 py-3 pr-4">Time</th>
+            <th className="w-20 py-3 pr-4">Link</th>
             <th className="w-20 py-3 pr-4"></th>
           </tr>
         </thead>
-        {priorityGroups.map((group) => (
-          <tbody key={group.label}>
-            {/* Priority Group Header */}
-            <tr className="bg-zinc-800/50">
-              <td colSpan={7} className="py-2 pl-4">
-                <span className="flex items-center gap-2 text-sm font-medium text-zinc-300">
-                  <span
-                    className={`h-2 w-2 rounded-full ${
-                      group.label === "Urgent"
-                        ? "bg-red-500"
-                        : group.label === "High"
-                          ? "bg-orange-500"
-                          : group.label === "Medium"
-                            ? "bg-yellow-500"
-                            : "bg-zinc-500"
-                    }`}
-                  />
-                  {group.label} Priority
-                  <span className="text-xs text-zinc-500">
-                    ({group.tasks.length})
-                  </span>
-                </span>
-              </td>
-            </tr>
-            {group.tasks.map((task) => (
-              <TaskTableRow
-                key={task.id}
-                task={task}
-                category={getCategoryById(task.categoryId)}
-                onToggleComplete={onToggleComplete}
-                onEdit={onEdit}
-                onDelete={onDelete}
-              />
-            ))}
-          </tbody>
-        ))}
+        <tbody>
+          {sortedTasks.map((task) => (
+            <TaskTableRow
+              key={task.id}
+              task={task}
+              category={getCategoryById(task.categoryId)}
+              onToggleComplete={onToggleComplete}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
+          ))}
+        </tbody>
       </table>
     </div>
   );

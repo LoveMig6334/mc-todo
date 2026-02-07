@@ -55,7 +55,7 @@ export default function Home() {
       <FloatingNav currentPath="/" />
 
       <main
-        className={`mx-auto px-4 pb-8 pt-24 ${viewMode === "board" ? "max-w-6xl" : "max-w-4xl"}`}
+        className={`mx-auto px-4 pb-8 pt-24 ${viewMode === "board" ? "max-w-7xl" : "max-w-6xl"}`}
       >
         {/* Header */}
         <div className="mb-8 flex items-start justify-between">
