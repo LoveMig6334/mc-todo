@@ -81,6 +81,7 @@ export default function Home() {
             onToggleComplete={toggleComplete}
             onEdit={handleEditTask}
             onDelete={handleDeleteTask}
+            onUpdate={updateTask}
           />
         ) : (
           <CategoryBoardView

@@ -13,6 +13,7 @@ const createMockTask = (overrides: Partial<Task> = {}): Task => ({
   details: "Test details",
   categoryId: "work",
   priority: 5,
+  status: "in_progress",
   dueDate: { start: "2099-01-15", end: null },
   referenceLinks: [],
   completed: false,
@@ -25,6 +26,7 @@ const mockHandlers = {
   onToggleComplete: jest.fn(),
   onEdit: jest.fn(),
   onDelete: jest.fn(),
+  onUpdate: jest.fn(),
 };
 
 describe("PriorityListView", () => {
@@ -114,7 +116,7 @@ describe("PriorityListView", () => {
     expect(taskTitle).toHaveClass("line-through");
   });
 
-  it("displays priority labels correctly", () => {
+  it("displays priority values correctly", () => {
     const urgentTask = createMockTask({ id: "1", priority: 9 });
     const highTask = createMockTask({ id: "2", priority: 6 });
     const mediumTask = createMockTask({ id: "3", priority: 4 });
@@ -128,9 +130,9 @@ describe("PriorityListView", () => {
       />,
     );
 
-    expect(screen.getByText("Urgent")).toBeInTheDocument();
-    expect(screen.getByText("High")).toBeInTheDocument();
-    expect(screen.getByText("Medium")).toBeInTheDocument();
-    expect(screen.getByText("Low")).toBeInTheDocument();
+    expect(screen.getByText("9")).toBeInTheDocument();
+    expect(screen.getByText("6")).toBeInTheDocument();
+    expect(screen.getByText("4")).toBeInTheDocument();
+    expect(screen.getByText("1")).toBeInTheDocument();
   });
 });

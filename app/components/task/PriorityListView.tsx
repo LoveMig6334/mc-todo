@@ -1,6 +1,6 @@
 "use client";
 
-import { Category, Task } from "@/app/types/task";
+import { Category, Task, TaskFormData } from "@/app/types/task";
 import { useMemo } from "react";
 import TaskTableRow from "./TaskTableRow";
 
@@ -10,6 +10,7 @@ interface PriorityListViewProps {
   onToggleComplete: (id: string) => void;
   onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
+  onUpdate: (id: string, updates: Partial<TaskFormData>) => void;
 }
 
 export default function PriorityListView({
@@ -18,6 +19,7 @@ export default function PriorityListView({
   onToggleComplete,
   onEdit,
   onDelete,
+  onUpdate,
 }: PriorityListViewProps) {
   const getCategoryById = (id: string) =>
     categories.find((cat) => cat.id === id);
@@ -83,9 +85,11 @@ export default function PriorityListView({
               key={task.id}
               task={task}
               category={getCategoryById(task.categoryId)}
+              categories={categories}
               onToggleComplete={onToggleComplete}
               onEdit={onEdit}
               onDelete={onDelete}
+              onUpdate={onUpdate}
             />
           ))}
         </tbody>

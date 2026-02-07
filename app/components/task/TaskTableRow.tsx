@@ -7,24 +7,56 @@ import {
   getStatusColor,
   getStatusLabel,
 } from "@/app/lib/utils";
-import { Category, Task } from "@/app/types/task";
+import { Category, Task, TaskFormData, TaskStatus } from "@/app/types/task";
+import { useCallback } from "react";
+import {
+  InlineDateCell,
+  InlineLinkCell,
+  InlineNumberCell,
+  InlineSelectCell,
+  InlineTextCell,
+} from "./InlineEditableCell";
+
+const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
+  { value: "in_progress", label: "In Progress" },
+  { value: "pending", label: "Pending" },
+  { value: "needs_approval", label: "Needs Approval" },
+  { value: "paused", label: "Paused" },
+];
 
 interface TaskTableRowProps {
   task: Task;
   category?: Category;
+  categories: Category[];
   onToggleComplete: (id: string) => void;
   onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
+  onUpdate: (id: string, updates: Partial<TaskFormData>) => void;
 }
 
 export default function TaskTableRow({
   task,
   category,
+  categories,
   onToggleComplete,
   onEdit,
   onDelete,
+  onUpdate,
 }: TaskTableRowProps) {
   const daysLeft = getDaysLeft(task.dueDate);
+
+  const handleUpdate = useCallback(
+    (updates: Partial<TaskFormData>) => {
+      onUpdate(task.id, updates);
+    },
+    [task.id, onUpdate],
+  );
+
+  const categoryOptions = categories.map((cat) => ({
+    value: cat.id,
+    label: cat.name,
+    color: cat.color,
+  }));
 
   return (
     <tr
@@ -66,155 +98,217 @@ export default function TaskTableRow({
 
       {/* Subject */}
       <td className="py-3 pr-4">
-        <span
+        <InlineTextCell
+          value={task.title}
+          onSave={(title) => handleUpdate({ title })}
           className={cn(
             "font-medium text-white",
             task.completed && "line-through text-zinc-500",
           )}
-        >
-          {task.title}
-        </span>
+        />
       </td>
 
       {/* Description */}
       <td className="py-3 pr-4">
-        <span
+        <InlineTextCell
+          value={task.details}
+          onSave={(details) => handleUpdate({ details })}
           className={cn(
             "text-sm text-zinc-400",
             task.completed && "text-zinc-600",
           )}
-        >
-          {task.details || "—"}
-        </span>
+          placeholder="—"
+        />
       </td>
 
       {/* Category */}
       <td className="w-28 py-3 pr-4">
-        {category ? (
-          <span
-            className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
-            style={{
-              backgroundColor: `${category.color}20`,
-              color: category.color,
-            }}
-          >
-            <span
-              className="h-1.5 w-1.5 rounded-full"
-              style={{ backgroundColor: category.color }}
-            />
-            {category.name}
-          </span>
-        ) : (
-          <span className="text-xs text-zinc-600">—</span>
-        )}
+        <InlineSelectCell
+          value={task.categoryId}
+          options={categoryOptions}
+          onSave={(categoryId) => handleUpdate({ categoryId })}
+          renderDisplay={() =>
+            category ? (
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
+                style={{
+                  backgroundColor: `${category.color}20`,
+                  color: category.color,
+                }}
+              >
+                <span
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{ backgroundColor: category.color }}
+                />
+                {category.name}
+              </span>
+            ) : (
+              <span className="text-xs text-zinc-600">—</span>
+            )
+          }
+        />
       </td>
 
       {/* Status */}
       <td className="w-32 py-3 pr-4">
-        <span
-          className={cn(
-            "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-            getStatusColor(task.status),
+        <InlineSelectCell
+          value={task.status}
+          options={STATUS_OPTIONS}
+          onSave={(status) =>
+            handleUpdate({ status: status as TaskStatus })
+          }
+          renderDisplay={(val) => (
+            <span
+              className={cn(
+                "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+                getStatusColor(val as TaskStatus),
+              )}
+            >
+              {getStatusLabel(val as TaskStatus)}
+            </span>
           )}
-        >
-          {getStatusLabel(task.status)}
-        </span>
+        />
       </td>
 
       {/* Priority */}
       <td className="w-20 py-3 pr-4">
-        <span
-          className={cn(
-            "inline-flex items-center justify-center rounded-full w-7 h-7 text-sm font-bold",
-            task.priority >= 8 && "bg-red-500/20 text-red-400",
-            task.priority >= 5 &&
-              task.priority < 8 &&
-              "bg-orange-500/20 text-orange-400",
-            task.priority >= 3 &&
-              task.priority < 5 &&
-              "bg-yellow-500/20 text-yellow-400",
-            task.priority < 3 && "bg-zinc-700 text-zinc-400",
+        <InlineNumberCell
+          value={task.priority}
+          min={0}
+          max={10}
+          onSave={(priority) => handleUpdate({ priority })}
+          renderDisplay={(val) => (
+            <span
+              className={cn(
+                "inline-flex items-center justify-center rounded-full w-7 h-7 text-sm font-bold",
+                val >= 8 && "bg-red-500/20 text-red-400",
+                val >= 5 && val < 8 && "bg-orange-500/20 text-orange-400",
+                val >= 3 && val < 5 && "bg-yellow-500/20 text-yellow-400",
+                val < 3 && "bg-zinc-700 text-zinc-400",
+              )}
+            >
+              {val}
+            </span>
           )}
-        >
-          {task.priority}
-        </span>
+        />
       </td>
 
       {/* Days Left */}
       <td className="w-24 py-3 pr-4">
-        <span
-          className={cn(
-            "text-xs font-medium",
-            daysLeft < 0 && "text-red-500",
-            daysLeft === 0 && "text-orange-500",
-            daysLeft > 0 && daysLeft <= 3 && "text-yellow-500",
-            daysLeft > 3 && "text-zinc-400",
+        <InlineDateCell
+          value={task.dueDate.end || task.dueDate.start}
+          onSave={(newEnd) =>
+            handleUpdate({
+              dueDate: {
+                start: task.dueDate.start,
+                end: newEnd === task.dueDate.start ? null : newEnd,
+              },
+            })
+          }
+          renderDisplay={() => (
+            <span
+              className={cn(
+                "text-xs font-medium",
+                daysLeft < 0 && "text-red-500",
+                daysLeft === 0 && "text-orange-500",
+                daysLeft > 0 && daysLeft <= 3 && "text-yellow-500",
+                daysLeft > 3 && "text-zinc-400",
+              )}
+            >
+              {task.completed
+                ? "Done"
+                : daysLeft < 0
+                  ? `${Math.abs(daysLeft)}d overdue`
+                  : daysLeft === 0
+                    ? "Today"
+                    : `${daysLeft}d left`}
+            </span>
           )}
-        >
-          {task.completed
-            ? "Done"
-            : daysLeft < 0
-              ? `${Math.abs(daysLeft)}d overdue`
-              : daysLeft === 0
-                ? "Today"
-                : `${daysLeft}d left`}
-        </span>
+        />
       </td>
 
       {/* Time */}
       <td className="w-32 py-3 pr-4">
-        <span className="flex items-center gap-1.5 text-xs text-zinc-400">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-          </svg>
-          {formatDateRange(task.dueDate.start, task.dueDate.end)}
-        </span>
+        <InlineDateCell
+          value={task.dueDate.start}
+          onSave={(newStart) =>
+            handleUpdate({
+              dueDate: {
+                start: newStart,
+                end: task.dueDate.end,
+              },
+            })
+          }
+          renderDisplay={() => (
+            <>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-zinc-400"
+              >
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              <span className="text-xs text-zinc-400">
+                {formatDateRange(task.dueDate.start, task.dueDate.end)}
+              </span>
+            </>
+          )}
+        />
       </td>
 
       {/* Link */}
       <td className="w-20 py-3 pr-4">
-        {task.referenceLinks.length > 0 ? (
-          <a
-            href={task.referenceLinks[0]}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-            </svg>
-            {task.referenceLinks.length > 1
-              ? `${task.referenceLinks.length} links`
-              : "Link"}
-          </a>
-        ) : (
-          <span className="text-xs text-zinc-600">—</span>
-        )}
+        <InlineLinkCell
+          value={task.referenceLinks[0] || ""}
+          onSave={(url) =>
+            handleUpdate({
+              referenceLinks: url
+                ? [url, ...task.referenceLinks.slice(1)]
+                : task.referenceLinks.slice(1),
+            })
+          }
+          renderDisplay={() =>
+            task.referenceLinks.length > 0 ? (
+              <a
+                href={task.referenceLinks[0]}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                </svg>
+                {task.referenceLinks.length > 1
+                  ? `${task.referenceLinks.length} links`
+                  : "Link"}
+              </a>
+            ) : (
+              <span className="text-xs text-zinc-600">—</span>
+            )
+          }
+        />
       </td>
 
       {/* Actions */}
