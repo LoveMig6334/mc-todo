@@ -6,12 +6,13 @@ import FloatingNav from "@/app/components/layout/FloatingNav";
 import TaskModal from "@/app/components/task/TaskModal";
 import { useCalendarGrid } from "@/app/hooks/useCalendarGrid";
 import { useCategories } from "@/app/hooks/useCategories";
+import { useEventResize } from "@/app/hooks/useEventResize";
 import { useTaskManager } from "@/app/hooks/useTaskManager";
 import { Task, TaskFormData } from "@/app/types/task";
 import { useState } from "react";
 
 export default function CalendarPage() {
-  const { tasks, addTask, updateTask, deleteTask } = useTaskManager();
+  const { tasks, addTask, updateTask, getTaskById } = useTaskManager();
   const { categories, addCategory } = useCategories();
 
   const today = new Date();
@@ -24,6 +25,11 @@ export default function CalendarPage() {
   const [expandedDayKey, setExpandedDayKey] = useState<string | null>(null);
 
   const grid = useCalendarGrid(currentYear, currentMonth, tasks, categories);
+
+  const { resizeState, startResize, updateResize } = useEventResize({
+    updateTask,
+    getTaskById,
+  });
 
   // --- Month Navigation ---
   const goToPrevMonth = () => {
@@ -76,13 +82,6 @@ export default function CalendarPage() {
     }
   };
 
-  const handleDeleteTask = () => {
-    if (editingTask && confirm("Are you sure you want to delete this task?")) {
-      deleteTask(editingTask.id);
-      handleCloseModal();
-    }
-  };
-
   return (
     <div className="min-h-screen bg-zinc-900">
       <FloatingNav currentPath="/calendar" />
@@ -113,6 +112,9 @@ export default function CalendarPage() {
           onClickEvent={handleClickEvent}
           expandedDayKey={expandedDayKey}
           onExpandDay={setExpandedDayKey}
+          onResizeStart={startResize}
+          onResizeHover={updateResize}
+          resizeState={resizeState}
         />
       </main>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { DAYS_OF_WEEK, THAI_DAYS } from "@/app/lib/calendarUtils";
-import { CalendarDay } from "@/app/types/calendar";
+import { CalendarDay, ResizeEdge, ResizeState } from "@/app/types/calendar";
 import { Task } from "@/app/types/task";
 import CalendarDayCell from "./CalendarDayCell";
 import CalendarEventPopover from "./CalendarEventPopover";
@@ -12,6 +12,9 @@ interface CalendarGridProps {
   onClickEvent: (task: Task) => void;
   expandedDayKey: string | null;
   onExpandDay: (dayKey: string | null) => void;
+  onResizeStart: (taskId: string, edge: ResizeEdge) => void;
+  onResizeHover: (dateStr: string) => void;
+  resizeState: ResizeState | null;
 }
 
 export default function CalendarGrid({
@@ -20,7 +23,12 @@ export default function CalendarGrid({
   onClickEvent,
   expandedDayKey,
   onExpandDay,
+  onResizeStart,
+  onResizeHover,
+  resizeState,
 }: CalendarGridProps) {
+  const isResizing = resizeState !== null;
+
   // Find expanded day data
   const expandedDay = expandedDayKey
     ? grid.flat().find((d) => d.date === expandedDayKey)
@@ -52,9 +60,15 @@ export default function CalendarGrid({
                 onClickEvent={onClickEvent}
                 isExpanded={expandedDayKey === day.date}
                 onExpandDay={onExpandDay}
+                onResizeStart={onResizeStart}
+                onResizeHover={onResizeHover}
+                isResizing={isResizing}
+                isResizeTarget={
+                  isResizing && resizeState.currentDateStr === day.date
+                }
               />
               {/* Popover for expanded day */}
-              {expandedDayKey === day.date && expandedDay && (
+              {expandedDayKey === day.date && expandedDay && !isResizing && (
                 <CalendarEventPopover
                   events={expandedDay.events}
                   onClickEvent={onClickEvent}

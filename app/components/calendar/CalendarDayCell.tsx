@@ -2,7 +2,7 @@
 
 import { cn } from "@/app/lib/utils";
 import { MAX_VISIBLE_EVENTS } from "@/app/lib/calendarUtils";
-import { CalendarDay, CalendarEventLayout } from "@/app/types/calendar";
+import { CalendarDay, CalendarEventLayout, ResizeEdge } from "@/app/types/calendar";
 import { Task } from "@/app/types/task";
 import CalendarEvent from "./CalendarEvent";
 
@@ -12,6 +12,10 @@ interface CalendarDayCellProps {
   onClickEvent: (task: Task) => void;
   isExpanded: boolean;
   onExpandDay: (dayKey: string | null) => void;
+  onResizeStart?: (taskId: string, edge: ResizeEdge) => void;
+  onResizeHover?: (dateStr: string) => void;
+  isResizing?: boolean;
+  isResizeTarget?: boolean;
 }
 
 export default function CalendarDayCell({
@@ -20,6 +24,10 @@ export default function CalendarDayCell({
   onClickEvent,
   isExpanded,
   onExpandDay,
+  onResizeStart,
+  onResizeHover,
+  isResizing,
+  isResizeTarget,
 }: CalendarDayCellProps) {
   const { date, dayOfMonth, isCurrentMonth, isToday, events } = day;
 
@@ -41,13 +49,24 @@ export default function CalendarDayCell({
   return (
     <div
       className={cn(
-        "relative flex min-h-[120px] flex-col border border-zinc-800 p-1",
+        "relative flex min-h-30 flex-col border border-zinc-800 p-1",
         !isCurrentMonth && "opacity-40",
         isToday && "ring-1 ring-inset ring-orange-500",
+        isResizing && "select-none",
+        isResizeTarget && "bg-orange-500/10",
       )}
-      onDoubleClick={() => onDoubleClickDay(date)}
-      onMouseEnter={() => hasOverflow && onExpandDay(date)}
-      onMouseLeave={() => isExpanded && onExpandDay(null)}
+      onDoubleClick={() => {
+        if (isResizing) return;
+        onDoubleClickDay(date);
+      }}
+      onMouseEnter={() => {
+        if (isResizing) {
+          onResizeHover?.(date);
+        } else if (hasOverflow) {
+          onExpandDay(date);
+        }
+      }}
+      onMouseLeave={() => isExpanded && !isResizing && onExpandDay(null)}
     >
       {/* Day number */}
       <span
@@ -68,6 +87,8 @@ export default function CalendarDayCell({
               key={slot.task.id}
               layout={slot}
               onClick={() => onClickEvent(slot.task)}
+              onResizeStart={onResizeStart}
+              isResizing={isResizing}
             />
           ) : (
             <div key={`empty-${idx}`} className="h-6" />

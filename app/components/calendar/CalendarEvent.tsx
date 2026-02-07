@@ -1,21 +1,38 @@
 "use client";
 
 import { cn } from "@/app/lib/utils";
-import { CalendarEventLayout } from "@/app/types/calendar";
+import { CalendarEventLayout, ResizeEdge } from "@/app/types/calendar";
 
 interface CalendarEventProps {
   layout: CalendarEventLayout;
   onClick: () => void;
+  onResizeStart?: (taskId: string, edge: ResizeEdge) => void;
+  isResizing?: boolean;
 }
 
-export default function CalendarEvent({ layout, onClick }: CalendarEventProps) {
+export default function CalendarEvent({
+  layout,
+  onClick,
+  onResizeStart,
+  isResizing,
+}: CalendarEventProps) {
   const { task, category, spanStart, spanEnd, spanMiddle } = layout;
   const bgColor = category?.color ?? "#71717a";
+
+  const handleResizeMouseDown = (
+    e: React.MouseEvent,
+    edge: ResizeEdge,
+  ) => {
+    e.stopPropagation();
+    e.preventDefault();
+    onResizeStart?.(task.id, edge);
+  };
 
   return (
     <button
       type="button"
       onClick={(e) => {
+        if (isResizing) return;
         e.stopPropagation();
         onClick();
       }}
@@ -31,6 +48,14 @@ export default function CalendarEvent({ layout, onClick }: CalendarEventProps) {
       )}
       style={{ backgroundColor: bgColor + "cc" }}
     >
+      {/* Left resize handle (on start edge) */}
+      {spanStart && onResizeStart && (
+        <div
+          className="absolute left-0 top-0 h-full w-1.5 cursor-col-resize opacity-0 group-hover/event:opacity-100 hover:bg-white/30 transition-opacity z-10"
+          onMouseDown={(e) => handleResizeMouseDown(e, "start")}
+        />
+      )}
+
       <span
         className={cn(
           "truncate",
@@ -39,6 +64,14 @@ export default function CalendarEvent({ layout, onClick }: CalendarEventProps) {
       >
         {spanStart ? task.title : ""}
       </span>
+
+      {/* Right resize handle (on end edge) */}
+      {spanEnd && onResizeStart && (
+        <div
+          className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize opacity-0 group-hover/event:opacity-100 hover:bg-white/30 transition-opacity z-10"
+          onMouseDown={(e) => handleResizeMouseDown(e, "end")}
+        />
+      )}
     </button>
   );
 }

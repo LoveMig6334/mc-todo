@@ -8,7 +8,8 @@
       "Bash(npm ls:*)",
       "Bash(npx next lint)",
       "Bash(npx eslint:*)",
-      "Bash(npx jest:*)"
+      "Bash(npx jest:*)",
+      "Bash(npx next lint -- --max-warnings 0)"
     ]
   }
 }
