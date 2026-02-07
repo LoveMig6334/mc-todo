@@ -86,7 +86,7 @@ export default function CalendarPage() {
     <div className="min-h-screen bg-zinc-900">
       <FloatingNav currentPath="/calendar" />
 
-      <main className="mx-auto max-w-6xl px-4 pb-8 pt-24">
+      <main className="mx-auto max-w-[80%] px-4 pb-8 pt-24">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-white">Calendar</h1>
