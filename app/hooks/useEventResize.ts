@@ -14,7 +14,10 @@ interface PendingUpdate {
   dueDate: { start: string; end: string | null };
 }
 
-function computeNewDueDate(
+/**
+ * Computes the new due date after resizing a task edge
+ */
+export function computeNewDueDate(
   task: Task,
   state: ResizeState,
 ): { start: string; end: string | null } {
@@ -45,6 +48,29 @@ function computeNewDueDate(
   }
 
   return newDueDate;
+}
+
+/**
+ * Computes the array of date strings for resize preview rendering
+ */
+export function computeResizePreviewDates(
+  task: Task,
+  resizeState: ResizeState,
+): string[] {
+  const newDueDate = computeNewDueDate(task, resizeState);
+  const dates: string[] = [];
+
+  const startDate = new Date(newDueDate.start);
+  const endDate = newDueDate.end ? new Date(newDueDate.end) : startDate;
+
+  // Iterate from start to end date
+  const current = new Date(startDate);
+  while (current <= endDate) {
+    dates.push(current.toISOString().split("T")[0]);
+    current.setDate(current.getDate() + 1);
+  }
+
+  return dates;
 }
 
 export function useEventResize({

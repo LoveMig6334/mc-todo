@@ -8,7 +8,10 @@ import TaskModal from "@/app/components/task/TaskModal";
 import { useCalendarGrid } from "@/app/hooks/useCalendarGrid";
 import { useCategories } from "@/app/hooks/useCategories";
 import { computePreviewDates, useEventDrag } from "@/app/hooks/useEventDrag";
-import { useEventResize } from "@/app/hooks/useEventResize";
+import {
+  computeResizePreviewDates,
+  useEventResize,
+} from "@/app/hooks/useEventResize";
 import { useTaskManager } from "@/app/hooks/useTaskManager";
 import { Task, TaskFormData } from "@/app/types/task";
 import { useMemo, useState } from "react";
@@ -50,12 +53,30 @@ export default function CalendarPage() {
     ? categories.find((c) => c.id === draggedTask.categoryId)
     : undefined;
 
-  const previewDates = useMemo(() => {
+  const dragPreviewDates = useMemo(() => {
     if (!draggedTask || !dragState || dragState.offsetDays === 0) {
       return undefined;
     }
     return computePreviewDates(draggedTask, dragState.offsetDays);
   }, [draggedTask, dragState]);
+
+  // Compute preview data for resize operation
+  const resizedTask = resizeState ? getTaskById(resizeState.taskId) : undefined;
+  const resizedCategory = resizedTask
+    ? categories.find((c) => c.id === resizedTask.categoryId)
+    : undefined;
+
+  const resizePreviewDates = useMemo(() => {
+    if (!resizedTask || !resizeState) return undefined;
+    if (resizeState.currentDateStr === resizeState.originalDateStr)
+      return undefined;
+    return computeResizePreviewDates(resizedTask, resizeState);
+  }, [resizedTask, resizeState]);
+
+  // Unified preview data: resize takes priority when active
+  const previewDates = resizePreviewDates ?? dragPreviewDates;
+  const previewTask = resizedTask ?? draggedTask;
+  const previewCategory = resizedCategory ?? draggedCategory;
 
   // --- Month Navigation ---
   const goToPrevMonth = () => {
@@ -171,8 +192,8 @@ export default function CalendarPage() {
           onDragHover={handleDragHover}
           dragState={dragState}
           previewDates={previewDates}
-          draggedTask={draggedTask}
-          draggedCategory={draggedCategory}
+          draggedTask={previewTask}
+          draggedCategory={previewCategory}
         />
       </main>
 
