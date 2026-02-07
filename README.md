@@ -16,7 +16,7 @@ MC-Todo is designed with a **"Dark Modern"** aesthetic featuring:
 - **UI Library:** React 19.2.3
 - **Styling:** Tailwind CSS v4
 - **Language:** TypeScript 5
-- **Testing:** Jest
+- **Testing:** Jest 30
 
 ## Getting Started
 
@@ -85,16 +85,20 @@ mc-todo/
 ├── app/
 │   ├── components/
 │   │   ├── layout/      # FloatingNav
-│   │   ├── task/        # TaskModal, TaskList, TaskItem, DatePicker
+│   │   ├── task/        # TaskModal, TaskList, TaskItem, TaskCard, DatePicker,
+│   │   │                # TaskTableRow, InlineEditableCell, ReferenceLinks,
+│   │   │                # CategoryBoardView, PriorityListView, ViewControls
 │   │   ├── calendar/    # CalendarGrid, CalendarDayCell, CalendarEvent,
-│   │   │                # CalendarHeader, CalendarEventPopover
-│   │   └── ui/          # Shared UI primitives
+│   │   │                # CalendarHeader, CalendarEventPopover,
+│   │   │                # DragPreviewEvent, TrashDropZone
+│   │   └── ui/          # Button, Dropdown, Input, Modal, Slider, Textarea
 │   ├── hooks/           # useTaskManager, useCategories, useLocalStorage,
-│   │                    # useCalendarGrid, useEventResize
+│   │                    # useCalendarGrid, useEventResize, useEventDrag,
+│   │                    # useViewPreference
 │   ├── lib/             # utils, calendarUtils
 │   ├── types/           # task.ts, calendar.ts
 │   ├── calendar/        # /calendar route
-│   └── __tests__/       # Jest tests
+│   └── __tests__/       # Jest tests (13 test files)
 ├── public/              # Static assets
 ├── CLAUDE.md           # Development knowledge base
 └── README.md           # This file
