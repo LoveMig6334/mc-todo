@@ -55,14 +55,14 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - [x] Unit tests
 
 ### Feature 2: Linked Calendar View
-- [ ] Calendar grid with month display (English + Thai on hover)
-- [ ] Event visualization on calendar
-- [ ] Event resizing (drag edges)
-- [ ] Double-click quick create
-- [ ] Overlapping events stacking
-- [ ] Crowding logic (collapse to colored lines when >3-5 events)
-- [ ] Hover expand for collapsed events
-- [ ] Unit tests
+- [x] Calendar grid with month display (English + Thai on hover)
+- [x] Event visualization on calendar
+- [x] Event resizing (drag edges)
+- [x] Double-click quick create
+- [x] Overlapping events stacking
+- [x] Crowding logic (collapse to colored lines when >3-5 events)
+- [x] Hover expand for collapsed events
+- [x] Unit tests
 
 ### Feature 3: Dashboard (Analytics)
 - [ ] Total tasks metric
@@ -83,10 +83,17 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ```
 mc-todo/
 ├── app/
-│   ├── components/       # Reusable UI components
-│   ├── hooks/           # Custom React hooks
-│   ├── lib/             # Utility functions
-│   ├── types/           # TypeScript definitions
+│   ├── components/
+│   │   ├── layout/      # FloatingNav
+│   │   ├── task/        # TaskModal, TaskList, TaskItem, DatePicker
+│   │   ├── calendar/    # CalendarGrid, CalendarDayCell, CalendarEvent,
+│   │   │                # CalendarHeader, CalendarEventPopover
+│   │   └── ui/          # Shared UI primitives
+│   ├── hooks/           # useTaskManager, useCategories, useLocalStorage,
+│   │                    # useCalendarGrid, useEventResize
+│   ├── lib/             # utils, calendarUtils
+│   ├── types/           # task.ts, calendar.ts
+│   ├── calendar/        # /calendar route
 │   └── __tests__/       # Jest tests
 ├── public/              # Static assets
 ├── CLAUDE.md           # Development knowledge base
