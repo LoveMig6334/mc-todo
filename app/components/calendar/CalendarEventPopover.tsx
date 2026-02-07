@@ -19,7 +19,7 @@ export default function CalendarEventPopover({
 
   return (
     <div
-      className="absolute left-0 top-0 z-50 w-56 rounded-lg border border-zinc-700 bg-zinc-800 p-2 shadow-xl"
+      className="animate-in fade-in absolute left-0 top-0 z-50 w-56 rounded-lg border border-zinc-700 bg-zinc-800 p-2 shadow-xl"
       onMouseLeave={onClose}
     >
       <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-zinc-500">

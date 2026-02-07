@@ -12,7 +12,7 @@ interface CalendarGridProps {
   onClickEvent: (task: Task) => void;
   expandedDayKey: string | null;
   onExpandDay: (dayKey: string | null) => void;
-  onResizeStart: (taskId: string, edge: ResizeEdge) => void;
+  onResizeStart: (taskId: string, edge: ResizeEdge, dateStr: string) => void;
   onResizeHover: (dateStr: string) => void;
   resizeState: ResizeState | null;
 }

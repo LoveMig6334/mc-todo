@@ -2,11 +2,44 @@
 
 import { ResizeEdge, ResizeState } from "@/app/types/calendar";
 import { Task, TaskFormData } from "@/app/types/task";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface UseEventResizeOptions {
   updateTask: (id: string, updates: Partial<TaskFormData>) => void;
   getTaskById: (id: string) => Task | undefined;
+}
+
+function computeNewDueDate(
+  task: Task,
+  state: ResizeState,
+): { start: string; end: string | null } {
+  const newDueDate = { ...task.dueDate };
+
+  if (state.edge === "start") {
+    newDueDate.start = state.currentDateStr;
+    // Ensure start <= end
+    if (newDueDate.end && newDueDate.start > newDueDate.end) {
+      newDueDate.end = newDueDate.start;
+    }
+    // If start === end, make it single-day
+    if (newDueDate.end === newDueDate.start) {
+      newDueDate.end = null;
+    }
+  } else {
+    newDueDate.end = state.currentDateStr;
+    // Ensure end >= start
+    if (newDueDate.end < newDueDate.start) {
+      const temp = newDueDate.start;
+      newDueDate.start = newDueDate.end;
+      newDueDate.end = temp;
+    }
+    // If end === start, make it single-day
+    if (newDueDate.end === newDueDate.start) {
+      newDueDate.end = null;
+    }
+  }
+
+  return newDueDate;
 }
 
 export function useEventResize({
@@ -15,10 +48,6 @@ export function useEventResize({
 }: UseEventResizeOptions) {
   const [resizeState, setResizeState] = useState<ResizeState | null>(null);
   const isResizing = resizeState !== null;
-  const resizeStateRef = useRef<ResizeState | null>(null);
-
-  // Keep ref in sync for use in global mouseup
-  resizeStateRef.current = resizeState;
 
   const startResize = useCallback(
     (taskId: string, edge: ResizeEdge, dateStr: string) => {
@@ -32,59 +61,25 @@ export function useEventResize({
     [],
   );
 
-  const updateResize = useCallback(
-    (hoveredDateStr: string) => {
-      if (!resizeState) return;
-      setResizeState((prev) =>
-        prev ? { ...prev, currentDateStr: hoveredDateStr } : null,
-      );
-    },
-    [resizeState],
-  );
+  const updateResize = useCallback((hoveredDateStr: string) => {
+    setResizeState((prev) =>
+      prev ? { ...prev, currentDateStr: hoveredDateStr } : null,
+    );
+  }, []);
 
   const endResize = useCallback(() => {
-    const state = resizeStateRef.current;
-    if (!state) return;
+    // Use functional updater to access current state without a ref
+    setResizeState((prev) => {
+      if (!prev) return null;
 
-    const task = getTaskById(state.taskId);
-    if (!task) {
-      setResizeState(null);
-      return;
-    }
-
-    // Only update if the date actually changed
-    if (state.currentDateStr !== state.originalDateStr) {
-      const newDueDate = { ...task.dueDate };
-
-      if (state.edge === "start") {
-        newDueDate.start = state.currentDateStr;
-        // Ensure start <= end
-        if (newDueDate.end && newDueDate.start > newDueDate.end) {
-          newDueDate.end = newDueDate.start;
-        }
-        // If start === end, make it single-day
-        if (newDueDate.end === newDueDate.start) {
-          newDueDate.end = null;
-        }
-      } else {
-        newDueDate.end = state.currentDateStr;
-        // Ensure end >= start
-        if (newDueDate.end < newDueDate.start) {
-          // Swap: the user dragged end before start
-          const temp = newDueDate.start;
-          newDueDate.start = newDueDate.end;
-          newDueDate.end = temp;
-        }
-        // If end === start, make it single-day
-        if (newDueDate.end === newDueDate.start) {
-          newDueDate.end = null;
-        }
+      const task = getTaskById(prev.taskId);
+      if (task && prev.currentDateStr !== prev.originalDateStr) {
+        const newDueDate = computeNewDueDate(task, prev);
+        updateTask(prev.taskId, { dueDate: newDueDate });
       }
 
-      updateTask(state.taskId, { dueDate: newDueDate });
-    }
-
-    setResizeState(null);
+      return null;
+    });
   }, [getTaskById, updateTask]);
 
   // Global mouseup listener to handle drops outside the calendar

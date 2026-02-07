@@ -12,7 +12,7 @@ interface CalendarDayCellProps {
   onClickEvent: (task: Task) => void;
   isExpanded: boolean;
   onExpandDay: (dayKey: string | null) => void;
-  onResizeStart?: (taskId: string, edge: ResizeEdge) => void;
+  onResizeStart?: (taskId: string, edge: ResizeEdge, dateStr: string) => void;
   onResizeHover?: (dateStr: string) => void;
   isResizing?: boolean;
   isResizeTarget?: boolean;
@@ -87,7 +87,7 @@ export default function CalendarDayCell({
               key={slot.task.id}
               layout={slot}
               onClick={() => onClickEvent(slot.task)}
-              onResizeStart={onResizeStart}
+              onResizeStart={onResizeStart ? (taskId, edge) => onResizeStart(taskId, edge, date) : undefined}
               isResizing={isResizing}
             />
           ) : (

@@ -45,7 +45,7 @@ export default function CalendarHeader({
         </button>
 
         <h2
-          className="text-xl font-semibold text-white min-w-[200px] text-center"
+          className="text-xl font-semibold text-white min-w-50 text-center"
           title={thaiMonth}
         >
           {monthName} {currentYear}
