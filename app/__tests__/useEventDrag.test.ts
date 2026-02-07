@@ -25,6 +25,7 @@ describe("useEventDrag", () => {
 
   const createMocks = (task: Task = mockTask) => ({
     updateTask: jest.fn(),
+    deleteTask: jest.fn(),
     getTaskById: jest.fn().mockReturnValue(task),
   });
 
@@ -45,6 +46,7 @@ describe("useEventDrag", () => {
         originalDate: "2024-01-15",
         currentDate: "2024-01-15",
         offsetDays: 0,
+        isOverTrash: false,
       });
       expect(result.current.isDragging).toBe(true);
     });
@@ -65,6 +67,7 @@ describe("useEventDrag", () => {
 
       expect(result.current.dragState?.currentDate).toBe("2024-01-18");
       expect(result.current.dragState?.offsetDays).toBe(3);
+      expect(result.current.dragState?.isOverTrash).toBe(false);
     });
 
     it("calculates negative offset for backward drag", () => {
@@ -89,6 +92,53 @@ describe("useEventDrag", () => {
 
       act(() => {
         result.current.updateDrag("2024-01-18");
+      });
+
+      expect(result.current.dragState).toBeNull();
+    });
+  });
+
+  describe("setOverTrash", () => {
+    it("sets isOverTrash to true", () => {
+      const mocks = createMocks();
+      const { result } = renderHook(() => useEventDrag(mocks));
+
+      act(() => {
+        result.current.startDrag("task-1", "2024-01-15");
+      });
+
+      act(() => {
+        result.current.setOverTrash(true);
+      });
+
+      expect(result.current.dragState?.isOverTrash).toBe(true);
+    });
+
+    it("sets isOverTrash to false", () => {
+      const mocks = createMocks();
+      const { result } = renderHook(() => useEventDrag(mocks));
+
+      act(() => {
+        result.current.startDrag("task-1", "2024-01-15");
+      });
+
+      act(() => {
+        result.current.setOverTrash(true);
+      });
+
+      act(() => {
+        result.current.setOverTrash(false);
+      });
+
+      expect(result.current.dragState?.isOverTrash).toBe(false);
+    });
+
+    it("does nothing when not dragging", () => {
+      const mocks = createMocks();
+      const { result } = renderHook(() => useEventDrag(mocks));
+
+      act(() => {
+        result.current.setOverTrash(true);
       });
 
       expect(result.current.dragState).toBeNull();
@@ -187,6 +237,46 @@ describe("useEventDrag", () => {
 
       expect(mocks.updateTask).not.toHaveBeenCalled();
       expect(result.current.dragState).toBeNull();
+    });
+
+    it("calls deleteTask when dropped on trash", () => {
+      const mocks = createMocks();
+      const { result } = renderHook(() => useEventDrag(mocks));
+
+      act(() => {
+        result.current.startDrag("task-1", "2024-01-15");
+      });
+
+      act(() => {
+        result.current.setOverTrash(true);
+      });
+
+      act(() => {
+        result.current.endDrag();
+      });
+
+      expect(mocks.deleteTask).toHaveBeenCalledWith("task-1");
+      expect(mocks.updateTask).not.toHaveBeenCalled();
+    });
+
+    it("does not call deleteTask when not over trash", () => {
+      const mocks = createMocks();
+      const { result } = renderHook(() => useEventDrag(mocks));
+
+      act(() => {
+        result.current.startDrag("task-1", "2024-01-15");
+      });
+
+      act(() => {
+        result.current.updateDrag("2024-01-18");
+      });
+
+      act(() => {
+        result.current.endDrag();
+      });
+
+      expect(mocks.deleteTask).not.toHaveBeenCalled();
+      expect(mocks.updateTask).toHaveBeenCalled();
     });
   });
 

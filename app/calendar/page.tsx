@@ -2,6 +2,7 @@
 
 import CalendarGrid from "@/app/components/calendar/CalendarGrid";
 import CalendarHeader from "@/app/components/calendar/CalendarHeader";
+import TrashDropZone from "@/app/components/calendar/TrashDropZone";
 import FloatingNav from "@/app/components/layout/FloatingNav";
 import TaskModal from "@/app/components/task/TaskModal";
 import { useCalendarGrid } from "@/app/hooks/useCalendarGrid";
@@ -13,7 +14,8 @@ import { Task, TaskFormData } from "@/app/types/task";
 import { useState } from "react";
 
 export default function CalendarPage() {
-  const { tasks, addTask, updateTask, getTaskById } = useTaskManager();
+  const { tasks, addTask, updateTask, deleteTask, getTaskById } =
+    useTaskManager();
   const { categories, addCategory } = useCategories();
 
   const today = new Date();
@@ -32,8 +34,9 @@ export default function CalendarPage() {
     getTaskById,
   });
 
-  const { dragState, startDrag, updateDrag } = useEventDrag({
+  const { dragState, startDrag, updateDrag, setOverTrash } = useEventDrag({
     updateTask,
+    deleteTask,
     getTaskById,
   });
 
@@ -156,6 +159,14 @@ export default function CalendarPage() {
           dragState={dragState}
         />
       </main>
+
+      {/* Trash Drop Zone - appears during drag */}
+      <TrashDropZone
+        isVisible={isDragging}
+        isActive={dragState?.isOverTrash ?? false}
+        onHoverStart={() => setOverTrash(true)}
+        onHoverEnd={() => setOverTrash(false)}
+      />
 
       {/* Task Modal (reused from Feature 1) */}
       <TaskModal

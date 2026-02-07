@@ -36,4 +36,5 @@ export interface DragState {
   originalDate: string; // Where drag started
   currentDate: string; // Current hover target
   offsetDays: number; // Days moved from original
+  isOverTrash: boolean; // Hovering over trash drop zone
 }

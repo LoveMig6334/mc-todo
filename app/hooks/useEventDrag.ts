@@ -6,12 +6,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 interface UseEventDragOptions {
   updateTask: (id: string, updates: Partial<TaskFormData>) => void;
+  deleteTask: (id: string) => void;
   getTaskById: (id: string) => Task | undefined;
 }
 
 interface PendingUpdate {
+  type: "move" | "delete";
   taskId: string;
-  dueDate: { start: string; end: string | null };
+  dueDate?: { start: string; end: string | null };
 }
 
 /**
@@ -47,7 +49,11 @@ function computeNewDueDate(
   return { start: newStart, end: newEnd };
 }
 
-export function useEventDrag({ updateTask, getTaskById }: UseEventDragOptions) {
+export function useEventDrag({
+  updateTask,
+  deleteTask,
+  getTaskById,
+}: UseEventDragOptions) {
   const [dragState, setDragState] = useState<DragState | null>(null);
   const isDragging = dragState !== null;
 
@@ -60,6 +66,7 @@ export function useEventDrag({ updateTask, getTaskById }: UseEventDragOptions) {
       originalDate: dateStr,
       currentDate: dateStr,
       offsetDays: 0,
+      isOverTrash: false,
     });
   }, []);
 
@@ -71,6 +78,17 @@ export function useEventDrag({ updateTask, getTaskById }: UseEventDragOptions) {
         ...prev,
         currentDate: hoveredDateStr,
         offsetDays,
+        isOverTrash: false,
+      };
+    });
+  }, []);
+
+  const setOverTrash = useCallback((isOver: boolean) => {
+    setDragState((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        isOverTrash: isOver,
       };
     });
   }, []);
@@ -80,11 +98,21 @@ export function useEventDrag({ updateTask, getTaskById }: UseEventDragOptions) {
     setDragState((prev) => {
       if (!prev) return null;
 
+      // If dropped on trash, queue delete
+      if (prev.isOverTrash) {
+        pendingUpdateRef.current = { type: "delete", taskId: prev.taskId };
+        return null;
+      }
+
+      // Otherwise, move if offset changed
       const task = getTaskById(prev.taskId);
       if (task && prev.offsetDays !== 0) {
         const newDueDate = computeNewDueDate(task, prev.offsetDays);
-        // Queue the update to be applied in useEffect (after render)
-        pendingUpdateRef.current = { taskId: prev.taskId, dueDate: newDueDate };
+        pendingUpdateRef.current = {
+          type: "move",
+          taskId: prev.taskId,
+          dueDate: newDueDate,
+        };
       }
 
       return null;
@@ -94,9 +122,14 @@ export function useEventDrag({ updateTask, getTaskById }: UseEventDragOptions) {
   // Apply pending updates after render to avoid setState-during-render
   useEffect(() => {
     if (pendingUpdateRef.current) {
-      const { taskId, dueDate } = pendingUpdateRef.current;
+      const pending = pendingUpdateRef.current;
       pendingUpdateRef.current = null;
-      updateTask(taskId, { dueDate });
+
+      if (pending.type === "delete") {
+        deleteTask(pending.taskId);
+      } else if (pending.dueDate) {
+        updateTask(pending.taskId, { dueDate: pending.dueDate });
+      }
     }
   });
 
@@ -119,6 +152,7 @@ export function useEventDrag({ updateTask, getTaskById }: UseEventDragOptions) {
     isDragging,
     startDrag,
     updateDrag,
+    setOverTrash,
     endDrag,
   };
 }
