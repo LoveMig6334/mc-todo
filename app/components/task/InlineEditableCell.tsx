@@ -45,7 +45,10 @@ export function InlineTextCell({
   if (!editing) {
     return (
       <span
-        className={cn("cursor-pointer rounded px-1 -mx-1 hover:bg-zinc-700/50 transition-colors", className)}
+        className={cn(
+          "cursor-pointer rounded px-1 -mx-1 hover:bg-zinc-700/50 transition-colors",
+          className,
+        )}
         onDoubleClick={() => {
           setDraft(value);
           setEditing(true);
@@ -275,7 +278,7 @@ export function InlineDateCell({
       onKeyDown={(e) => {
         if (e.key === "Escape") setEditing(false);
       }}
-      className="w-full rounded border border-orange-500/50 bg-zinc-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-orange-500 [color-scheme:dark]"
+      className="w-full rounded border border-orange-500/50 bg-zinc-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-orange-500 scheme-dark"
     />
   );
 }

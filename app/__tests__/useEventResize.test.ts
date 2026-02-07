@@ -9,6 +9,7 @@ describe("useEventResize", () => {
     details: "",
     categoryId: "cat-1",
     priority: 3,
+    status: "pending",
     dueDate: { start: "2024-01-15", end: "2024-01-20" },
     referenceLinks: [],
     completed: false,

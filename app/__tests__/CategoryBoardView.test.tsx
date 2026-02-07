@@ -13,6 +13,7 @@ const createMockTask = (overrides: Partial<Task> = {}): Task => ({
   details: "Test details",
   categoryId: "work",
   priority: 5,
+  status: "pending",
   dueDate: { start: "2099-01-15", end: null },
   referenceLinks: [],
   completed: false,

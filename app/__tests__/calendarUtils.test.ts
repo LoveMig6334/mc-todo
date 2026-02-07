@@ -24,6 +24,7 @@ function makeTask(
     details: "",
     categoryId: "work",
     priority: 5,
+    status: "pending",
     referenceLinks: [],
     completed: false,
     createdAt: "2026-01-01T00:00:00",

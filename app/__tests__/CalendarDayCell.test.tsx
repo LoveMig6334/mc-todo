@@ -9,6 +9,7 @@ function makeTask(overrides: Partial<Task> & { id: string }): Task {
     details: "",
     categoryId: "work",
     priority: 5,
+    status: "pending",
     dueDate: { start: "2026-02-15", end: null },
     referenceLinks: [],
     completed: false,
