@@ -97,9 +97,7 @@ export function getCalendarDays(year: number, month: number): string[] {
   const daysInPrevMonth = getDaysInMonth(prevYear, prevMonth);
 
   for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-    days.push(
-      formatDateString(prevYear, prevMonth, daysInPrevMonth - i),
-    );
+    days.push(formatDateString(prevYear, prevMonth, daysInPrevMonth - i));
   }
 
   // Current month days
@@ -228,7 +226,8 @@ export function assignEventLanes(
 
     // Create layout entries for each day
     const category = categories.find((c) => c.id === task.categoryId);
-    const isMultiDay = task.dueDate.end !== null && task.dueDate.end !== task.dueDate.start;
+    const isMultiDay =
+      task.dueDate.end !== null && task.dueDate.end !== task.dueDate.start;
 
     for (const dayIdx of taskDayIndices) {
       const dayStr = weekDays[dayIdx];

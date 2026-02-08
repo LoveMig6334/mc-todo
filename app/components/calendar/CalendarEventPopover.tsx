@@ -46,10 +46,7 @@ export default function CalendarEventPopover({
               }}
             />
             <span
-              className={cn(
-                "truncate",
-                event.task.completed && "line-through",
-              )}
+              className={cn("truncate", event.task.completed && "line-through")}
             >
               {event.task.title}
             </span>
