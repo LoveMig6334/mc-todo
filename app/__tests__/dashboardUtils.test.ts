@@ -1,0 +1,259 @@
+import {
+  computeSummaryStats,
+  computeCategoryBreakdown,
+  computePriorityDistribution,
+  computeStatusDistribution,
+  computeUpcomingDeadlines,
+} from "@/app/lib/dashboardUtils";
+import { Category, Task } from "@/app/types/task";
+
+// Helper to create a task with sensible defaults
+function makeTask(overrides: Partial<Task> = {}): Task {
+  return {
+    id: "1",
+    title: "Test Task",
+    details: "",
+    categoryId: "work",
+    priority: 5,
+    status: "pending",
+    dueDate: { start: "2099-06-15", end: null },
+    referenceLinks: [],
+    completed: false,
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z",
+    ...overrides,
+  };
+}
+
+const categories: Category[] = [
+  { id: "work", name: "Work", color: "#f97316" },
+  { id: "personal", name: "Personal", color: "#3b82f6" },
+  { id: "health", name: "Health", color: "#22c55e" },
+];
+
+describe("computeSummaryStats", () => {
+  it("returns zeros for empty array", () => {
+    const stats = computeSummaryStats([]);
+    expect(stats).toEqual({
+      total: 0,
+      completed: 0,
+      overdue: 0,
+      inProgress: 0,
+      completionRate: 0,
+    });
+  });
+
+  it("counts completed tasks", () => {
+    const tasks = [
+      makeTask({ id: "1", completed: true }),
+      makeTask({ id: "2", completed: false }),
+      makeTask({ id: "3", completed: true }),
+    ];
+    const stats = computeSummaryStats(tasks);
+    expect(stats.total).toBe(3);
+    expect(stats.completed).toBe(2);
+    expect(stats.completionRate).toBe(67);
+  });
+
+  it("counts overdue tasks (excluding completed)", () => {
+    const tasks = [
+      makeTask({ id: "1", dueDate: { start: "2020-01-01", end: null } }),
+      makeTask({
+        id: "2",
+        dueDate: { start: "2020-01-01", end: null },
+        completed: true,
+      }),
+    ];
+    const stats = computeSummaryStats(tasks);
+    expect(stats.overdue).toBe(1);
+  });
+
+  it("counts in-progress tasks", () => {
+    const tasks = [
+      makeTask({ id: "1", status: "in_progress" }),
+      makeTask({ id: "2", status: "pending" }),
+      makeTask({ id: "3", status: "in_progress", completed: true }),
+    ];
+    const stats = computeSummaryStats(tasks);
+    expect(stats.inProgress).toBe(1);
+  });
+});
+
+describe("computeCategoryBreakdown", () => {
+  it("returns empty array when no tasks", () => {
+    expect(computeCategoryBreakdown([], categories)).toEqual([]);
+  });
+
+  it("groups tasks by category and sorts by total desc", () => {
+    const tasks = [
+      makeTask({ id: "1", categoryId: "personal" }),
+      makeTask({ id: "2", categoryId: "personal", completed: true }),
+      makeTask({ id: "3", categoryId: "work" }),
+    ];
+    const result = computeCategoryBreakdown(tasks, categories);
+    expect(result).toHaveLength(2);
+    expect(result[0].name).toBe("Personal");
+    expect(result[0].total).toBe(2);
+    expect(result[0].completed).toBe(1);
+    expect(result[1].name).toBe("Work");
+    expect(result[1].total).toBe(1);
+  });
+
+  it("excludes categories with zero tasks", () => {
+    const tasks = [makeTask({ id: "1", categoryId: "work" })];
+    const result = computeCategoryBreakdown(tasks, categories);
+    expect(result).toHaveLength(1);
+    expect(result[0].categoryId).toBe("work");
+  });
+
+  it("ignores tasks with unknown category", () => {
+    const tasks = [makeTask({ id: "1", categoryId: "nonexistent" })];
+    const result = computeCategoryBreakdown(tasks, categories);
+    expect(result).toEqual([]);
+  });
+});
+
+describe("computePriorityDistribution", () => {
+  it("returns 4 buckets with zero counts for empty array", () => {
+    const result = computePriorityDistribution([]);
+    expect(result).toHaveLength(4);
+    expect(result.every((b) => b.count === 0)).toBe(true);
+  });
+
+  it("categorizes priorities into correct buckets", () => {
+    const tasks = [
+      makeTask({ id: "1", priority: 0 }),
+      makeTask({ id: "2", priority: 2 }),
+      makeTask({ id: "3", priority: 3 }),
+      makeTask({ id: "4", priority: 5 }),
+      makeTask({ id: "5", priority: 10 }),
+    ];
+    const result = computePriorityDistribution(tasks);
+    expect(result[0]).toMatchObject({ label: "Low", count: 2 });
+    expect(result[1]).toMatchObject({ label: "Medium", count: 1 });
+    expect(result[2]).toMatchObject({ label: "High", count: 1 });
+    expect(result[3]).toMatchObject({ label: "Urgent", count: 1 });
+  });
+
+  it("excludes completed tasks", () => {
+    const tasks = [
+      makeTask({ id: "1", priority: 10, completed: true }),
+      makeTask({ id: "2", priority: 10 }),
+    ];
+    const result = computePriorityDistribution(tasks);
+    expect(result[3].count).toBe(1);
+  });
+
+  it("handles boundary priority values correctly", () => {
+    const tasks = [
+      makeTask({ id: "1", priority: 2 }), // Low max
+      makeTask({ id: "2", priority: 3 }), // Medium min
+      makeTask({ id: "3", priority: 4 }), // Medium max
+      makeTask({ id: "4", priority: 5 }), // High min
+      makeTask({ id: "5", priority: 7 }), // High max
+      makeTask({ id: "6", priority: 8 }), // Urgent min
+    ];
+    const result = computePriorityDistribution(tasks);
+    expect(result[0].count).toBe(1); // Low
+    expect(result[1].count).toBe(2); // Medium
+    expect(result[2].count).toBe(2); // High
+    expect(result[3].count).toBe(1); // Urgent
+  });
+});
+
+describe("computeStatusDistribution", () => {
+  it("returns empty when no active tasks", () => {
+    const tasks = [makeTask({ id: "1", completed: true })];
+    expect(computeStatusDistribution(tasks)).toEqual([]);
+  });
+
+  it("counts each status correctly", () => {
+    const tasks = [
+      makeTask({ id: "1", status: "pending" }),
+      makeTask({ id: "2", status: "pending" }),
+      makeTask({ id: "3", status: "in_progress" }),
+      makeTask({ id: "4", status: "paused" }),
+      makeTask({ id: "5", status: "needs_approval" }),
+    ];
+    const result = computeStatusDistribution(tasks);
+    expect(result).toHaveLength(4);
+    expect(result.find((s) => s.status === "pending")?.count).toBe(2);
+    expect(result.find((s) => s.status === "in_progress")?.count).toBe(1);
+  });
+
+  it("filters out statuses with zero count", () => {
+    const tasks = [makeTask({ id: "1", status: "pending" })];
+    const result = computeStatusDistribution(tasks);
+    expect(result).toHaveLength(1);
+    expect(result[0].status).toBe("pending");
+  });
+});
+
+describe("computeUpcomingDeadlines", () => {
+  it("returns empty for no tasks", () => {
+    expect(computeUpcomingDeadlines([], categories)).toEqual([]);
+  });
+
+  it("excludes completed tasks", () => {
+    const tasks = [
+      makeTask({
+        id: "1",
+        completed: true,
+        dueDate: { start: "2099-06-15", end: null },
+      }),
+    ];
+    expect(computeUpcomingDeadlines(tasks, categories)).toEqual([]);
+  });
+
+  it("excludes overdue tasks", () => {
+    const tasks = [
+      makeTask({
+        id: "1",
+        dueDate: { start: "2020-01-01", end: null },
+      }),
+    ];
+    expect(computeUpcomingDeadlines(tasks, categories)).toEqual([]);
+  });
+
+  it("sorts by daysLeft ascending", () => {
+    const tasks = [
+      makeTask({
+        id: "1",
+        title: "Far",
+        dueDate: { start: "2099-12-31", end: null },
+      }),
+      makeTask({
+        id: "2",
+        title: "Near",
+        dueDate: { start: "2099-06-01", end: null },
+      }),
+    ];
+    const result = computeUpcomingDeadlines(tasks, categories);
+    expect(result[0].title).toBe("Near");
+    expect(result[1].title).toBe("Far");
+  });
+
+  it("respects limit parameter", () => {
+    const tasks = Array.from({ length: 10 }, (_, i) =>
+      makeTask({ id: String(i), title: `Task ${i}` }),
+    );
+    const result = computeUpcomingDeadlines(tasks, categories, 3);
+    expect(result).toHaveLength(3);
+  });
+
+  it("uses default limit of 5", () => {
+    const tasks = Array.from({ length: 10 }, (_, i) =>
+      makeTask({ id: String(i), title: `Task ${i}` }),
+    );
+    const result = computeUpcomingDeadlines(tasks, categories);
+    expect(result).toHaveLength(5);
+  });
+
+  it("uses fallback color for unknown category", () => {
+    const tasks = [
+      makeTask({ id: "1", categoryId: "nonexistent" }),
+    ];
+    const result = computeUpcomingDeadlines(tasks, categories);
+    expect(result[0].categoryColor).toBe("#71717a");
+  });
+});
