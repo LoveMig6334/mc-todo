@@ -6,11 +6,12 @@ import PriorityListView from "@/app/components/task/PriorityListView";
 import TaskModal from "@/app/components/task/TaskModal";
 import ViewControls from "@/app/components/task/ViewControls";
 import Button from "@/app/components/ui/Button";
+import ConfirmModal from "@/app/components/ui/ConfirmModal";
 import { useCategories } from "@/app/hooks/useCategories";
 import { useTaskManager } from "@/app/hooks/useTaskManager";
 import { useViewPreference } from "@/app/hooks/useViewPreference";
 import { Task, TaskFormData } from "@/app/types/task";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 export default function Home() {
   const { tasks, stats, addTask, updateTask, deleteTask, toggleComplete } =
@@ -20,6 +21,7 @@ export default function Home() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
 
   const handleOpenModal = () => {
     setEditingTask(null);
@@ -44,11 +46,20 @@ export default function Home() {
     }
   };
 
-  const handleDeleteTask = (id: string) => {
-    if (confirm("Are you sure you want to delete this task?")) {
-      deleteTask(id);
+  const handleDeleteTask = useCallback((id: string) => {
+    setDeletingTaskId(id);
+  }, []);
+
+  const handleConfirmDelete = useCallback(() => {
+    if (deletingTaskId) {
+      deleteTask(deletingTaskId);
+      setDeletingTaskId(null);
     }
-  };
+  }, [deletingTaskId, deleteTask]);
+
+  const handleCancelDelete = useCallback(() => {
+    setDeletingTaskId(null);
+  }, []);
 
   return (
     <div className="min-h-screen bg-zinc-900">
@@ -126,6 +137,13 @@ export default function Home() {
           categories={categories}
           onAddCategory={addCategory}
           editingTask={editingTask}
+        />
+
+        {/* Delete Confirmation Modal */}
+        <ConfirmModal
+          isOpen={deletingTaskId !== null}
+          onClose={handleCancelDelete}
+          onConfirm={handleConfirmDelete}
         />
       </main>
     </div>
