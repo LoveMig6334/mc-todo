@@ -213,7 +213,8 @@ export default function CalendarWeekEvents({
             {onResizeStart && (
               <motion.div
                 data-resize-handle="start"
-                className="absolute left-0 top-0 h-full w-1.5 cursor-col-resize opacity-0 group-hover/event:opacity-100 hover:bg-white/30 z-10"
+                className="absolute left-0 top-0 h-full w-1.5 cursor-col-resize opacity-0 group-hover/event:opacity-100 z-10"
+                style={{ backgroundColor: "rgba(0,0,0,0)" }}
                 onMouseDown={(e) =>
                   handleResizeMouseDown(e, task.id, "start", task.dueDate.start)
                 }
@@ -230,7 +231,8 @@ export default function CalendarWeekEvents({
             {onResizeStart && (
               <motion.div
                 data-resize-handle="end"
-                className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize opacity-0 group-hover/event:opacity-100 hover:bg-white/30 z-10"
+                className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize opacity-0 group-hover/event:opacity-100 z-10"
+                style={{ backgroundColor: "rgba(0,0,0,0)" }}
                 onMouseDown={(e) =>
                   handleResizeMouseDown(
                     e,
