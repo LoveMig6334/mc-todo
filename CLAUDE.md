@@ -127,6 +127,32 @@ A modern, high-performance To-Do List application built with Next.js featuring:
 
 ---
 
+[2026-02-08 12:00] - Motion + Tailwind v4: Don't mix Tailwind hover classes with whileHover
+
+**Problem:** Using a Tailwind `hover:bg-*` class on a `motion.*` element alongside `whileHover={{ backgroundColor }}` causes Motion to read the Tailwind-computed oklab hover color as the starting value, producing: `'oklab(...)' is not an animatable color.`
+
+**Wrong Code:**
+
+```tsx
+<motion.div
+  className="hover:bg-white/30"
+  whileHover={{ backgroundColor: "rgba(255,255,255,0.4)" }}
+/>
+```
+
+**Correct Code:**
+
+```tsx
+<motion.div
+  style={{ backgroundColor: "rgba(0,0,0,0)" }}
+  whileHover={{ backgroundColor: "rgba(255,255,255,0.4)" }}
+/>
+```
+
+**Context:** When both Tailwind and Motion control the same CSS property on hover, they conflict. Remove the Tailwind `hover:` class (it's redundant) and set an explicit `style` default so Motion animates from a parseable RGB/RGBA value instead of Tailwind v4's oklab output.
+
+---
+
 [2026-02-07 12:34] - React Hooks: Cannot call side-effects inside setState updater
 
 **Problem:** Calling external side-effect functions (like `updateTask`, which writes to localStorage) inside a `setState` functional updater causes "Cannot update a component while rendering" errors. The updater runs during React's reconciliation phase, and triggering another state update there causes cascading renders.
