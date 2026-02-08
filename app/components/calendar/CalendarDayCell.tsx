@@ -78,10 +78,14 @@ export default function CalendarDayCell({
         isToday && "ring-1 ring-inset ring-orange-500",
         (isResizing || isDragging) && "select-none",
       )}
+      style={{
+        backgroundColor: "rgba(0, 0, 0, 0)",
+        borderColor: "rgb(39, 39, 42)",
+      }}
       animate={{
         backgroundColor: isActiveTarget
           ? "rgba(249, 115, 22, 0.15)"
-          : "transparent",
+          : "rgba(0, 0, 0, 0)",
         borderColor: isActiveTarget ? "rgb(249, 115, 22)" : "rgb(39, 39, 42)",
       }}
       transition={{ duration: 0.15 }}
