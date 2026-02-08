@@ -58,7 +58,8 @@ export function computeSummaryStats(tasks: Task[]): SummaryStats {
   const inProgress = tasks.filter(
     (t) => !t.completed && t.status === "in_progress",
   ).length;
-  const completionRate = total === 0 ? 0 : Math.round((completed / total) * 100);
+  const completionRate =
+    total === 0 ? 0 : Math.round((completed / total) * 100);
 
   return { total, completed, overdue, inProgress, completionRate };
 }
@@ -92,7 +93,12 @@ export function computeCategoryBreakdown(
     .sort((a, b) => b.total - a.total);
 }
 
-const PRIORITY_BUCKETS: { label: string; min: number; max: number; color: string }[] = [
+const PRIORITY_BUCKETS: {
+  label: string;
+  min: number;
+  max: number;
+  color: string;
+}[] = [
   { label: "Low", min: 0, max: 2, color: "#71717a" },
   { label: "Medium", min: 3, max: 4, color: "#eab308" },
   { label: "High", min: 5, max: 7, color: "#f97316" },

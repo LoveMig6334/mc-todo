@@ -20,9 +20,7 @@ function formatDaysLeft(daysLeft: number): string {
 export default function UpcomingDeadlines({ tasks }: UpcomingDeadlinesProps) {
   return (
     <div className="rounded-xl border border-zinc-700 bg-zinc-800 p-5">
-      <h3 className="text-sm font-medium text-zinc-400">
-        Upcoming Deadlines
-      </h3>
+      <h3 className="text-sm font-medium text-zinc-400">Upcoming Deadlines</h3>
 
       {tasks.length === 0 ? (
         <p className="mt-6 text-center text-sm text-zinc-500">
@@ -36,7 +34,7 @@ export default function UpcomingDeadlines({ tasks }: UpcomingDeadlinesProps) {
               className="flex items-center gap-3 rounded-lg bg-zinc-900/50 px-3 py-2.5"
             >
               <span
-                className="h-2 w-2 flex-shrink-0 rounded-full"
+                className="h-2 w-2 shrink-0 rounded-full"
                 style={{ backgroundColor: task.categoryColor }}
               />
               <span className="min-w-0 flex-1 truncate text-sm text-zinc-300">
@@ -44,7 +42,7 @@ export default function UpcomingDeadlines({ tasks }: UpcomingDeadlinesProps) {
               </span>
               <span
                 className={cn(
-                  "flex-shrink-0 rounded-md px-2 py-0.5 text-xs font-medium",
+                  "shrink-0 rounded-md px-2 py-0.5 text-xs font-medium",
                   getDaysLeftColor(task.daysLeft),
                 )}
               >

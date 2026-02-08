@@ -20,9 +20,7 @@ export default function StatCard({
         <span className={accentColor ?? "text-zinc-400"}>{icon}</span>
       </div>
       <p className="mt-2 text-3xl font-bold text-white">{value}</p>
-      {subtitle && (
-        <p className="mt-1 text-xs text-zinc-500">{subtitle}</p>
-      )}
+      {subtitle && <p className="mt-1 text-xs text-zinc-500">{subtitle}</p>}
     </div>
   );
 }

@@ -15,7 +15,8 @@ export default function StatusDonutChart({
   total,
 }: StatusDonutChartProps) {
   // Build segments with cumulative offsets
-  const segments: { color: string; dashArray: string; dashOffset: number }[] = [];
+  const segments: { color: string; dashArray: string; dashOffset: number }[] =
+    [];
   let accumulated = 0;
 
   for (const stat of data) {
@@ -81,7 +82,10 @@ export default function StatusDonutChart({
         {data.length > 0 && (
           <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-1">
             {data.map((stat) => (
-              <div key={stat.status} className="flex items-center gap-1.5 text-xs">
+              <div
+                key={stat.status}
+                className="flex items-center gap-1.5 text-xs"
+              >
                 <span
                   className="inline-block h-2 w-2 rounded-full"
                   style={{ backgroundColor: stat.color }}

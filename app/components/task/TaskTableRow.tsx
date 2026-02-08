@@ -154,9 +154,7 @@ export default function TaskTableRow({
         <InlineSelectCell
           value={task.status}
           options={STATUS_OPTIONS}
-          onSave={(status) =>
-            handleUpdate({ status: status as TaskStatus })
-          }
+          onSave={(status) => handleUpdate({ status: status as TaskStatus })}
           renderDisplay={(val) => (
             <span
               className={cn(

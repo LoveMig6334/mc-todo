@@ -1,10 +1,10 @@
 "use client";
 
 import {
-  computeSummaryStats,
   computeCategoryBreakdown,
   computePriorityDistribution,
   computeStatusDistribution,
+  computeSummaryStats,
   computeUpcomingDeadlines,
   DashboardStats,
 } from "@/app/lib/dashboardUtils";

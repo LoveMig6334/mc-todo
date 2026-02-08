@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { cn, getPriorityColor, getPriorityLabel } from '@/app/lib/utils';
+import { cn, getPriorityColor, getPriorityLabel } from "@/app/lib/utils";
 
 interface SliderProps {
   label?: string;
@@ -29,7 +29,9 @@ export default function Slider({
         <div className="mb-2 flex items-center justify-between">
           <label className="text-sm font-medium text-zinc-300">{label}</label>
           {showPriorityLabel && (
-            <span className={cn('text-sm font-medium', getPriorityColor(value))}>
+            <span
+              className={cn("text-sm font-medium", getPriorityColor(value))}
+            >
               {value} - {getPriorityLabel(value)}
             </span>
           )}
