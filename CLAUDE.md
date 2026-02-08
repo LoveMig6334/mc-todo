@@ -264,10 +264,17 @@ import '@testing-library/jest-dom';
 ```
 app/
 ├── components/       # Reusable UI components
+│   ├── layout/      # FloatingNav
+│   ├── task/        # TaskModal, TaskList, TaskItem, etc.
+│   ├── calendar/    # CalendarGrid, CalendarDayCell, etc.
+│   ├── dashboard/   # StatCard, CategoryBarChart, PriorityBarChart,
+│   │                # StatusDonutChart, UpcomingDeadlines
+│   └── ui/          # Button, Dropdown, Input, Modal, Slider, Textarea
 ├── hooks/           # Custom React hooks
 ├── lib/             # Utility functions and helpers
 ├── types/           # TypeScript type definitions
-├── (routes)/        # Page routes
+├── calendar/        # /calendar route
+├── dashboard/       # /dashboard route
 └── __tests__/       # Jest test files
 ```
 

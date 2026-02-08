@@ -65,11 +65,15 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - [x] Unit tests
 
 ### Feature 3: Dashboard (Analytics)
-- [ ] Total tasks metric
-- [ ] Completed tasks metric
-- [ ] Overdue tasks metric
-- [ ] Visual representation of productivity
-- [ ] Unit tests
+- [x] Total tasks metric
+- [x] Completed tasks metric
+- [x] Overdue tasks metric
+- [x] Visual representation of productivity
+  - [x] Category breakdown (horizontal bar chart)
+  - [x] Priority distribution (vertical bar chart)
+  - [x] Status overview (SVG donut chart)
+  - [x] Upcoming deadlines list
+- [x] Unit tests
 
 ### Infrastructure
 - [x] Floating navigation bar (collapsible)
@@ -91,14 +95,17 @@ mc-todo/
 │   │   ├── calendar/    # CalendarGrid, CalendarDayCell, CalendarEvent,
 │   │   │                # CalendarHeader, CalendarEventPopover,
 │   │   │                # DragPreviewEvent, TrashDropZone
+│   │   ├── dashboard/   # StatCard, CategoryBarChart, PriorityBarChart,
+│   │   │                # StatusDonutChart, UpcomingDeadlines
 │   │   └── ui/          # Button, Dropdown, Input, Modal, Slider, Textarea
 │   ├── hooks/           # useTaskManager, useCategories, useLocalStorage,
 │   │                    # useCalendarGrid, useEventResize, useEventDrag,
-│   │                    # useViewPreference
-│   ├── lib/             # utils, calendarUtils
+│   │                    # useViewPreference, useDashboardStats
+│   ├── lib/             # utils, calendarUtils, dashboardUtils
 │   ├── types/           # task.ts, calendar.ts
 │   ├── calendar/        # /calendar route
-│   └── __tests__/       # Jest tests (13 test files)
+│   ├── dashboard/       # /dashboard route
+│   └── __tests__/       # Jest tests (17 test files)
 ├── public/              # Static assets
 ├── CLAUDE.md           # Development knowledge base
 └── README.md           # This file
