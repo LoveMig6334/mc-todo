@@ -58,6 +58,75 @@ A modern, high-performance To-Do List application built with Next.js featuring:
 
 <!-- New entries should be added below this line -->
 
+[2026-02-08 12:00] - Motion: "transparent" is not an animatable value
+
+**Problem:** Framer Motion cannot animate to/from the CSS keyword `"transparent"`. When used in `animate`, Motion logs: `You are trying to animate backgroundColor from "rgba(0, 0, 0, 0)" to "transparent". "transparent" is not an animatable value.`
+
+**Wrong Code:**
+
+```tsx
+<motion.div
+  animate={{
+    backgroundColor: isActive ? "rgba(249, 115, 22, 0.15)" : "transparent",
+  }}
+/>
+```
+
+**Correct Code:**
+
+```tsx
+<motion.div
+  animate={{
+    backgroundColor: isActive
+      ? "rgba(249, 115, 22, 0.15)"
+      : "rgba(0, 0, 0, 0)",
+  }}
+/>
+```
+
+**Context:** Applies to any Motion `animate` prop. Named/keyword colors like `"transparent"`, `"red"`, etc. are not animatable — always use `rgba()`, `rgb()`, or hex equivalents.
+
+---
+
+[2026-02-08 12:00] - Motion + Tailwind v4: oklab computed colors are not animatable
+
+**Problem:** Tailwind CSS v4 outputs colors in `oklab()` format. When Motion reads the initial value from `getComputedStyle()`, it receives an `oklab(...)` string it cannot parse, causing: `'oklab(...)' is not an animatable color.`
+
+**Wrong Code:**
+
+```tsx
+// Motion reads initial borderColor from DOM → gets oklab() from Tailwind v4
+<motion.div
+  className="border border-zinc-800"
+  animate={{
+    borderColor: isActive ? "rgb(249, 115, 22)" : "rgb(39, 39, 42)",
+  }}
+/>
+```
+
+**Correct Code:**
+
+```tsx
+// Set explicit initial values via style so Motion never reads computed oklab
+<motion.div
+  className="border border-zinc-800"
+  style={{
+    backgroundColor: "rgba(0, 0, 0, 0)",
+    borderColor: "rgb(39, 39, 42)",
+  }}
+  animate={{
+    backgroundColor: isActive
+      ? "rgba(249, 115, 22, 0.15)"
+      : "rgba(0, 0, 0, 0)",
+    borderColor: isActive ? "rgb(249, 115, 22)" : "rgb(39, 39, 42)",
+  }}
+/>
+```
+
+**Context:** Applies whenever using Motion `animate` on color properties (`backgroundColor`, `borderColor`, `color`) alongside Tailwind CSS v4. Always provide a `style` prop with explicit RGB/RGBA defaults so Motion reads from `style` instead of `getComputedStyle()`.
+
+---
+
 [2026-02-07 12:34] - React Hooks: Cannot call side-effects inside setState updater
 
 **Problem:** Calling external side-effect functions (like `updateTask`, which writes to localStorage) inside a `setState` functional updater causes "Cannot update a component while rendering" errors. The updater runs during React's reconciliation phase, and triggering another state update there causes cascading renders.
