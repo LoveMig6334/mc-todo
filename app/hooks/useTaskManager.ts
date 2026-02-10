@@ -67,15 +67,31 @@ export function useTaskManager() {
     [tasks],
   );
 
+  // Normalize tasks to ensure subtasks field exists (backward compatibility)
+  const normalizedTasks = useMemo(() => {
+    return tasks.map((t) => ({
+      ...t,
+      subtasks: t.subtasks ?? [],
+    }));
+  }, [tasks]);
+
   const stats = useMemo(() => {
-    const total = tasks.length;
-    const completed = tasks.filter((t) => t.completed).length;
-    const overdue = tasks.filter(
+    const total = normalizedTasks.length;
+    const completed = normalizedTasks.filter((t) => t.completed).length;
+    const overdue = normalizedTasks.filter(
       (t) => !t.completed && isOverdue(t.dueDate),
     ).length;
+    const pending = normalizedTasks.filter(
+      (t) => !t.completed && t.status === "pending",
+    ).length;
+    const inProgress = normalizedTasks.filter(
+      (t) => !t.completed && t.status === "in_progress",
+    ).length;
+    const completionRate =
+      total === 0 ? 0 : Math.round((completed / total) * 100);
 
-    return { total, completed, overdue };
-  }, [tasks]);
+    return { total, completed, overdue, pending, inProgress, completionRate };
+  }, [normalizedTasks]);
 
   const sortedTasks = useMemo(() => {
     return [...tasks].sort((a, b) => {

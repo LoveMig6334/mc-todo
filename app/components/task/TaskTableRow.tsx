@@ -106,6 +106,34 @@ export default function TaskTableRow({
             task.completed && "line-through text-zinc-500",
           )}
         />
+        {task.subtasks && task.subtasks.length > 0 && (
+          <span
+            className={cn(
+              "mt-0.5 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px]",
+              task.subtasks.filter((s) => s.completed).length ===
+                task.subtasks.length
+                ? "bg-emerald-500/15 text-emerald-400"
+                : "bg-zinc-700 text-zinc-400",
+            )}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="8"
+              height="8"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M9 11l3 3L22 4" />
+              <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+            </svg>
+            {task.subtasks.filter((s) => s.completed).length}/
+            {task.subtasks.length}
+          </span>
+        )}
       </td>
 
       {/* Description */}

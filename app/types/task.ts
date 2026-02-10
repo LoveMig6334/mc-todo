@@ -4,6 +4,12 @@ export type TaskStatus =
   | "pending"
   | "paused";
 
+export interface Subtask {
+  id: string;
+  title: string;
+  completed: boolean;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -15,6 +21,7 @@ export interface Task {
     start: string; // ISO date string (YYYY-MM-DD)
     end: string | null; // null for single-day tasks
   };
+  subtasks: Subtask[];
   referenceLinks: string[];
   completed: boolean;
   createdAt: string; // ISO datetime string

@@ -6,10 +6,17 @@ import Input from "@/app/components/ui/Input";
 import Modal from "@/app/components/ui/Modal";
 import Slider from "@/app/components/ui/Slider";
 import Textarea from "@/app/components/ui/Textarea";
-import { Category, DateRange, Task, TaskFormData } from "@/app/types/task";
+import {
+  Category,
+  DateRange,
+  Subtask,
+  Task,
+  TaskFormData,
+} from "@/app/types/task";
 import { useMemo, useState } from "react";
 import DatePicker from "./DatePicker";
 import ReferenceLinks from "./ReferenceLinks";
+import SubtaskList from "./SubtaskList";
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -33,6 +40,7 @@ const getDefaultFormData = (prefilledDate?: string): TaskFormData => {
       start: prefilledDate || today,
       end: null,
     },
+    subtasks: [],
     referenceLinks: [],
     completed: false,
   };
@@ -55,6 +63,7 @@ function TaskModalContent({
         priority: editingTask.priority,
         status: editingTask.status,
         dueDate: editingTask.dueDate,
+        subtasks: editingTask.subtasks ?? [],
         referenceLinks: editingTask.referenceLinks,
         completed: editingTask.completed,
       };
@@ -190,6 +199,19 @@ function TaskModalContent({
       {errors.dueDate && (
         <p className="-mt-3 text-xs text-red-500">{errors.dueDate}</p>
       )}
+
+      {/* Subtasks */}
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-zinc-300">
+          Subtasks
+        </label>
+        <SubtaskList
+          subtasks={formData.subtasks}
+          onChange={(subtasks: Subtask[]) =>
+            updateFormData("subtasks", subtasks)
+          }
+        />
+      </div>
 
       {/* Reference Links */}
       <ReferenceLinks
