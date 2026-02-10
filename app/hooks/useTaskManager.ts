@@ -45,13 +45,16 @@ export function useTaskManager() {
 
   const toggleComplete = useCallback(
     (id: string) => {
+      const now = new Date().toISOString();
       setTasks((prev) =>
         prev.map((task) =>
           task.id === id
             ? {
                 ...task,
                 completed: !task.completed,
-                updatedAt: new Date().toISOString(),
+                completedAt: !task.completed ? now : null,
+                archived: !task.completed ? task.archived : false, // un-archive when uncompleted
+                updatedAt: now,
               }
             : task,
         ),
@@ -60,6 +63,43 @@ export function useTaskManager() {
     [setTasks],
   );
 
+  const archiveTask = useCallback(
+    (id: string) => {
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.id === id
+            ? { ...task, archived: true, updatedAt: new Date().toISOString() }
+            : task,
+        ),
+      );
+    },
+    [setTasks],
+  );
+
+  const restoreTask = useCallback(
+    (id: string) => {
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.id === id
+            ? { ...task, archived: false, updatedAt: new Date().toISOString() }
+            : task,
+        ),
+      );
+    },
+    [setTasks],
+  );
+
+  const archiveAllCompleted = useCallback(() => {
+    const now = new Date().toISOString();
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.completed && !task.archived
+          ? { ...task, archived: true, updatedAt: now }
+          : task,
+      ),
+    );
+  }, [setTasks]);
+
   const getTaskById = useCallback(
     (id: string) => {
       return tasks.find((task) => task.id === id);
@@ -67,34 +107,47 @@ export function useTaskManager() {
     [tasks],
   );
 
-  // Normalize tasks to ensure subtasks field exists (backward compatibility)
+  // Normalize tasks to ensure new fields exist (backward compatibility)
   const normalizedTasks = useMemo(() => {
     return tasks.map((t) => ({
       ...t,
       subtasks: t.subtasks ?? [],
+      completedAt: t.completedAt ?? null,
+      archived: t.archived ?? false,
     }));
   }, [tasks]);
 
+  // Split into active and archived tasks
+  const activeTasks = useMemo(
+    () => normalizedTasks.filter((t) => !t.archived),
+    [normalizedTasks],
+  );
+
+  const archivedTasks = useMemo(
+    () => normalizedTasks.filter((t) => t.archived),
+    [normalizedTasks],
+  );
+
   const stats = useMemo(() => {
-    const total = normalizedTasks.length;
-    const completed = normalizedTasks.filter((t) => t.completed).length;
-    const overdue = normalizedTasks.filter(
+    const total = activeTasks.length;
+    const completed = activeTasks.filter((t) => t.completed).length;
+    const overdue = activeTasks.filter(
       (t) => !t.completed && isOverdue(t.dueDate),
     ).length;
-    const pending = normalizedTasks.filter(
+    const pending = activeTasks.filter(
       (t) => !t.completed && t.status === "pending",
     ).length;
-    const inProgress = normalizedTasks.filter(
+    const inProgress = activeTasks.filter(
       (t) => !t.completed && t.status === "in_progress",
     ).length;
     const completionRate =
       total === 0 ? 0 : Math.round((completed / total) * 100);
 
     return { total, completed, overdue, pending, inProgress, completionRate };
-  }, [normalizedTasks]);
+  }, [activeTasks]);
 
   const sortedTasks = useMemo(() => {
-    return [...tasks].sort((a, b) => {
+    return [...activeTasks].sort((a, b) => {
       // Completed tasks go to bottom
       if (a.completed !== b.completed) {
         return a.completed ? 1 : -1;
@@ -109,15 +162,19 @@ export function useTaskManager() {
         new Date(b.dueDate.start).getTime()
       );
     });
-  }, [tasks]);
+  }, [activeTasks]);
 
   return {
     tasks: sortedTasks,
+    archivedTasks,
     stats,
     addTask,
     updateTask,
     deleteTask,
     toggleComplete,
+    archiveTask,
+    archiveAllCompleted,
+    restoreTask,
     getTaskById,
   };
 }

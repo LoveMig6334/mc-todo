@@ -90,3 +90,22 @@ export function getStatusColor(
   };
   return colors[status];
 }
+
+export function getCompletedDaysAgo(completedAt: string): number {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  const completed = new Date(completedAt);
+  completed.setHours(0, 0, 0, 0);
+
+  const diffTime = now.getTime() - completed.getTime();
+  return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+}
+
+export function isArchiveEligible(
+  task: { completed: boolean; completedAt: string | null; archived: boolean },
+  thresholdDays: number,
+): boolean {
+  if (!task.completed || task.archived || !task.completedAt) return false;
+  return getCompletedDaysAgo(task.completedAt) >= thresholdDays;
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import FloatingNav from "@/app/components/layout/FloatingNav";
+import ArchivedTasksPanel from "@/app/components/task/ArchivedTasksPanel";
 import CategoryBoardView from "@/app/components/task/CategoryBoardView";
 import GreetingBanner from "@/app/components/task/GreetingBanner";
 import PriorityListView from "@/app/components/task/PriorityListView";
@@ -12,6 +13,7 @@ import ViewControls from "@/app/components/task/ViewControls";
 import Button from "@/app/components/ui/Button";
 import ConfirmModal from "@/app/components/ui/ConfirmModal";
 import ShortcutHint from "@/app/components/ui/ShortcutHint";
+import { useAutoArchive } from "@/app/hooks/useAutoArchive";
 import { useCategories } from "@/app/hooks/useCategories";
 import { useKeyboardShortcuts } from "@/app/hooks/useKeyboardShortcuts";
 import { useTaskFilter } from "@/app/hooks/useTaskFilter";
@@ -21,10 +23,26 @@ import { Task, TaskFormData } from "@/app/types/task";
 import { useCallback, useState } from "react";
 
 export default function Home() {
-  const { tasks, stats, addTask, updateTask, deleteTask, toggleComplete } =
-    useTaskManager();
+  const {
+    tasks,
+    archivedTasks,
+    stats,
+    addTask,
+    updateTask,
+    deleteTask,
+    toggleComplete,
+    archiveTask,
+    archiveAllCompleted,
+    restoreTask,
+  } = useTaskManager();
   const { categories, addCategory } = useCategories();
   const { viewMode, setViewMode } = useViewPreference();
+
+  // Auto-archive completed tasks after threshold
+  const { archiveThreshold, setArchiveThreshold } = useAutoArchive(
+    tasks,
+    archiveTask,
+  );
 
   const {
     searchQuery,
@@ -162,6 +180,17 @@ export default function Home() {
             onDelete={handleDeleteTask}
           />
         )}
+
+        {/* Archived Tasks Panel */}
+        <ArchivedTasksPanel
+          archivedTasks={archivedTasks}
+          archiveThreshold={archiveThreshold}
+          onThresholdChange={setArchiveThreshold}
+          onRestore={restoreTask}
+          onDelete={deleteTask}
+          onArchiveAllCompleted={archiveAllCompleted}
+          hasCompletedTasks={tasks.some((t) => t.completed)}
+        />
 
         {/* Floating Add Button */}
         <div className="fixed bottom-6 right-6">

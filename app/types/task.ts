@@ -24,6 +24,8 @@ export interface Task {
   subtasks: Subtask[];
   referenceLinks: string[];
   completed: boolean;
+  completedAt: string | null; // ISO datetime when marked complete, null if not completed
+  archived: boolean; // Whether the task has been auto-archived
   createdAt: string; // ISO datetime string
   updatedAt: string; // ISO datetime string
 }
