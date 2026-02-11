@@ -144,15 +144,19 @@ export default function SubtaskList({
       )}
 
       {/* Subtask items */}
-      <ul className="space-y-1">
+      <ul className="space-y-0.5">
         {subtasks.map((subtask) => {
           const status = subtask.status ?? "pending";
           const priority = subtask.priority ?? "low";
           const hasLink = !!subtask.link;
 
           return (
-            <li key={subtask.id}>
-              <div className="group flex items-center gap-2 rounded-md px-1 py-0.5 hover:bg-zinc-800/50">
+            <li
+              key={subtask.id}
+              className="group rounded-md px-1.5 py-1 hover:bg-zinc-800/50"
+            >
+              {/* Row 1: Checkbox + Title + Remove */}
+              <div className="flex items-center gap-2">
                 {/* Checkbox */}
                 <button
                   onClick={() => !readOnly && handleToggle(subtask.id)}
@@ -185,7 +189,7 @@ export default function SubtaskList({
                 {/* Title */}
                 <span
                   className={cn(
-                    "min-w-0 flex-1 truncate text-sm",
+                    "min-w-0 flex-1 text-sm",
                     subtask.completed
                       ? "text-zinc-500 line-through"
                       : "text-zinc-200",
@@ -194,155 +198,11 @@ export default function SubtaskList({
                   {subtask.title}
                 </span>
 
-                {/* Inline badges */}
-                {!readOnly && (
-                  <div className="flex shrink-0 items-center gap-1">
-                    {/* Status badge */}
-                    <button
-                      onDoubleClick={() => handleCycleStatus(subtask.id)}
-                      className={cn(
-                        "rounded px-1.5 py-0.5 text-[10px] font-medium leading-none transition-opacity select-none",
-                        getStatusColor(status),
-                      )}
-                      title={`Status: ${getStatusLabel(status)} (double-click to cycle)`}
-                    >
-                      {getStatusLabel(status)}
-                    </button>
-
-                    {/* Priority badge */}
-                    <button
-                      onDoubleClick={() => handleCyclePriority(subtask.id)}
-                      className={cn(
-                        "rounded px-1.5 py-0.5 text-[10px] font-medium leading-none transition-opacity select-none",
-                        getSubtaskPriorityColor(priority),
-                      )}
-                      title={`Priority: ${getSubtaskPriorityLabel(priority)} (double-click to cycle)`}
-                    >
-                      {getSubtaskPriorityLabel(priority)}
-                    </button>
-
-                    {/* Link icon */}
-                    {hasLink ? (
-                      <div className="flex items-center gap-0.5">
-                        <a
-                          href={subtask.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="rounded p-0.5 text-blue-400 transition-colors hover:text-blue-300"
-                          title={subtask.link}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                          </svg>
-                        </a>
-                        <button
-                          onClick={() => handleOpenLinkEdit(subtask)}
-                          className="rounded p-0.5 text-zinc-600 transition-colors hover:text-zinc-400"
-                          title="Edit link"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="10"
-                            height="10"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                          </svg>
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => handleOpenLinkEdit(subtask)}
-                        className="rounded p-0.5 text-zinc-600 transition-colors hover:text-zinc-400"
-                        title="Add link"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {/* Read-only badges */}
-                {readOnly && (
-                  <div className="flex shrink-0 items-center gap-1">
-                    <span
-                      className={cn(
-                        "rounded px-1.5 py-0.5 text-[10px] font-medium leading-none",
-                        getStatusColor(status),
-                      )}
-                    >
-                      {getStatusLabel(status)}
-                    </span>
-                    <span
-                      className={cn(
-                        "rounded px-1.5 py-0.5 text-[10px] font-medium leading-none",
-                        getSubtaskPriorityColor(priority),
-                      )}
-                    >
-                      {getSubtaskPriorityLabel(priority)}
-                    </span>
-                    {hasLink && (
-                      <a
-                        href={subtask.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="rounded p-0.5 text-blue-400 transition-colors hover:text-blue-300"
-                        title={subtask.link}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                        </svg>
-                      </a>
-                    )}
-                  </div>
-                )}
-
                 {/* Remove button */}
                 {!readOnly && (
                   <button
                     onClick={() => handleRemove(subtask.id)}
-                    className="rounded p-0.5 text-zinc-600 opacity-0 transition-all hover:text-red-400 group-hover:opacity-100"
+                    className="shrink-0 rounded p-0.5 text-zinc-600 opacity-0 transition-all hover:text-red-400 group-hover:opacity-100"
                     aria-label="Remove subtask"
                   >
                     <svg
@@ -363,9 +223,136 @@ export default function SubtaskList({
                 )}
               </div>
 
+              {/* Row 2: Status + Priority + Link badges */}
+              <div className="mt-1 ml-5.5 flex items-center gap-2">
+                {/* Status badge */}
+                {!readOnly ? (
+                  <button
+                    onDoubleClick={() => handleCycleStatus(subtask.id)}
+                    className={cn(
+                      "rounded px-1.5 py-0.5 text-[10px] font-medium leading-none transition-opacity select-none",
+                      getStatusColor(status),
+                    )}
+                    title={`Status: ${getStatusLabel(status)} (double-click to cycle)`}
+                  >
+                    {getStatusLabel(status)}
+                  </button>
+                ) : (
+                  <span
+                    className={cn(
+                      "rounded px-1.5 py-0.5 text-[10px] font-medium leading-none",
+                      getStatusColor(status),
+                    )}
+                  >
+                    {getStatusLabel(status)}
+                  </span>
+                )}
+
+                {/* Priority badge */}
+                {!readOnly ? (
+                  <button
+                    onDoubleClick={() => handleCyclePriority(subtask.id)}
+                    className={cn(
+                      "rounded px-1.5 py-0.5 text-[10px] font-medium leading-none transition-opacity select-none",
+                      getSubtaskPriorityColor(priority),
+                    )}
+                    title={`Priority: ${getSubtaskPriorityLabel(priority)} (double-click to cycle)`}
+                  >
+                    {getSubtaskPriorityLabel(priority)}
+                  </button>
+                ) : (
+                  <span
+                    className={cn(
+                      "rounded px-1.5 py-0.5 text-[10px] font-medium leading-none",
+                      getSubtaskPriorityColor(priority),
+                    )}
+                  >
+                    {getSubtaskPriorityLabel(priority)}
+                  </span>
+                )}
+
+                {/* Divider */}
+                <span className="h-3 w-px bg-zinc-700" />
+
+                {/* Link */}
+                {hasLink ? (
+                  <div className="flex items-center gap-1">
+                    <a
+                      href={subtask.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 rounded px-1 py-0.5 text-[10px] text-blue-400 transition-colors hover:text-blue-300"
+                      title={subtask.link}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="10"
+                        height="10"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                      </svg>
+                      <span className="max-w-32 truncate">
+                        {subtask.link!.replace(/^https?:\/\//, "")}
+                      </span>
+                    </a>
+                    {!readOnly && (
+                      <button
+                        onClick={() => handleOpenLinkEdit(subtask)}
+                        className="rounded p-0.5 text-zinc-600 transition-colors hover:text-zinc-400"
+                        title="Edit link"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="9"
+                          height="9"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                ) : !readOnly ? (
+                  <button
+                    onClick={() => handleOpenLinkEdit(subtask)}
+                    className="flex items-center gap-1 rounded px-1 py-0.5 text-[10px] text-zinc-600 transition-colors hover:text-zinc-400"
+                    title="Add link"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="10"
+                      height="10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                    </svg>
+                    <span>Add link</span>
+                  </button>
+                ) : null}
+              </div>
+
               {/* Inline link editor */}
               {editingLinkId === subtask.id && (
-                <div className="ml-5.5 mt-1 flex items-center gap-1.5 px-1">
+                <div className="mt-1.5 ml-5.5 flex items-center gap-1.5">
                   <input
                     type="url"
                     placeholder="https://..."
