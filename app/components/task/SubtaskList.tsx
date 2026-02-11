@@ -33,6 +33,7 @@ export default function SubtaskList({
   const [newSubtask, setNewSubtask] = useState("");
   const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
   const [linkInput, setLinkInput] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const completedCount = subtasks.filter((s) => s.completed).length;
   const progress =
@@ -74,6 +75,7 @@ export default function SubtaskList({
 
   const handleRemove = (id: string) => {
     onChange(subtasks.filter((s) => s.id !== id));
+    setConfirmDeleteId(null);
   };
 
   const handleCycleStatus = (id: string) => {
@@ -149,13 +151,14 @@ export default function SubtaskList({
           const status = subtask.status ?? "pending";
           const priority = subtask.priority ?? "low";
           const hasLink = !!subtask.link;
+          const isConfirming = confirmDeleteId === subtask.id;
 
           return (
             <li
               key={subtask.id}
-              className="group rounded-md px-1.5 py-1 hover:bg-zinc-800/50"
+              className="group relative rounded-md py-1 pl-1.5 pr-9 hover:bg-zinc-800/50"
             >
-              {/* Row 1: Checkbox + Title + Remove */}
+              {/* Row 1: Checkbox + Title */}
               <div className="flex items-center gap-2">
                 {/* Checkbox */}
                 <button
@@ -197,30 +200,6 @@ export default function SubtaskList({
                 >
                   {subtask.title}
                 </span>
-
-                {/* Remove button */}
-                {!readOnly && (
-                  <button
-                    onClick={() => handleRemove(subtask.id)}
-                    className="shrink-0 rounded p-0.5 text-zinc-600 opacity-0 transition-all hover:text-red-400 group-hover:opacity-100"
-                    aria-label="Remove subtask"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                  </button>
-                )}
               </div>
 
               {/* Row 2: Status + Priority + Link badges */}
@@ -378,6 +357,75 @@ export default function SubtaskList({
                     Cancel
                   </button>
                 </div>
+              )}
+
+              {/* Delete confirm inline bar */}
+              {isConfirming && (
+                <div className="mt-1.5 ml-5.5 flex items-center gap-2 rounded-md border border-red-500/30 bg-red-500/10 px-2 py-1.5">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="shrink-0 text-red-400"
+                  >
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                  <span className="flex-1 text-xs text-red-300">
+                    Delete this subtask?
+                  </span>
+                  <button
+                    onClick={() => handleRemove(subtask.id)}
+                    className="rounded bg-red-500/20 px-2 py-0.5 text-[11px] font-medium text-red-400 transition-colors hover:bg-red-500/30 hover:text-red-300"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    onClick={() => setConfirmDeleteId(null)}
+                    className="rounded bg-zinc-700/50 px-2 py-0.5 text-[11px] font-medium text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-zinc-300"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+
+              {/* Delete button — absolute right, vertically centered */}
+              {!readOnly && (
+                <button
+                  onClick={() =>
+                    setConfirmDeleteId(isConfirming ? null : subtask.id)
+                  }
+                  className={cn(
+                    "absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-1 transition-all",
+                    isConfirming
+                      ? "text-red-400 opacity-100"
+                      : "text-zinc-600 opacity-0 hover:bg-zinc-700/50 hover:text-red-400 group-hover:opacity-100",
+                  )}
+                  aria-label="Remove subtask"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M3 6h18" />
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                  </svg>
+                </button>
               )}
             </li>
           );
