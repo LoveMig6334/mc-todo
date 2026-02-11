@@ -1,7 +1,14 @@
 "use client";
 
-import { cn, generateId } from "@/app/lib/utils";
-import { Subtask } from "@/app/types/task";
+import {
+  cn,
+  generateId,
+  getStatusLabel,
+  getStatusColor,
+  getSubtaskPriorityLabel,
+  getSubtaskPriorityColor,
+} from "@/app/lib/utils";
+import { Subtask, TaskStatus, SubtaskPriority } from "@/app/types/task";
 import { useState } from "react";
 
 interface SubtaskListProps {
@@ -10,12 +17,22 @@ interface SubtaskListProps {
   readOnly?: boolean;
 }
 
+const STATUS_CYCLE: TaskStatus[] = [
+  "pending",
+  "in_progress",
+  "needs_approval",
+  "paused",
+];
+const PRIORITY_CYCLE: SubtaskPriority[] = ["low", "medium", "high"];
+
 export default function SubtaskList({
   subtasks,
   onChange,
   readOnly = false,
 }: SubtaskListProps) {
   const [newSubtask, setNewSubtask] = useState("");
+  const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
+  const [linkInput, setLinkInput] = useState("");
 
   const completedCount = subtasks.filter((s) => s.completed).length;
   const progress =
@@ -26,7 +43,17 @@ export default function SubtaskList({
   const handleAdd = () => {
     const title = newSubtask.trim();
     if (!title) return;
-    onChange([...subtasks, { id: generateId(), title, completed: false }]);
+    onChange([
+      ...subtasks,
+      {
+        id: generateId(),
+        title,
+        completed: false,
+        status: "pending",
+        priority: "low",
+        link: "",
+      },
+    ]);
     setNewSubtask("");
   };
 
@@ -49,6 +76,56 @@ export default function SubtaskList({
     onChange(subtasks.filter((s) => s.id !== id));
   };
 
+  const handleCycleStatus = (id: string) => {
+    onChange(
+      subtasks.map((s) => {
+        if (s.id !== id) return s;
+        const current = s.status ?? "pending";
+        const idx = STATUS_CYCLE.indexOf(current);
+        const next = STATUS_CYCLE[(idx + 1) % STATUS_CYCLE.length];
+        return { ...s, status: next };
+      }),
+    );
+  };
+
+  const handleCyclePriority = (id: string) => {
+    onChange(
+      subtasks.map((s) => {
+        if (s.id !== id) return s;
+        const current = s.priority ?? "low";
+        const idx = PRIORITY_CYCLE.indexOf(current);
+        const next = PRIORITY_CYCLE[(idx + 1) % PRIORITY_CYCLE.length];
+        return { ...s, priority: next };
+      }),
+    );
+  };
+
+  const handleOpenLinkEdit = (subtask: Subtask) => {
+    setEditingLinkId(subtask.id);
+    setLinkInput(subtask.link ?? "");
+  };
+
+  const handleSaveLink = (id: string) => {
+    onChange(
+      subtasks.map((s) =>
+        s.id === id ? { ...s, link: linkInput.trim() } : s,
+      ),
+    );
+    setEditingLinkId(null);
+    setLinkInput("");
+  };
+
+  const handleLinkKeyDown = (e: React.KeyboardEvent, id: string) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSaveLink(id);
+    }
+    if (e.key === "Escape") {
+      setEditingLinkId(null);
+      setLinkInput("");
+    }
+  };
+
   return (
     <div className="space-y-2">
       {/* Header with progress */}
@@ -68,72 +145,256 @@ export default function SubtaskList({
 
       {/* Subtask items */}
       <ul className="space-y-1">
-        {subtasks.map((subtask) => (
-          <li
-            key={subtask.id}
-            className="group flex items-center gap-2 rounded-md px-1 py-0.5 hover:bg-zinc-800/50"
-          >
-            <button
-              onClick={() => !readOnly && handleToggle(subtask.id)}
-              disabled={readOnly}
-              className={cn(
-                "h-3.5 w-3.5 shrink-0 rounded border transition-all duration-200 flex items-center justify-center",
-                subtask.completed
-                  ? "border-emerald-500 bg-emerald-500"
-                  : "border-zinc-500 hover:border-emerald-500",
-              )}
-            >
-              {subtask.completed && (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="8"
-                  height="8"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-white"
+        {subtasks.map((subtask) => {
+          const status = subtask.status ?? "pending";
+          const priority = subtask.priority ?? "low";
+          const hasLink = !!subtask.link;
+
+          return (
+            <li key={subtask.id}>
+              <div className="group flex items-center gap-2 rounded-md px-1 py-0.5 hover:bg-zinc-800/50">
+                {/* Checkbox */}
+                <button
+                  onClick={() => !readOnly && handleToggle(subtask.id)}
+                  disabled={readOnly}
+                  className={cn(
+                    "h-3.5 w-3.5 shrink-0 rounded border transition-all duration-200 flex items-center justify-center",
+                    subtask.completed
+                      ? "border-emerald-500 bg-emerald-500"
+                      : "border-zinc-500 hover:border-emerald-500",
+                  )}
                 >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              )}
-            </button>
-            <span
-              className={cn(
-                "flex-1 text-sm",
-                subtask.completed
-                  ? "text-zinc-500 line-through"
-                  : "text-zinc-200",
-              )}
-            >
-              {subtask.title}
-            </span>
-            {!readOnly && (
-              <button
-                onClick={() => handleRemove(subtask.id)}
-                className="rounded p-0.5 text-zinc-600 opacity-0 transition-all hover:text-red-400 group-hover:opacity-100"
-                aria-label="Remove subtask"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                  {subtask.completed && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="8"
+                      height="8"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-white"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </button>
+
+                {/* Title */}
+                <span
+                  className={cn(
+                    "min-w-0 flex-1 truncate text-sm",
+                    subtask.completed
+                      ? "text-zinc-500 line-through"
+                      : "text-zinc-200",
+                  )}
                 >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            )}
-          </li>
-        ))}
+                  {subtask.title}
+                </span>
+
+                {/* Inline badges */}
+                {!readOnly && (
+                  <div className="flex shrink-0 items-center gap-1">
+                    {/* Status badge */}
+                    <button
+                      onClick={() => handleCycleStatus(subtask.id)}
+                      className={cn(
+                        "rounded px-1.5 py-0.5 text-[10px] font-medium leading-none transition-opacity",
+                        getStatusColor(status),
+                      )}
+                      title={`Status: ${getStatusLabel(status)} (click to cycle)`}
+                    >
+                      {getStatusLabel(status)}
+                    </button>
+
+                    {/* Priority badge */}
+                    <button
+                      onClick={() => handleCyclePriority(subtask.id)}
+                      className={cn(
+                        "rounded px-1.5 py-0.5 text-[10px] font-medium leading-none transition-opacity",
+                        getSubtaskPriorityColor(priority),
+                      )}
+                      title={`Priority: ${getSubtaskPriorityLabel(priority)} (click to cycle)`}
+                    >
+                      {getSubtaskPriorityLabel(priority)}
+                    </button>
+
+                    {/* Link icon */}
+                    {hasLink ? (
+                      <div className="flex items-center gap-0.5">
+                        <a
+                          href={subtask.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded p-0.5 text-blue-400 transition-colors hover:text-blue-300"
+                          title={subtask.link}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                          </svg>
+                        </a>
+                        <button
+                          onClick={() => handleOpenLinkEdit(subtask)}
+                          className="rounded p-0.5 text-zinc-600 transition-colors hover:text-zinc-400"
+                          title="Edit link"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="10"
+                            height="10"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                          </svg>
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleOpenLinkEdit(subtask)}
+                        className="rounded p-0.5 text-zinc-600 transition-colors hover:text-zinc-400"
+                        title="Add link"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Read-only badges */}
+                {readOnly && (
+                  <div className="flex shrink-0 items-center gap-1">
+                    <span
+                      className={cn(
+                        "rounded px-1.5 py-0.5 text-[10px] font-medium leading-none",
+                        getStatusColor(status),
+                      )}
+                    >
+                      {getStatusLabel(status)}
+                    </span>
+                    <span
+                      className={cn(
+                        "rounded px-1.5 py-0.5 text-[10px] font-medium leading-none",
+                        getSubtaskPriorityColor(priority),
+                      )}
+                    >
+                      {getSubtaskPriorityLabel(priority)}
+                    </span>
+                    {hasLink && (
+                      <a
+                        href={subtask.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded p-0.5 text-blue-400 transition-colors hover:text-blue-300"
+                        title={subtask.link}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                        </svg>
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {/* Remove button */}
+                {!readOnly && (
+                  <button
+                    onClick={() => handleRemove(subtask.id)}
+                    className="rounded p-0.5 text-zinc-600 opacity-0 transition-all hover:text-red-400 group-hover:opacity-100"
+                    aria-label="Remove subtask"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+
+              {/* Inline link editor */}
+              {editingLinkId === subtask.id && (
+                <div className="ml-5.5 mt-1 flex items-center gap-1.5 px-1">
+                  <input
+                    type="url"
+                    placeholder="https://..."
+                    value={linkInput}
+                    onChange={(e) => setLinkInput(e.target.value)}
+                    onKeyDown={(e) => handleLinkKeyDown(e, subtask.id)}
+                    autoFocus
+                    className="flex-1 rounded border border-zinc-700 bg-zinc-800/50 px-2 py-0.5 text-xs text-white placeholder-zinc-500 outline-none focus:border-blue-500 transition-colors"
+                  />
+                  <button
+                    onClick={() => handleSaveLink(subtask.id)}
+                    className="rounded border border-zinc-700 px-1.5 py-0.5 text-[10px] text-zinc-300 transition-colors hover:border-blue-500 hover:text-blue-400"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingLinkId(null);
+                      setLinkInput("");
+                    }}
+                    className="rounded border border-zinc-700 px-1.5 py-0.5 text-[10px] text-zinc-500 transition-colors hover:border-zinc-500 hover:text-zinc-300"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </li>
+          );
+        })}
       </ul>
 
       {/* Add subtask input */}

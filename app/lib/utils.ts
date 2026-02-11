@@ -91,6 +91,28 @@ export function getStatusColor(
   return colors[status];
 }
 
+export function getSubtaskPriorityLabel(
+  priority: "low" | "medium" | "high",
+): string {
+  const labels: Record<typeof priority, string> = {
+    low: "Low",
+    medium: "Med",
+    high: "High",
+  };
+  return labels[priority];
+}
+
+export function getSubtaskPriorityColor(
+  priority: "low" | "medium" | "high",
+): string {
+  const colors: Record<typeof priority, string> = {
+    low: "bg-zinc-700 text-zinc-400",
+    medium: "bg-yellow-500/20 text-yellow-400",
+    high: "bg-red-500/20 text-red-400",
+  };
+  return colors[priority];
+}
+
 export function getCompletedDaysAgo(completedAt: string): number {
   const now = new Date();
   now.setHours(0, 0, 0, 0);

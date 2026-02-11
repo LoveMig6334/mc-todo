@@ -4,10 +4,15 @@ export type TaskStatus =
   | "pending"
   | "paused";
 
+export type SubtaskPriority = "low" | "medium" | "high";
+
 export interface Subtask {
   id: string;
   title: string;
   completed: boolean;
+  status?: TaskStatus;
+  priority?: SubtaskPriority;
+  link?: string;
 }
 
 export interface Task {
