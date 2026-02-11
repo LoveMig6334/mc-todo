@@ -199,24 +199,24 @@ export default function SubtaskList({
                   <div className="flex shrink-0 items-center gap-1">
                     {/* Status badge */}
                     <button
-                      onClick={() => handleCycleStatus(subtask.id)}
+                      onDoubleClick={() => handleCycleStatus(subtask.id)}
                       className={cn(
-                        "rounded px-1.5 py-0.5 text-[10px] font-medium leading-none transition-opacity",
+                        "rounded px-1.5 py-0.5 text-[10px] font-medium leading-none transition-opacity select-none",
                         getStatusColor(status),
                       )}
-                      title={`Status: ${getStatusLabel(status)} (click to cycle)`}
+                      title={`Status: ${getStatusLabel(status)} (double-click to cycle)`}
                     >
                       {getStatusLabel(status)}
                     </button>
 
                     {/* Priority badge */}
                     <button
-                      onClick={() => handleCyclePriority(subtask.id)}
+                      onDoubleClick={() => handleCyclePriority(subtask.id)}
                       className={cn(
-                        "rounded px-1.5 py-0.5 text-[10px] font-medium leading-none transition-opacity",
+                        "rounded px-1.5 py-0.5 text-[10px] font-medium leading-none transition-opacity select-none",
                         getSubtaskPriorityColor(priority),
                       )}
-                      title={`Priority: ${getSubtaskPriorityLabel(priority)} (click to cycle)`}
+                      title={`Priority: ${getSubtaskPriorityLabel(priority)} (double-click to cycle)`}
                     >
                       {getSubtaskPriorityLabel(priority)}
                     </button>
