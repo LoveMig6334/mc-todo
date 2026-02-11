@@ -15,8 +15,11 @@ const mockTask: Task = {
   priority: 5,
   status: "pending",
   dueDate: { start: '2099-01-15', end: null },
+  subtasks: [],
   referenceLinks: ['https://example.com'],
   completed: false,
+  completedAt: null,
+  archived: false,
   createdAt: '2024-01-01T00:00:00Z',
   updatedAt: '2024-01-01T00:00:00Z',
 };
@@ -25,6 +28,7 @@ const mockHandlers = {
   onToggleComplete: jest.fn(),
   onEdit: jest.fn(),
   onDelete: jest.fn(),
+  onUpdate: jest.fn(),
 };
 
 describe('TaskList', () => {

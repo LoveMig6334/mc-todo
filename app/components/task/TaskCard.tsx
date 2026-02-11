@@ -6,7 +6,9 @@ import {
   getPriorityLabel,
   isOverdue,
 } from "@/app/lib/utils";
-import { Category, Task } from "@/app/types/task";
+import { Category, Task, TaskFormData } from "@/app/types/task";
+import { useCallback, useState } from "react";
+import SubtaskList from "./SubtaskList";
 
 interface TaskCardProps {
   task: Task;
@@ -14,6 +16,7 @@ interface TaskCardProps {
   onToggleComplete: (id: string) => void;
   onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
+  onUpdate: (id: string, updates: Partial<TaskFormData>) => void;
 }
 
 export default function TaskCard({
@@ -22,11 +25,23 @@ export default function TaskCard({
   onToggleComplete,
   onEdit,
   onDelete,
+  onUpdate,
 }: TaskCardProps) {
+  const [expanded, setExpanded] = useState(false);
   const overdue = !task.completed && isOverdue(task.dueDate);
+
+  const handleDoubleClick = useCallback(
+    (e: React.MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest("button, input, a, select, textarea")) return;
+      setExpanded((prev) => !prev);
+    },
+    [],
+  );
 
   return (
     <div
+      onDoubleClick={handleDoubleClick}
       className={cn(
         "group rounded-lg border bg-zinc-800/50 p-3 transition-all duration-200",
         task.completed
@@ -180,6 +195,33 @@ export default function TaskCard({
             {task.subtasks.filter((s) => s.completed).length}/
             {task.subtasks.length}
           </span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="10"
+            height="10"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={cn(
+              "transition-transform duration-200",
+              expanded && "rotate-180",
+            )}
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </div>
+      )}
+
+      {/* Inline subtasks */}
+      {expanded && (
+        <div className="mt-2 border-t border-zinc-700 pt-2">
+          <SubtaskList
+            subtasks={task.subtasks ?? []}
+            onChange={(subtasks) => onUpdate(task.id, { subtasks })}
+          />
         </div>
       )}
 

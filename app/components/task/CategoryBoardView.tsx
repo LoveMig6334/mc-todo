@@ -1,6 +1,6 @@
 "use client";
 
-import { Category, Task } from "@/app/types/task";
+import { Category, Task, TaskFormData } from "@/app/types/task";
 import { useMemo } from "react";
 import TaskCard from "./TaskCard";
 
@@ -10,6 +10,7 @@ interface CategoryBoardViewProps {
   onToggleComplete: (id: string) => void;
   onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
+  onUpdate: (id: string, updates: Partial<TaskFormData>) => void;
 }
 
 interface CategoryColumn {
@@ -32,6 +33,7 @@ export default function CategoryBoardView({
   onToggleComplete,
   onEdit,
   onDelete,
+  onUpdate,
 }: CategoryBoardViewProps) {
   // Group tasks by category, with backlog for uncategorized
   const columns = useMemo(() => {
@@ -145,6 +147,7 @@ export default function CategoryBoardView({
                   onToggleComplete={onToggleComplete}
                   onEdit={onEdit}
                   onDelete={onDelete}
+                  onUpdate={onUpdate}
                 />
               ))
             )}

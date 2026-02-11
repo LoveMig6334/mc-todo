@@ -8,7 +8,7 @@ import {
   getStatusLabel,
 } from "@/app/lib/utils";
 import { Category, Task, TaskFormData, TaskStatus } from "@/app/types/task";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import {
   InlineDateCell,
   InlineLinkCell,
@@ -16,6 +16,7 @@ import {
   InlineSelectCell,
   InlineTextCell,
 } from "./InlineEditableCell";
+import SubtaskList from "./SubtaskList";
 
 const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
   { value: "in_progress", label: "In Progress" },
@@ -43,7 +44,17 @@ export default function TaskTableRow({
   onDelete,
   onUpdate,
 }: TaskTableRowProps) {
+  const [expanded, setExpanded] = useState(false);
   const daysLeft = getDaysLeft(task.dueDate);
+
+  const handleDoubleClick = useCallback(
+    (e: React.MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest("button, input, a, select, textarea")) return;
+      setExpanded((prev) => !prev);
+    },
+    [],
+  );
 
   const handleUpdate = useCallback(
     (updates: Partial<TaskFormData>) => {
@@ -59,10 +70,13 @@ export default function TaskTableRow({
   }));
 
   return (
+    <>
     <tr
+      onDoubleClick={handleDoubleClick}
       className={cn(
-        "group border-b border-zinc-800 transition-colors hover:bg-zinc-800/50",
+        "group border-b border-zinc-800 transition-colors hover:bg-zinc-800/50 cursor-default",
         task.completed && "opacity-60",
+        expanded && "border-b-0 bg-zinc-800/30",
       )}
     >
       {/* Checkbox */}
@@ -132,6 +146,23 @@ export default function TaskTableRow({
             </svg>
             {task.subtasks.filter((s) => s.completed).length}/
             {task.subtasks.length}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="8"
+              height="8"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={cn(
+                "transition-transform duration-200",
+                expanded && "rotate-180",
+              )}
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
           </span>
         )}
       </td>
@@ -383,5 +414,18 @@ export default function TaskTableRow({
         </div>
       </td>
     </tr>
+    {expanded && (
+      <tr className="border-b border-zinc-800 bg-zinc-800/20">
+        <td colSpan={10} className="px-4 py-3">
+          <div className="ml-12 max-w-md">
+            <SubtaskList
+              subtasks={task.subtasks ?? []}
+              onChange={(subtasks) => onUpdate(task.id, { subtasks })}
+            />
+          </div>
+        </td>
+      </tr>
+    )}
+    </>
   );
 }

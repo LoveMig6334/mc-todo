@@ -43,6 +43,8 @@ const getDefaultFormData = (prefilledDate?: string): TaskFormData => {
     subtasks: [],
     referenceLinks: [],
     completed: false,
+    completedAt: null,
+    archived: false,
   };
 };
 
@@ -66,6 +68,8 @@ function TaskModalContent({
         subtasks: editingTask.subtasks ?? [],
         referenceLinks: editingTask.referenceLinks,
         completed: editingTask.completed,
+        completedAt: editingTask.completedAt,
+        archived: editingTask.archived,
       };
     }
     return getDefaultFormData(prefilledDate);

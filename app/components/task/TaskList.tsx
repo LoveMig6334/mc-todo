@@ -1,6 +1,6 @@
 "use client";
 
-import { Category, Task } from "@/app/types/task";
+import { Category, Task, TaskFormData } from "@/app/types/task";
 import TaskItem from "./TaskItem";
 
 interface TaskListProps {
@@ -9,6 +9,7 @@ interface TaskListProps {
   onToggleComplete: (id: string) => void;
   onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
+  onUpdate: (id: string, updates: Partial<TaskFormData>) => void;
 }
 
 export default function TaskList({
@@ -17,6 +18,7 @@ export default function TaskList({
   onToggleComplete,
   onEdit,
   onDelete,
+  onUpdate,
 }: TaskListProps) {
   const getCategoryById = (id: string) =>
     categories.find((cat) => cat.id === id);
@@ -59,6 +61,7 @@ export default function TaskList({
           onToggleComplete={onToggleComplete}
           onEdit={onEdit}
           onDelete={onDelete}
+          onUpdate={onUpdate}
         />
       ))}
     </div>

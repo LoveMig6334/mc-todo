@@ -7,7 +7,9 @@ import {
   getPriorityLabel,
   isOverdue,
 } from "@/app/lib/utils";
-import { Category, Task } from "@/app/types/task";
+import { Category, Task, TaskFormData } from "@/app/types/task";
+import { useCallback, useState } from "react";
+import SubtaskList from "./SubtaskList";
 
 interface TaskItemProps {
   task: Task;
@@ -15,6 +17,7 @@ interface TaskItemProps {
   onToggleComplete: (id: string) => void;
   onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
+  onUpdate: (id: string, updates: Partial<TaskFormData>) => void;
 }
 
 export default function TaskItem({
@@ -23,11 +26,23 @@ export default function TaskItem({
   onToggleComplete,
   onEdit,
   onDelete,
+  onUpdate,
 }: TaskItemProps) {
+  const [expanded, setExpanded] = useState(false);
   const overdue = !task.completed && isOverdue(task.dueDate);
+
+  const handleDoubleClick = useCallback(
+    (e: React.MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest("button, input, a, select, textarea")) return;
+      setExpanded((prev) => !prev);
+    },
+    [],
+  );
 
   return (
     <div
+      onDoubleClick={handleDoubleClick}
       className={cn(
         "group rounded-xl border bg-zinc-900 p-4 transition-all duration-200",
         task.completed
@@ -204,7 +219,64 @@ export default function TaskItem({
                 {task.referenceLinks.length !== 1 && "s"}
               </span>
             )}
+
+            {/* Subtask count */}
+            {task.subtasks && task.subtasks.length > 0 && (
+              <span
+                className={cn(
+                  "flex items-center gap-1",
+                  task.subtasks.filter((s) => s.completed).length ===
+                    task.subtasks.length
+                    ? "text-emerald-400"
+                    : "text-zinc-400",
+                )}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M9 11l3 3L22 4" />
+                  <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+                </svg>
+                {task.subtasks.filter((s) => s.completed).length}/
+                {task.subtasks.length}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={cn(
+                    "transition-transform duration-200",
+                    expanded && "rotate-180",
+                  )}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </span>
+            )}
           </div>
+
+          {/* Inline subtasks */}
+          {expanded && (
+            <div className="mt-3 border-t border-zinc-800 pt-3">
+              <SubtaskList
+                subtasks={task.subtasks ?? []}
+                onChange={(subtasks) => onUpdate(task.id, { subtasks })}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
