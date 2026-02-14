@@ -35,10 +35,10 @@ A per-task interactive workspace where users can create flowcharts, take notes, 
 
 ### 4.4 TODO List Block
 
-- [ ] Inline checklist block with add/remove items
-- [ ] Toggle checkbox completion
-- [ ] Reorder items via drag
-- [ ] Progress indicator (e.g., 3/5 done)
+- [x] Inline checklist block with add/remove items
+- [x] Toggle checkbox completion
+- [x] Reorder items via drag
+- [x] Progress indicator (e.g., 3/5 done)
 
 ### 4.5 Flowchart Block
 
