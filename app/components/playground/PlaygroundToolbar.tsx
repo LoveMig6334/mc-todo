@@ -7,12 +7,14 @@ interface PlaygroundToolbarProps {
   viewport: PlaygroundViewport;
   onViewportChange: (viewport: PlaygroundViewport) => void;
   onAddNote: () => void;
+  onAddTodo: () => void;
 }
 
 export default function PlaygroundToolbar({
   viewport,
   onViewportChange,
   onAddNote,
+  onAddTodo,
 }: PlaygroundToolbarProps) {
   const zoomPercent = Math.round(viewport.zoom * 100);
 
@@ -63,6 +65,28 @@ export default function PlaygroundToolbar({
           <line x1="9" y1="15" x2="15" y2="15" />
         </svg>
         <span className="text-xs font-medium">Note</span>
+      </button>
+
+      {/* Add TODO button */}
+      <button
+        onClick={onAddTodo}
+        className={cn(buttonClass, "gap-1.5 w-auto px-3")}
+        title="Add TODO"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M9 11l3 3L22 4" />
+          <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+        </svg>
+        <span className="text-xs font-medium">TODO</span>
       </button>
 
       {/* Divider */}

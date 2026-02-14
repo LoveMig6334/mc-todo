@@ -1,13 +1,16 @@
 "use client";
 
 import {
+  BlockData,
   NoteBlockData,
   PlaygroundBlock,
   PlaygroundViewport,
+  TodoBlockData,
 } from "@/app/types/playground";
 import { useCallback, useRef } from "react";
 import BlockWrapper from "./BlockWrapper";
 import NoteBlock from "./NoteBlock";
+import TodoListBlock from "./TodoListBlock";
 
 interface PlaygroundCanvasProps {
   blocks: PlaygroundBlock[];
@@ -17,7 +20,7 @@ interface PlaygroundCanvasProps {
   onMoveBlock: (id: string, position: { x: number; y: number }) => void;
   onResizeBlock: (id: string, size: { width: number; height: number }) => void;
   onDeleteBlock: (id: string) => void;
-  onUpdateBlock: (id: string, data: Partial<NoteBlockData>) => void;
+  onUpdateBlock: (id: string, data: Partial<BlockData>) => void;
   onBringToFront: (id: string) => void;
   onViewportChange: (viewport: PlaygroundViewport) => void;
 }
@@ -152,6 +155,13 @@ export default function PlaygroundCanvas({
             {block.type === "note" && (
               <NoteBlock
                 data={block.data as NoteBlockData}
+                isSelected={selectedBlockId === block.id}
+                onUpdate={(data) => onUpdateBlock(block.id, data)}
+              />
+            )}
+            {block.type === "todo" && (
+              <TodoListBlock
+                data={block.data as TodoBlockData}
                 isSelected={selectedBlockId === block.id}
                 onUpdate={(data) => onUpdateBlock(block.id, data)}
               />

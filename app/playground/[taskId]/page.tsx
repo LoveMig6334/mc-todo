@@ -5,7 +5,7 @@ import PlaygroundCanvas from "@/app/components/playground/PlaygroundCanvas";
 import PlaygroundToolbar from "@/app/components/playground/PlaygroundToolbar";
 import { usePlayground } from "@/app/hooks/usePlayground";
 import { useTaskManager } from "@/app/hooks/useTaskManager";
-import { NoteBlockData } from "@/app/types/playground";
+import { BlockData } from "@/app/types/playground";
 import Link from "next/link";
 import { use, useCallback, useState } from "react";
 
@@ -40,8 +40,15 @@ export default function PlaygroundPage({ params }: PlaygroundPageProps) {
     setSelectedBlockId(id);
   }, [viewport, addBlock]);
 
+  const handleAddTodo = useCallback(() => {
+    const centerX = (-viewport.x + 400) / viewport.zoom;
+    const centerY = (-viewport.y + 300) / viewport.zoom;
+    const id = addBlock("todo", { x: centerX, y: centerY });
+    setSelectedBlockId(id);
+  }, [viewport, addBlock]);
+
   const handleUpdateBlock = useCallback(
-    (id: string, data: Partial<NoteBlockData>) => {
+    (id: string, data: Partial<BlockData>) => {
       updateBlock(id, data);
     },
     [updateBlock],
@@ -123,6 +130,7 @@ export default function PlaygroundPage({ params }: PlaygroundPageProps) {
           viewport={viewport}
           onViewportChange={setViewport}
           onAddNote={handleAddNote}
+          onAddTodo={handleAddTodo}
         />
       </div>
     </div>

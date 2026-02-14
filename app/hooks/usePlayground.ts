@@ -21,6 +21,12 @@ const DEFAULT_NOTE_DATA: BlockData = {
   color: "#27272a", // zinc-800
 };
 
+const DEFAULT_TODO_DATA: BlockData = {
+  title: "",
+  items: [],
+  color: "#27272a", // zinc-800
+};
+
 const DEFAULT_BLOCK_SIZE = { width: 280, height: 200 };
 
 export function usePlayground(taskId: string) {
@@ -32,13 +38,15 @@ export function usePlayground(taskId: string) {
   const addBlock = useCallback(
     (type: PlaygroundBlock["type"], position: { x: number; y: number }) => {
       const maxZ = state.blocks.reduce((max, b) => Math.max(max, b.zIndex), 0);
+      const defaultData =
+        type === "todo" ? { ...DEFAULT_TODO_DATA } : { ...DEFAULT_NOTE_DATA };
       const newBlock: PlaygroundBlock = {
         id: generateId(),
         type,
         position,
         size: { ...DEFAULT_BLOCK_SIZE },
         zIndex: maxZ + 1,
-        data: { ...DEFAULT_NOTE_DATA },
+        data: defaultData,
       };
       setState((prev) => ({
         ...prev,

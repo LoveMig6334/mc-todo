@@ -4,11 +4,23 @@ export interface NoteBlockData {
   color: string; // bg color hex
 }
 
-export type BlockData = NoteBlockData;
+export interface TodoItem {
+  id: string;
+  text: string;
+  completed: boolean;
+}
+
+export interface TodoBlockData {
+  title: string;
+  items: TodoItem[];
+  color: string; // bg color hex
+}
+
+export type BlockData = NoteBlockData | TodoBlockData;
 
 export interface PlaygroundBlock {
   id: string;
-  type: "note"; // extensible: "todo" | "flowchart" | "drawing" later
+  type: "note" | "todo";
   position: { x: number; y: number };
   size: { width: number; height: number };
   zIndex: number;

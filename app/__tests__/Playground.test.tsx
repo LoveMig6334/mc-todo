@@ -1,7 +1,12 @@
 import BlockWrapper from "@/app/components/playground/BlockWrapper";
 import NoteBlock from "@/app/components/playground/NoteBlock";
 import PlaygroundToolbar from "@/app/components/playground/PlaygroundToolbar";
-import { NoteBlockData, PlaygroundBlock } from "@/app/types/playground";
+import TodoListBlock from "@/app/components/playground/TodoListBlock";
+import {
+  NoteBlockData,
+  PlaygroundBlock,
+  TodoBlockData,
+} from "@/app/types/playground";
 import { fireEvent, render, screen } from "@testing-library/react";
 
 // --- NoteBlock ---
@@ -291,6 +296,7 @@ describe("PlaygroundToolbar", () => {
     viewport: { x: 0, y: 0, zoom: 1 },
     onViewportChange: jest.fn(),
     onAddNote: jest.fn(),
+    onAddTodo: jest.fn(),
   };
 
   it("renders zoom percentage", () => {
@@ -347,5 +353,176 @@ describe("PlaygroundToolbar", () => {
       y: 0,
       zoom: 1,
     });
+  });
+
+  it("calls onAddTodo when TODO button clicked", () => {
+    render(<PlaygroundToolbar {...defaultProps} />);
+    fireEvent.click(screen.getByTitle("Add TODO"));
+    expect(defaultProps.onAddTodo).toHaveBeenCalled();
+  });
+});
+
+// --- TodoListBlock ---
+
+const defaultTodoData: TodoBlockData = {
+  title: "My Checklist",
+  items: [
+    { id: "item-1", text: "Buy groceries", completed: false },
+    { id: "item-2", text: "Clean house", completed: true },
+  ],
+  color: "#27272a",
+};
+
+describe("TodoListBlock", () => {
+  it("renders title and items", () => {
+    render(
+      <TodoListBlock
+        data={defaultTodoData}
+        isSelected={false}
+        onUpdate={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByDisplayValue("My Checklist")).toBeInTheDocument();
+    expect(screen.getByText("Buy groceries")).toBeInTheDocument();
+    expect(screen.getByText("Clean house")).toBeInTheDocument();
+  });
+
+  it("renders empty checklist", () => {
+    render(
+      <TodoListBlock
+        data={{ title: "", items: [], color: "#27272a" }}
+        isSelected={false}
+        onUpdate={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByPlaceholderText("Checklist title")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Add item...")).toBeInTheDocument();
+    // No progress indicator when empty
+    expect(screen.queryByTestId("todo-progress-text")).not.toBeInTheDocument();
+  });
+
+  it("adds a new item via Enter", () => {
+    const onUpdate = jest.fn();
+    render(
+      <TodoListBlock
+        data={{ title: "", items: [], color: "#27272a" }}
+        isSelected={false}
+        onUpdate={onUpdate}
+      />,
+    );
+
+    const input = screen.getByPlaceholderText("Add item...");
+    fireEvent.change(input, { target: { value: "New task" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    expect(onUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        items: [
+          expect.objectContaining({ text: "New task", completed: false }),
+        ],
+      }),
+    );
+  });
+
+  it("toggles item completion", () => {
+    const onUpdate = jest.fn();
+    render(
+      <TodoListBlock
+        data={defaultTodoData}
+        isSelected={false}
+        onUpdate={onUpdate}
+      />,
+    );
+
+    // Toggle the first item (currently incomplete)
+    const markCompleteBtn = screen.getByTitle("Mark complete");
+    fireEvent.click(markCompleteBtn);
+
+    expect(onUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        items: expect.arrayContaining([
+          expect.objectContaining({ id: "item-1", completed: true }),
+        ]),
+      }),
+    );
+  });
+
+  it("removes an item", () => {
+    const onUpdate = jest.fn();
+    render(
+      <TodoListBlock
+        data={defaultTodoData}
+        isSelected={false}
+        onUpdate={onUpdate}
+      />,
+    );
+
+    const removeButtons = screen.getAllByTitle("Remove item");
+    fireEvent.click(removeButtons[0]);
+
+    expect(onUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        items: [expect.objectContaining({ id: "item-2" })],
+      }),
+    );
+  });
+
+  it("shows progress indicator", () => {
+    render(
+      <TodoListBlock
+        data={defaultTodoData}
+        isSelected={false}
+        onUpdate={jest.fn()}
+      />,
+    );
+
+    // 1 of 2 items completed
+    expect(screen.getByTestId("todo-progress-text")).toHaveTextContent(
+      "1/2 done",
+    );
+    expect(screen.getByTestId("todo-progress-bar")).toBeInTheDocument();
+  });
+
+  it("shows color picker when selected", () => {
+    render(
+      <TodoListBlock
+        data={defaultTodoData}
+        isSelected={true}
+        onUpdate={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByTitle("Zinc")).toBeInTheDocument();
+    expect(screen.getByTitle("Blue")).toBeInTheDocument();
+  });
+
+  it("hides color picker when not selected", () => {
+    render(
+      <TodoListBlock
+        data={defaultTodoData}
+        isSelected={false}
+        onUpdate={jest.fn()}
+      />,
+    );
+
+    expect(screen.queryByTitle("Zinc")).not.toBeInTheDocument();
+  });
+
+  it("calls onUpdate when title changes", () => {
+    const onUpdate = jest.fn();
+    render(
+      <TodoListBlock
+        data={defaultTodoData}
+        isSelected={false}
+        onUpdate={onUpdate}
+      />,
+    );
+
+    fireEvent.change(screen.getByDisplayValue("My Checklist"), {
+      target: { value: "New Title" },
+    });
+    expect(onUpdate).toHaveBeenCalledWith({ title: "New Title" });
   });
 });
