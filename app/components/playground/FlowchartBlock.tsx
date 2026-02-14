@@ -2,6 +2,8 @@
 
 import { generateId } from "@/app/lib/utils";
 import {
+  EdgeArrowDirection,
+  EdgeLineType,
   FlowchartBlockData,
   FlowchartEdge,
   FlowchartNode,
@@ -77,6 +79,77 @@ function getNearestPorts(
     }
   }
   return { sourcePort: bestSource, targetPort: bestTarget };
+}
+
+// --- Adaptive (curved) path helpers ---
+const PORT_EXTENSION = 50;
+
+function getControlPoint(
+  point: { x: number; y: number },
+  port: PortSide,
+): { x: number; y: number } {
+  switch (port) {
+    case "top":
+      return { x: point.x, y: point.y - PORT_EXTENSION };
+    case "bottom":
+      return { x: point.x, y: point.y + PORT_EXTENSION };
+    case "left":
+      return { x: point.x - PORT_EXTENSION, y: point.y };
+    case "right":
+      return { x: point.x + PORT_EXTENSION, y: point.y };
+  }
+}
+
+function getAdaptivePath(
+  start: { x: number; y: number },
+  end: { x: number; y: number },
+  sourcePort: PortSide,
+  targetPort: PortSide,
+): string {
+  const cp1 = getControlPoint(start, sourcePort);
+  const cp2 = getControlPoint(end, targetPort);
+  return `M ${start.x} ${start.y} C ${cp1.x} ${cp1.y}, ${cp2.x} ${cp2.y}, ${end.x} ${end.y}`;
+}
+
+function bezierMidpoint(
+  start: { x: number; y: number },
+  end: { x: number; y: number },
+  sourcePort: PortSide,
+  targetPort: PortSide,
+): { x: number; y: number } {
+  const cp1 = getControlPoint(start, sourcePort);
+  const cp2 = getControlPoint(end, targetPort);
+  const t = 0.5;
+  const mt = 1 - t;
+  return {
+    x: mt * mt * mt * start.x + 3 * mt * mt * t * cp1.x + 3 * mt * t * t * cp2.x + t * t * t * end.x,
+    y: mt * mt * mt * start.y + 3 * mt * mt * t * cp1.y + 3 * mt * t * t * cp2.y + t * t * t * end.y,
+  };
+}
+
+// --- Arrow direction helpers ---
+function getEdgeMarkers(
+  direction: EdgeArrowDirection,
+  isSelected: boolean,
+): { markerStart?: string; markerEnd?: string } {
+  const fwd = isSelected ? "url(#arrowhead-selected)" : "url(#arrowhead)";
+  const rev = isSelected ? "url(#arrowhead-reverse-selected)" : "url(#arrowhead-reverse)";
+  switch (direction) {
+    case "forward":
+      return { markerEnd: fwd };
+    case "backward":
+      return { markerStart: rev };
+    case "both":
+      return { markerStart: rev, markerEnd: fwd };
+    case "none":
+      return {};
+  }
+}
+
+function cycleArrowDirection(current: EdgeArrowDirection): EdgeArrowDirection {
+  const order: EdgeArrowDirection[] = ["forward", "backward", "both", "none"];
+  const idx = order.indexOf(current);
+  return order[(idx + 1) % order.length];
 }
 
 interface FlowchartBlockProps {
@@ -175,6 +248,17 @@ export default function FlowchartBlock({
         ),
       });
       setEditingEdgeId(null);
+    },
+    [data.edges, onUpdate],
+  );
+
+  const updateEdge = useCallback(
+    (edgeId: string, updates: Partial<FlowchartEdge>) => {
+      onUpdate({
+        edges: data.edges.map((e) =>
+          e.id === edgeId ? { ...e, ...updates } : e,
+        ),
+      });
     },
     [data.edges, onUpdate],
   );
@@ -484,6 +568,29 @@ export default function FlowchartBlock({
             >
               <polygon points="0 0, 10 3.5, 0 7" fill="rgb(249, 115, 22)" />
             </marker>
+            <marker
+              id="arrowhead-reverse"
+              markerWidth="10"
+              markerHeight="7"
+              refX="1"
+              refY="3.5"
+              orient="auto"
+            >
+              <polygon
+                points="10 0, 0 3.5, 10 7"
+                fill="rgba(255,255,255,0.5)"
+              />
+            </marker>
+            <marker
+              id="arrowhead-reverse-selected"
+              markerWidth="10"
+              markerHeight="7"
+              refX="1"
+              refY="3.5"
+              orient="auto"
+            >
+              <polygon points="10 0, 0 3.5, 10 7" fill="rgb(249, 115, 22)" />
+            </marker>
           </defs>
 
           {/* Edges */}
@@ -502,54 +609,85 @@ export default function FlowchartBlock({
             );
             const start = getPortPosition(sourceNode, sourcePort);
             const end = getPortPosition(targetNode, targetPort);
-            const midX = (start.x + end.x) / 2;
-            const midY = (start.y + end.y) / 2;
             const isEdgeSelected = selectedEdgeId === edge.id;
+
+            const lineType: EdgeLineType = edge.lineType ?? "straight";
+            const arrowDirection: EdgeArrowDirection = edge.arrowDirection ?? "forward";
+            const markers = getEdgeMarkers(arrowDirection, isEdgeSelected);
+
+            const isCurved = lineType === "adaptive";
+            const mid = isCurved
+              ? bezierMidpoint(start, end, sourcePort, targetPort)
+              : { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 };
+
+            const strokeColor = isEdgeSelected
+              ? "rgb(249, 115, 22)"
+              : "rgba(255,255,255,0.4)";
+            const strokeW = isEdgeSelected ? 2.5 : 1.5;
+
+            const edgeClickHandler = (e: React.MouseEvent) => {
+              e.stopPropagation();
+              setSelectedEdgeId(edge.id);
+              setSelectedNodeId(null);
+            };
+            const edgeDblClickHandler = (e: React.MouseEvent) => {
+              e.stopPropagation();
+              setEditingEdgeId(edge.id);
+            };
 
             return (
               <g key={edge.id}>
                 {/* Invisible wide hitbox */}
-                <line
-                  x1={start.x}
-                  y1={start.y}
-                  x2={end.x}
-                  y2={end.y}
-                  stroke="transparent"
-                  strokeWidth="12"
-                  style={{ pointerEvents: "stroke", cursor: "pointer" }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedEdgeId(edge.id);
-                    setSelectedNodeId(null);
-                  }}
-                  onDoubleClick={(e) => {
-                    e.stopPropagation();
-                    setEditingEdgeId(edge.id);
-                  }}
-                />
+                {isCurved ? (
+                  <path
+                    d={getAdaptivePath(start, end, sourcePort, targetPort)}
+                    stroke="transparent"
+                    strokeWidth="12"
+                    fill="none"
+                    style={{ pointerEvents: "stroke", cursor: "pointer" }}
+                    onClick={edgeClickHandler}
+                    onDoubleClick={edgeDblClickHandler}
+                  />
+                ) : (
+                  <line
+                    x1={start.x}
+                    y1={start.y}
+                    x2={end.x}
+                    y2={end.y}
+                    stroke="transparent"
+                    strokeWidth="12"
+                    style={{ pointerEvents: "stroke", cursor: "pointer" }}
+                    onClick={edgeClickHandler}
+                    onDoubleClick={edgeDblClickHandler}
+                  />
+                )}
                 {/* Visible line */}
-                <line
-                  x1={start.x}
-                  y1={start.y}
-                  x2={end.x}
-                  y2={end.y}
-                  stroke={
-                    isEdgeSelected
-                      ? "rgb(249, 115, 22)"
-                      : "rgba(255,255,255,0.4)"
-                  }
-                  strokeWidth={isEdgeSelected ? 2.5 : 1.5}
-                  markerEnd={
-                    isEdgeSelected
-                      ? "url(#arrowhead-selected)"
-                      : "url(#arrowhead)"
-                  }
-                />
+                {isCurved ? (
+                  <path
+                    d={getAdaptivePath(start, end, sourcePort, targetPort)}
+                    stroke={strokeColor}
+                    strokeWidth={strokeW}
+                    fill="none"
+                    markerStart={markers.markerStart}
+                    markerEnd={markers.markerEnd}
+                  />
+                ) : (
+                  <line
+                    x1={start.x}
+                    y1={start.y}
+                    x2={end.x}
+                    y2={end.y}
+                    stroke={strokeColor}
+                    strokeWidth={strokeW}
+                    markerStart={markers.markerStart}
+                    markerEnd={markers.markerEnd}
+                  />
+                )}
                 {/* Edge label */}
                 {editingEdgeId === edge.id ? (
                   <foreignObject
-                    x={midX - 40}
-                    y={midY - 12}
+                    x={mid.x - 40}
+                    y={mid.y - 12}
                     width="80"
                     height="24"
                     style={{ pointerEvents: "all" }}
@@ -573,8 +711,8 @@ export default function FlowchartBlock({
                   </foreignObject>
                 ) : edge.label ? (
                   <text
-                    x={midX}
-                    y={midY - 4}
+                    x={mid.x}
+                    y={mid.y - 4}
                     textAnchor="middle"
                     fill={
                       isEdgeSelected
@@ -718,6 +856,113 @@ export default function FlowchartBlock({
             })}
           </div>
         ))}
+
+        {/* Edge context toolbar */}
+        {selectedEdgeId && (() => {
+          const edge = data.edges.find((e) => e.id === selectedEdgeId);
+          if (!edge) return null;
+          const sourceNode = data.nodes.find((n) => n.id === edge.sourceNodeId);
+          const targetNode = data.nodes.find((n) => n.id === edge.targetNodeId);
+          if (!sourceNode || !targetNode) return null;
+
+          const { sourcePort, targetPort } = getNearestPorts(sourceNode, targetNode);
+          const start = getPortPosition(sourceNode, sourcePort);
+          const end = getPortPosition(targetNode, targetPort);
+          const lineType: EdgeLineType = edge.lineType ?? "straight";
+          const arrowDirection: EdgeArrowDirection = edge.arrowDirection ?? "forward";
+          const isCurved = lineType === "adaptive";
+          const mid = isCurved
+            ? bezierMidpoint(start, end, sourcePort, targetPort)
+            : { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 };
+
+          return (
+            <div
+              data-testid="edge-toolbar"
+              className="absolute flex gap-1 rounded-lg border border-white/10 bg-zinc-800 px-1 py-0.5 shadow-lg"
+              style={{
+                left: mid.x,
+                top: mid.y - 36,
+                transform: "translateX(-50%)",
+                zIndex: 50,
+              }}
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              {/* Line type toggle */}
+              <button
+                title={lineType === "straight" ? "Switch to curved" : "Switch to straight"}
+                data-testid="edge-toggle-line-type"
+                className="p-1 rounded text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+                onClick={() => {
+                  updateEdge(edge.id, {
+                    lineType: lineType === "straight" ? "adaptive" : "straight",
+                  });
+                }}
+              >
+                {lineType === "straight" ? (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                    <line x1="2" y1="14" x2="14" y2="2" />
+                  </svg>
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                    <path d="M 2 14 C 2 6, 14 10, 14 2" />
+                  </svg>
+                )}
+              </button>
+              {/* Arrow direction cycle */}
+              <button
+                title={`Arrow: ${arrowDirection}`}
+                data-testid="edge-cycle-arrow"
+                className="p-1 rounded text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+                onClick={() => {
+                  updateEdge(edge.id, {
+                    arrowDirection: cycleArrowDirection(arrowDirection),
+                  });
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  {arrowDirection === "forward" && (
+                    <>
+                      <line x1="2" y1="8" x2="14" y2="8" />
+                      <polyline points="10,4 14,8 10,12" />
+                    </>
+                  )}
+                  {arrowDirection === "backward" && (
+                    <>
+                      <line x1="2" y1="8" x2="14" y2="8" />
+                      <polyline points="6,4 2,8 6,12" />
+                    </>
+                  )}
+                  {arrowDirection === "both" && (
+                    <>
+                      <line x1="2" y1="8" x2="14" y2="8" />
+                      <polyline points="10,4 14,8 10,12" />
+                      <polyline points="6,4 2,8 6,12" />
+                    </>
+                  )}
+                  {arrowDirection === "none" && (
+                    <line x1="2" y1="8" x2="14" y2="8" />
+                  )}
+                </svg>
+              </button>
+              {/* Delete edge */}
+              <button
+                title="Delete edge"
+                data-testid="edge-delete"
+                className="p-1 rounded text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                onClick={() => deleteEdge(edge.id)}
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3,4 4,14 12,14 13,4" />
+                  <line x1="2" y1="4" x2="14" y2="4" />
+                  <line x1="6" y1="2" x2="10" y2="2" />
+                  <line x1="6" y1="7" x2="6" y2="11" />
+                  <line x1="10" y1="7" x2="10" y2="11" />
+                </svg>
+              </button>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Color picker */}

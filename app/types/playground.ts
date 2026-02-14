@@ -26,11 +26,16 @@ export interface FlowchartNode {
   size: { width: number; height: number };
 }
 
+export type EdgeLineType = "straight" | "adaptive";
+export type EdgeArrowDirection = "forward" | "backward" | "both" | "none";
+
 export interface FlowchartEdge {
   id: string;
   sourceNodeId: string;
   targetNodeId: string;
   label: string;
+  lineType?: EdgeLineType;
+  arrowDirection?: EdgeArrowDirection;
 }
 
 export interface FlowchartBlockData {

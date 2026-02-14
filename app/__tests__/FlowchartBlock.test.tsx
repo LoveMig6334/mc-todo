@@ -270,4 +270,127 @@ describe("FlowchartBlock", () => {
 
     expect(screen.getByTestId("flowchart-canvas")).toBeInTheDocument();
   });
+
+  describe("edge toolbar", () => {
+    const edgeData: FlowchartBlockData = {
+      ...defaultData,
+      nodes: [
+        makeNode({ id: "n1", label: "A" }),
+        makeNode({ id: "n2", label: "B", position: { x: 250, y: 50 } }),
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "n1",
+          targetNodeId: "n2",
+          label: "Go",
+        },
+      ],
+    };
+
+    function renderAndSelectEdge(
+      onUpdate = jest.fn(),
+      data: FlowchartBlockData = edgeData,
+    ) {
+      render(
+        <FlowchartBlock
+          data={data}
+          isSelected={true}
+          onUpdate={onUpdate}
+          blockSize={blockSize}
+        />,
+      );
+      // Click on the invisible hitbox line to select the edge
+      const canvas = screen.getByTestId("flowchart-canvas");
+      const svg = canvas.querySelector("svg")!;
+      // The first <line> with strokeWidth="12" in the first <g> is the hitbox
+      const hitbox =
+        svg.querySelector("g line[stroke='transparent']") ??
+        svg.querySelector("g path[stroke='transparent']");
+      fireEvent.click(hitbox!);
+      return onUpdate;
+    }
+
+    it("shows edge toolbar when edge is selected", () => {
+      renderAndSelectEdge();
+      expect(screen.getByTestId("edge-toolbar")).toBeInTheDocument();
+      expect(screen.getByTestId("edge-toggle-line-type")).toBeInTheDocument();
+      expect(screen.getByTestId("edge-cycle-arrow")).toBeInTheDocument();
+      expect(screen.getByTestId("edge-delete")).toBeInTheDocument();
+    });
+
+    it("does not show edge toolbar when no edge is selected", () => {
+      render(
+        <FlowchartBlock
+          data={edgeData}
+          isSelected={true}
+          onUpdate={jest.fn()}
+          blockSize={blockSize}
+        />,
+      );
+      expect(screen.queryByTestId("edge-toolbar")).not.toBeInTheDocument();
+    });
+
+    it("toggles line type from straight to adaptive", () => {
+      const onUpdate = renderAndSelectEdge();
+      fireEvent.click(screen.getByTestId("edge-toggle-line-type"));
+      expect(onUpdate).toHaveBeenCalledWith({
+        edges: [
+          expect.objectContaining({
+            id: "e1",
+            lineType: "adaptive",
+          }),
+        ],
+      });
+    });
+
+    it("toggles line type from adaptive to straight", () => {
+      const dataWithAdaptive: FlowchartBlockData = {
+        ...edgeData,
+        edges: [{ ...edgeData.edges[0], lineType: "adaptive" as const }],
+      };
+      const onUpdate = renderAndSelectEdge(jest.fn(), dataWithAdaptive);
+      fireEvent.click(screen.getByTestId("edge-toggle-line-type"));
+      expect(onUpdate).toHaveBeenCalledWith({
+        edges: [
+          expect.objectContaining({
+            id: "e1",
+            lineType: "straight",
+          }),
+        ],
+      });
+    });
+
+    it("cycles arrow direction from forward to backward", () => {
+      const onUpdate = renderAndSelectEdge();
+      fireEvent.click(screen.getByTestId("edge-cycle-arrow"));
+      expect(onUpdate).toHaveBeenCalledWith({
+        edges: [
+          expect.objectContaining({
+            id: "e1",
+            arrowDirection: "backward",
+          }),
+        ],
+      });
+    });
+
+    it("cycles arrow direction through all 4 values", () => {
+      // Start with backward -> should go to both
+      const dataBackward: FlowchartBlockData = {
+        ...edgeData,
+        edges: [{ ...edgeData.edges[0], arrowDirection: "backward" as const }],
+      };
+      const onUpdate1 = renderAndSelectEdge(jest.fn(), dataBackward);
+      fireEvent.click(screen.getByTestId("edge-cycle-arrow"));
+      expect(onUpdate1).toHaveBeenCalledWith({
+        edges: [expect.objectContaining({ arrowDirection: "both" })],
+      });
+    });
+
+    it("delete button removes the edge", () => {
+      const onUpdate = renderAndSelectEdge();
+      fireEvent.click(screen.getByTestId("edge-delete"));
+      expect(onUpdate).toHaveBeenCalledWith({ edges: [] });
+    });
+  });
 });
