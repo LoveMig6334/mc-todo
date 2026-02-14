@@ -1,6 +1,7 @@
 "use client";
 
 import CategoryBarChart from "@/app/components/dashboard/CategoryBarChart";
+import CategoryEditModal from "@/app/components/dashboard/CategoryEditModal";
 import PriorityBarChart from "@/app/components/dashboard/PriorityBarChart";
 import StatCard from "@/app/components/dashboard/StatCard";
 import StatusDonutChart from "@/app/components/dashboard/StatusDonutChart";
@@ -9,11 +10,21 @@ import FloatingNav from "@/app/components/layout/FloatingNav";
 import { useCategories } from "@/app/hooks/useCategories";
 import { useDashboardStats } from "@/app/hooks/useDashboardStats";
 import { useTaskManager } from "@/app/hooks/useTaskManager";
+import { useMemo, useState } from "react";
 
 export default function DashboardPage() {
   const { tasks } = useTaskManager();
-  const { categories } = useCategories();
+  const { categories, updateCategory, deleteCategory, addCategory } = useCategories();
   const stats = useDashboardStats(tasks, categories);
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+
+  const taskCountByCategory = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const task of tasks) {
+      counts[task.categoryId] = (counts[task.categoryId] ?? 0) + 1;
+    }
+    return counts;
+  }, [tasks]);
 
   const maxPriorityCount = Math.max(
     ...stats.priorityDistribution.map((b) => b.count),
@@ -153,7 +164,10 @@ export default function DashboardPage() {
 
             {/* Row 2: Charts */}
             <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <CategoryBarChart data={stats.categoryBreakdown} />
+              <CategoryBarChart
+                data={stats.categoryBreakdown}
+                onManage={() => setCategoryModalOpen(true)}
+              />
               <PriorityBarChart
                 data={stats.priorityDistribution}
                 maxCount={maxPriorityCount}
@@ -171,6 +185,16 @@ export default function DashboardPage() {
           </>
         )}
       </main>
+
+      <CategoryEditModal
+        isOpen={categoryModalOpen}
+        onClose={() => setCategoryModalOpen(false)}
+        categories={categories}
+        onUpdate={updateCategory}
+        onDelete={deleteCategory}
+        onAdd={addCategory}
+        taskCountByCategory={taskCountByCategory}
+      />
     </div>
   );
 }

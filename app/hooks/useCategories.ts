@@ -12,7 +12,7 @@ const DEFAULT_CATEGORIES: Category[] = [
   { id: "health", name: "Health", color: "#ef4444" },
 ];
 
-const CATEGORY_COLORS = [
+export const CATEGORY_COLORS = [
   "#f97316", // orange
   "#3b82f6", // blue
   "#22c55e", // green
