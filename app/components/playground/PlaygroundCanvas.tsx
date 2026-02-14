@@ -113,7 +113,7 @@ export default function PlaygroundCanvas({
 
   return (
     <div
-      className="relative flex-1 overflow-hidden bg-zinc-950 cursor-grab active:cursor-grabbing"
+      className="relative w-full h-full overflow-hidden bg-zinc-900 cursor-grab active:cursor-grabbing"
       onPointerDown={handleCanvasPointerDown}
       onPointerMove={handleCanvasPointerMove}
       onPointerUp={handleCanvasPointerUp}
@@ -124,7 +124,7 @@ export default function PlaygroundCanvas({
         className="absolute inset-0 pointer-events-none"
         style={{
           backgroundImage:
-            "radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px)",
+            "radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)",
           backgroundSize: `${20 * viewport.zoom}px ${20 * viewport.zoom}px`,
           backgroundPosition: `${viewport.x}px ${viewport.y}px`,
         }}

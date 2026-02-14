@@ -1,8 +1,8 @@
 "use client";
 
+import FloatingNav from "@/app/components/layout/FloatingNav";
 import PlaygroundCanvas from "@/app/components/playground/PlaygroundCanvas";
 import PlaygroundToolbar from "@/app/components/playground/PlaygroundToolbar";
-import FloatingNav from "@/app/components/layout/FloatingNav";
 import { usePlayground } from "@/app/hooks/usePlayground";
 import { useTaskManager } from "@/app/hooks/useTaskManager";
 import { NoteBlockData } from "@/app/types/playground";
@@ -49,12 +49,10 @@ export default function PlaygroundPage({ params }: PlaygroundPageProps) {
 
   if (!task) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-900 flex items-center justify-center">
         <FloatingNav currentPath={`/playground/${taskId}`} />
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-2">
-            Task Not Found
-          </h1>
+          <h1 className="text-2xl font-bold text-white mb-2">Task Not Found</h1>
           <p className="text-zinc-400 mb-6">
             The task you&apos;re looking for doesn&apos;t exist.
           </p>
@@ -70,7 +68,7 @@ export default function PlaygroundPage({ params }: PlaygroundPageProps) {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-zinc-950 overflow-hidden">
+    <div className="h-screen flex flex-col bg-zinc-900 overflow-hidden">
       <FloatingNav currentPath={`/playground/${taskId}`} />
 
       {/* Header */}
