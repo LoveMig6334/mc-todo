@@ -225,13 +225,37 @@ function TaskModalContent({
       />
 
       {/* Actions */}
-      <div className="flex justify-end gap-3 pt-4 border-t border-zinc-800">
-        <Button type="button" variant="ghost" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button type="submit" variant="primary">
-          {editingTask ? "Save Changes" : "Create Task"}
-        </Button>
+      <div className="flex items-center gap-3 pt-4 border-t border-zinc-800">
+        {editingTask && (
+          <a
+            href={`/playground/${editingTask.id}`}
+            className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-orange-500 transition-colors"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <path d="M3 9h18" />
+              <path d="M9 21V9" />
+            </svg>
+            Playground
+          </a>
+        )}
+        <div className="ml-auto flex gap-3">
+          <Button type="button" variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" variant="primary">
+            {editingTask ? "Save Changes" : "Create Task"}
+          </Button>
+        </div>
       </div>
     </form>
   );
