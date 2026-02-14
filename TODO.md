@@ -53,6 +53,7 @@ A per-task interactive workspace where users can create flowcharts, take notes, 
 ### 4.7 Toolbar & UX
 - [x] Floating toolbar with block type icons (Note, TODO, Flowchart, Drawing)
 - [x] Zoom and pan controls for the canvas
+- [x] Add Playground nav item to FloatingNav with task list dropdown
 - [ ] Grid/snap-to-grid toggle
 - [ ] Undo/redo support
 - [ ] Keyboard shortcuts (delete, copy, paste blocks)

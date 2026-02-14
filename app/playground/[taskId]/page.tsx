@@ -50,7 +50,7 @@ export default function PlaygroundPage({ params }: PlaygroundPageProps) {
   if (!task) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <FloatingNav currentPath="" />
+        <FloatingNav currentPath={`/playground/${taskId}`} />
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-2">
             Task Not Found
@@ -71,7 +71,7 @@ export default function PlaygroundPage({ params }: PlaygroundPageProps) {
 
   return (
     <div className="h-screen flex flex-col bg-zinc-950 overflow-hidden">
-      <FloatingNav currentPath="" />
+      <FloatingNav currentPath={`/playground/${taskId}`} />
 
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-14 pb-2 border-b border-zinc-800">
