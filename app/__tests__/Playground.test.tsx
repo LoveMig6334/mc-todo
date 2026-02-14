@@ -1,8 +1,8 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import NoteBlock from "@/app/components/playground/NoteBlock";
 import BlockWrapper from "@/app/components/playground/BlockWrapper";
+import NoteBlock from "@/app/components/playground/NoteBlock";
 import PlaygroundToolbar from "@/app/components/playground/PlaygroundToolbar";
-import { PlaygroundBlock, NoteBlockData } from "@/app/types/playground";
+import { NoteBlockData, PlaygroundBlock } from "@/app/types/playground";
+import { fireEvent, render, screen } from "@testing-library/react";
 
 // --- NoteBlock ---
 
@@ -25,8 +25,10 @@ describe("NoteBlock", () => {
     const titleInput = screen.getByPlaceholderText("Title");
     expect(titleInput).toHaveValue("Test Note");
 
-    const bodyTextarea = screen.getByPlaceholderText("Write something...");
-    expect(bodyTextarea).toHaveValue("Test body content");
+    // Body is now a contentEditable div
+    const bodyDiv = screen.getByText("Test body content");
+    expect(bodyDiv).toBeInTheDocument();
+    expect(bodyDiv).toHaveAttribute("contenteditable", "true");
   });
 
   it("calls onUpdate when title changes", () => {
@@ -45,7 +47,7 @@ describe("NoteBlock", () => {
     expect(onUpdate).toHaveBeenCalledWith({ title: "New Title" });
   });
 
-  it("calls onUpdate when body changes", () => {
+  it("calls onUpdate when body is edited", () => {
     const onUpdate = jest.fn();
     render(
       <NoteBlock
@@ -55,9 +57,10 @@ describe("NoteBlock", () => {
       />,
     );
 
-    fireEvent.change(screen.getByPlaceholderText("Write something..."), {
-      target: { value: "New body" },
-    });
+    const bodyDiv = screen.getByText("Test body content");
+    // Simulate input event on contentEditable div
+    bodyDiv.innerHTML = "New body";
+    fireEvent.input(bodyDiv);
     expect(onUpdate).toHaveBeenCalledWith({ body: "New body" });
   });
 
@@ -100,6 +103,111 @@ describe("NoteBlock", () => {
 
     fireEvent.click(screen.getByTitle("Blue"));
     expect(onUpdate).toHaveBeenCalledWith({ color: "#1e3a5f" });
+  });
+
+  // --- Formatting toolbar tests ---
+
+  describe("formatting toolbar", () => {
+    let execCommandMock: jest.Mock;
+
+    beforeAll(() => {
+      execCommandMock = jest.fn();
+      document.execCommand = execCommandMock;
+    });
+
+    afterAll(() => {
+      // @ts-expect-error clean up mock
+      delete document.execCommand;
+    });
+
+    beforeEach(() => {
+      execCommandMock.mockClear();
+    });
+
+    it("shows formatting toolbar when selected", () => {
+      render(
+        <NoteBlock
+          data={defaultNoteData}
+          isSelected={true}
+          onUpdate={jest.fn()}
+        />,
+      );
+
+      expect(screen.getByTestId("formatting-toolbar")).toBeInTheDocument();
+      expect(screen.getByTitle("Bold (Ctrl+B)")).toBeInTheDocument();
+      expect(screen.getByTitle("Italic (Ctrl+I)")).toBeInTheDocument();
+      expect(screen.getByTitle("Bullet list")).toBeInTheDocument();
+      expect(screen.getByTitle("Ordered list")).toBeInTheDocument();
+    });
+
+    it("hides formatting toolbar when not selected", () => {
+      render(
+        <NoteBlock
+          data={defaultNoteData}
+          isSelected={false}
+          onUpdate={jest.fn()}
+        />,
+      );
+
+      expect(
+        screen.queryByTestId("formatting-toolbar"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("calls execCommand when bold button is clicked", () => {
+      render(
+        <NoteBlock
+          data={defaultNoteData}
+          isSelected={true}
+          onUpdate={jest.fn()}
+        />,
+      );
+
+      fireEvent.click(screen.getByTitle("Bold (Ctrl+B)"));
+      expect(execCommandMock).toHaveBeenCalledWith("bold", false);
+    });
+
+    it("calls execCommand when italic button is clicked", () => {
+      render(
+        <NoteBlock
+          data={defaultNoteData}
+          isSelected={true}
+          onUpdate={jest.fn()}
+        />,
+      );
+
+      fireEvent.click(screen.getByTitle("Italic (Ctrl+I)"));
+      expect(execCommandMock).toHaveBeenCalledWith("italic", false);
+    });
+
+    it("calls execCommand when bullet list button is clicked", () => {
+      render(
+        <NoteBlock
+          data={defaultNoteData}
+          isSelected={true}
+          onUpdate={jest.fn()}
+        />,
+      );
+
+      fireEvent.click(screen.getByTitle("Bullet list"));
+      expect(execCommandMock).toHaveBeenCalledWith(
+        "insertUnorderedList",
+        false,
+      );
+    });
+
+    it("calls execCommand when ordered list button is clicked", () => {
+      render(
+        <NoteBlock
+          data={defaultNoteData}
+          isSelected={true}
+          onUpdate={jest.fn()}
+        />,
+      );
+
+      fireEvent.click(screen.getByTitle("Ordered list"));
+      expect(execCommandMock).toHaveBeenCalledWith("insertOrderedList", false);
+    });
   });
 });
 

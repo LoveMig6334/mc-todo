@@ -98,7 +98,12 @@ export default function BlockWrapper({
     (e: React.KeyboardEvent) => {
       if (e.key === "Delete" || e.key === "Backspace") {
         const tag = (e.target as HTMLElement).tagName;
-        if (tag === "INPUT" || tag === "TEXTAREA") return;
+        if (
+          tag === "INPUT" ||
+          tag === "TEXTAREA" ||
+          (e.target as HTMLElement).isContentEditable
+        )
+          return;
         onDelete(block.id);
       }
     },
