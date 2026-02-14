@@ -7,28 +7,28 @@ A per-task interactive workspace where users can create flowcharts, take notes, 
 ---
 
 ### 4.1 Core Infrastructure
-- [ ] Create `/playground/[taskId]` route
-- [ ] Design playground layout (toolbar + canvas area)
-- [ ] Implement playground data model and types
-- [ ] Add localStorage persistence per task (keyed by task ID)
-- [ ] Add navigation link from task to its playground (TaskItem, TaskModal)
-- [ ] Handle invalid/deleted task IDs gracefully
+- [x] Create `/playground/[taskId]` route
+- [x] Design playground layout (toolbar + canvas area)
+- [x] Implement playground data model and types
+- [x] Add localStorage persistence per task (keyed by task ID)
+- [x] Add navigation link from task to its playground (TaskItem, TaskModal)
+- [x] Handle invalid/deleted task IDs gracefully
 
 ### 4.2 Block System (Foundation)
-- [ ] Define base block type (id, type, position, size, zIndex)
-- [ ] Implement block rendering engine (canvas area with positioned blocks)
-- [ ] Add block selection (click to select, click away to deselect)
-- [ ] Add block dragging (reposition blocks on the canvas)
-- [ ] Add block resizing (drag handles on edges/corners)
-- [ ] Add block deletion (delete key / context menu)
-- [ ] Add block z-index management (bring to front, send to back)
-- [ ] Implement toolbar with block-type creation buttons
+- [x] Define base block type (id, type, position, size, zIndex)
+- [x] Implement block rendering engine (canvas area with positioned blocks)
+- [x] Add block selection (click to select, click away to deselect)
+- [x] Add block dragging (reposition blocks on the canvas)
+- [x] Add block resizing (drag handles on edges/corners)
+- [x] Add block deletion (delete key / context menu)
+- [x] Add block z-index management (bring to front, send to back)
+- [x] Implement toolbar with block-type creation buttons
 
 ### 4.3 Note Block
-- [ ] Rich text note block with title and body
+- [x] Rich text note block with title and body
 - [ ] Markdown support or basic formatting (bold, italic, lists)
-- [ ] Auto-save on edit
-- [ ] Customizable background color
+- [x] Auto-save on edit
+- [x] Customizable background color
 
 ### 4.4 TODO List Block
 - [ ] Inline checklist block with add/remove items
@@ -51,20 +51,20 @@ A per-task interactive workspace where users can create flowcharts, take notes, 
 - [ ] Export drawing as image (optional)
 
 ### 4.7 Toolbar & UX
-- [ ] Floating toolbar with block type icons (Note, TODO, Flowchart, Drawing)
-- [ ] Zoom and pan controls for the canvas
+- [x] Floating toolbar with block type icons (Note, TODO, Flowchart, Drawing)
+- [x] Zoom and pan controls for the canvas
 - [ ] Grid/snap-to-grid toggle
 - [ ] Undo/redo support
 - [ ] Keyboard shortcuts (delete, copy, paste blocks)
 
 ### 4.8 Persistence & Data
-- [ ] Serialize all blocks to JSON per task
-- [ ] Load playground state on mount
-- [ ] Auto-save on every change (debounced)
+- [x] Serialize all blocks to JSON per task
+- [x] Load playground state on mount
+- [x] Auto-save on every change (debounced)
 - [ ] Handle migration if block schema changes
 
 ### 4.9 Unit Tests
-- [ ] Block CRUD operations
-- [ ] Playground data serialization/deserialization
+- [x] Block CRUD operations
+- [x] Playground data serialization/deserialization
 - [ ] Navigation between task and playground
-- [ ] Individual block type rendering
+- [x] Individual block type rendering
