@@ -38,47 +38,34 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ---
 
-## Feature Implementation Roadmap
+## Features
 
-### Feature 1: Task Management (Home Page)
-- [x] Vertical list view layout
-- [x] Add task button with modal/popup
-- [x] Task creation form with all input fields:
-  - [x] Title input
-  - [x] Details input
-  - [x] Category/Topic dropdown (custom, user-manageable)
-  - [x] Priority slider (0-10)
-  - [x] Due date picker (single click & drag-and-hold for range)
-  - [x] Reference links (dynamic add/remove)
-- [x] Task display and management
-- [x] Data persistence (local storage)
-- [x] Unit tests
+### Task Management (Home Page)
+- Create, edit, and delete tasks with title, details, priority (0-10), due dates, and reference links
+- Custom user-manageable categories with color coding
+- Multiple view modes: list, table, category board, and priority list
+- Date picker with single-click and drag-and-hold for date ranges
+- Subtasks with inline status/priority cycling
+- Data persistence via localStorage
 
-### Feature 2: Linked Calendar View
-- [x] Calendar grid with month display (English + Thai on hover)
-- [x] Event visualization on calendar
-- [x] Event resizing (drag edges)
-- [x] Double-click quick create
-- [x] Overlapping events stacking
-- [x] Crowding logic (collapse to colored lines when >3-5 events)
-- [x] Hover expand for collapsed events
-- [x] Unit tests
+### Calendar View
+- Monthly calendar grid with English + Thai date display
+- Drag-and-drop event repositioning and edge-drag resizing
+- Double-click quick task creation
+- Smart event stacking with lane allocation for overlapping events
+- Crowding logic that collapses to colored lines when cells are dense, with hover expand
 
-### Feature 3: Dashboard (Analytics)
-- [x] Total tasks metric
-- [x] Completed tasks metric
-- [x] Overdue tasks metric
-- [x] Visual representation of productivity
-  - [x] Category breakdown (horizontal bar chart)
-  - [x] Priority distribution (vertical bar chart)
-  - [x] Status overview (SVG donut chart)
-  - [x] Upcoming deadlines list
-- [x] Unit tests
+### Dashboard Analytics
+- Key metrics: total, completed, and overdue tasks
+- Category breakdown (horizontal bar chart)
+- Priority distribution (vertical bar chart)
+- Status overview (SVG donut chart)
+- Upcoming deadlines list
 
 ### Infrastructure
-- [x] Floating navigation bar (collapsible)
-- [x] Jest testing setup
-- [x] ESLint configuration verified
+- Collapsible floating navigation bar
+- Zero external runtime dependencies (custom date math, custom drag handling)
+- Full test coverage with Jest 30 (17 test files)
 
 ---
 
