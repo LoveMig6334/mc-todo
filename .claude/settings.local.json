@@ -14,7 +14,8 @@
       "mcp__plugin_context7_context7__resolve-library-id",
       "mcp__plugin_context7_context7__query-docs",
       "Bash(npx next lint .)",
-      "Bash(npx next build:*)"
+      "Bash(npx next build:*)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }
