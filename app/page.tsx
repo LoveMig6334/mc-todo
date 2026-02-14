@@ -199,7 +199,7 @@ export default function Home() {
             onClick={handleOpenModal}
             variant="primary"
             size="lg"
-            className="rounded-full w-14 h-14 shadow-lg shadow-orange-500/20"
+            className="rounded-full w-15 h-15 p-0 shadow-lg shadow-orange-500/20"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
