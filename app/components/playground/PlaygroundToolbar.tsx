@@ -8,6 +8,7 @@ interface PlaygroundToolbarProps {
   onViewportChange: (viewport: PlaygroundViewport) => void;
   onAddNote: () => void;
   onAddTodo: () => void;
+  onAddFlowchart: () => void;
 }
 
 export default function PlaygroundToolbar({
@@ -15,6 +16,7 @@ export default function PlaygroundToolbar({
   onViewportChange,
   onAddNote,
   onAddTodo,
+  onAddFlowchart,
 }: PlaygroundToolbarProps) {
   const zoomPercent = Math.round(viewport.zoom * 100);
 
@@ -87,6 +89,29 @@ export default function PlaygroundToolbar({
           <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
         </svg>
         <span className="text-xs font-medium">TODO</span>
+      </button>
+
+      {/* Add Flowchart button */}
+      <button
+        onClick={onAddFlowchart}
+        className={cn(buttonClass, "gap-1.5 w-auto px-3")}
+        title="Add Flowchart"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <rect x="2" y="3" width="8" height="6" rx="1" />
+          <rect x="14" y="15" width="8" height="6" rx="1" />
+          <path d="M6 9v3a2 2 0 002 2h6a2 2 0 012 2v2" />
+        </svg>
+        <span className="text-xs font-medium">Flowchart</span>
       </button>
 
       {/* Divider */}

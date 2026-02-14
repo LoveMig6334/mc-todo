@@ -42,11 +42,11 @@ A per-task interactive workspace where users can create flowcharts, take notes, 
 
 ### 4.5 Flowchart Block
 
-- [ ] Node creation (labeled boxes/circles)
-- [ ] Edge/connection drawing between nodes
-- [ ] Node dragging with connected edges following
-- [ ] Edge labels
-- [ ] Basic node shapes (rectangle, diamond, circle)
+- [x] Node creation (labeled boxes/circles)
+- [x] Edge/connection drawing between nodes
+- [x] Node dragging with connected edges following
+- [x] Edge labels
+- [x] Basic node shapes (rectangle, diamond, circle)
 
 ### 4.6 Drawing Block
 

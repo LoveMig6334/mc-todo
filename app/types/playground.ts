@@ -16,11 +16,35 @@ export interface TodoBlockData {
   color: string; // bg color hex
 }
 
-export type BlockData = NoteBlockData | TodoBlockData;
+export type FlowchartNodeShape = "rectangle" | "diamond" | "circle";
+
+export interface FlowchartNode {
+  id: string;
+  label: string;
+  shape: FlowchartNodeShape;
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+}
+
+export interface FlowchartEdge {
+  id: string;
+  sourceNodeId: string;
+  targetNodeId: string;
+  label: string;
+}
+
+export interface FlowchartBlockData {
+  title: string;
+  nodes: FlowchartNode[];
+  edges: FlowchartEdge[];
+  color: string;
+}
+
+export type BlockData = NoteBlockData | TodoBlockData | FlowchartBlockData;
 
 export interface PlaygroundBlock {
   id: string;
-  type: "note" | "todo";
+  type: "note" | "todo" | "flowchart";
   position: { x: number; y: number };
   size: { width: number; height: number };
   zIndex: number;

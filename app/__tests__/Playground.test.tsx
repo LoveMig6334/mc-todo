@@ -297,6 +297,7 @@ describe("PlaygroundToolbar", () => {
     onViewportChange: jest.fn(),
     onAddNote: jest.fn(),
     onAddTodo: jest.fn(),
+    onAddFlowchart: jest.fn(),
   };
 
   it("renders zoom percentage", () => {
@@ -359,6 +360,12 @@ describe("PlaygroundToolbar", () => {
     render(<PlaygroundToolbar {...defaultProps} />);
     fireEvent.click(screen.getByTitle("Add TODO"));
     expect(defaultProps.onAddTodo).toHaveBeenCalled();
+  });
+
+  it("calls onAddFlowchart when Flowchart button clicked", () => {
+    render(<PlaygroundToolbar {...defaultProps} />);
+    fireEvent.click(screen.getByTitle("Add Flowchart"));
+    expect(defaultProps.onAddFlowchart).toHaveBeenCalled();
   });
 });
 
