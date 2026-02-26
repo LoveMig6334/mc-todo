@@ -5,6 +5,8 @@ import CategoryEditModal from "@/app/components/dashboard/CategoryEditModal";
 import PriorityBarChart from "@/app/components/dashboard/PriorityBarChart";
 import StatCard from "@/app/components/dashboard/StatCard";
 import StatusDonutChart from "@/app/components/dashboard/StatusDonutChart";
+import TimeManagementMatrix from "@/app/components/dashboard/TimeManagementMatrix";
+import TopSuggestedTasks from "@/app/components/dashboard/TopSuggestedTasks";
 import UpcomingDeadlines from "@/app/components/dashboard/UpcomingDeadlines";
 import FloatingNav from "@/app/components/layout/FloatingNav";
 import { useCategories } from "@/app/hooks/useCategories";
@@ -14,7 +16,8 @@ import { useMemo, useState } from "react";
 
 export default function DashboardPage() {
   const { tasks } = useTaskManager();
-  const { categories, updateCategory, deleteCategory, addCategory } = useCategories();
+  const { categories, updateCategory, deleteCategory, addCategory } =
+    useCategories();
   const stats = useDashboardStats(tasks, categories);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
 
@@ -181,6 +184,12 @@ export default function DashboardPage() {
                 total={activeTasks}
               />
               <UpcomingDeadlines tasks={stats.upcomingDeadlines} />
+            </div>
+
+            {/* Row 4: Matrix */}
+            <div className="mt-4 flex flex-col gap-4">
+              <TimeManagementMatrix data={stats.matrixData} />
+              <TopSuggestedTasks tasks={stats.matrixData.suggested} />
             </div>
           </>
         )}

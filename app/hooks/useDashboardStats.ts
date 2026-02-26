@@ -2,6 +2,7 @@
 
 import {
   computeCategoryBreakdown,
+  computeMatrixData,
   computePriorityDistribution,
   computeStatusDistribution,
   computeSummaryStats,
@@ -22,6 +23,7 @@ export function useDashboardStats(
       priorityDistribution: computePriorityDistribution(tasks),
       statusDistribution: computeStatusDistribution(tasks),
       upcomingDeadlines: computeUpcomingDeadlines(tasks, categories),
+      matrixData: computeMatrixData(tasks, categories),
     }),
     [tasks, categories],
   );

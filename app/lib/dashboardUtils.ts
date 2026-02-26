@@ -39,12 +39,30 @@ export interface UpcomingTask {
   daysLeft: number;
 }
 
+export type MatrixQuadrant = "q1" | "q2" | "q3" | "q4";
+
+export interface MatrixTask {
+  id: string;
+  title: string;
+  quadrant: MatrixQuadrant;
+  categoryColor: string;
+  categoryName: string;
+  priority: number;
+  daysLeft: number;
+}
+
+export interface MatrixData {
+  tasks: MatrixTask[];
+  suggested: MatrixTask[]; // Top 3 tasks to do now
+}
+
 export interface DashboardStats {
   summary: SummaryStats;
   categoryBreakdown: CategoryStat[];
   priorityDistribution: PriorityStat[];
   statusDistribution: StatusStat[];
   upcomingDeadlines: UpcomingTask[];
+  matrixData: MatrixData;
 }
 
 // --- Pure Functions ---
@@ -152,4 +170,60 @@ export function computeUpcomingDeadlines(
     }))
     .sort((a, b) => a.daysLeft - b.daysLeft)
     .slice(0, limit);
+}
+
+export function computeMatrixData(
+  tasks: Task[],
+  categories: Category[],
+): MatrixData {
+  const activeTasks = tasks.filter((t) => !t.completed);
+  const categoryMap = new Map(categories.map((c) => [c.id, c]));
+
+  const matrixTasks: MatrixTask[] = activeTasks.map((t) => {
+    const isImportant = t.priority >= 5;
+    const daysLeft = getDaysLeft(t.dueDate);
+    // Urgent if due within 3 days or overdue
+    const isUrgent = daysLeft <= 3;
+
+    let quadrant: MatrixQuadrant;
+    if (isUrgent && isImportant)
+      quadrant = "q1"; // Urgent & Important
+    else if (!isUrgent && isImportant)
+      quadrant = "q2"; // Not Urgent & Important
+    else if (isUrgent && !isImportant)
+      quadrant = "q3"; // Urgent & Not Important
+    else quadrant = "q4"; // Not Urgent & Not Important
+
+    const category = categoryMap.get(t.categoryId);
+
+    return {
+      id: t.id,
+      title: t.title,
+      quadrant,
+      categoryColor: category?.color ?? "#71717a",
+      categoryName: category?.name ?? "Unknown",
+      priority: t.priority,
+      daysLeft,
+    };
+  });
+
+  // Suggest tasks: prioritize Q1, then Q2, then Q3, then Q4
+  // Within same quadrant, rank by highest priority, then fewest days left
+  const suggested = [...matrixTasks]
+    .sort((a, b) => {
+      const qWeight = { q1: 1, q2: 2, q3: 3, q4: 4 };
+      if (qWeight[a.quadrant] !== qWeight[b.quadrant]) {
+        return qWeight[a.quadrant] - qWeight[b.quadrant];
+      }
+      if (a.priority !== b.priority) {
+        return b.priority - a.priority; // higher priority first
+      }
+      return a.daysLeft - b.daysLeft; // fewer days left first
+    })
+    .slice(0, 3);
+
+  return {
+    tasks: matrixTasks,
+    suggested,
+  };
 }
