@@ -49,6 +49,8 @@ export interface MatrixTask {
   categoryName: string;
   priority: number;
   daysLeft: number;
+  x: number; // 0-100% (Urgency: 0% = Due Now/Overdue, 100% = 30+ days)
+  y: number; // 0-100% (Importance/Priority: 0% = Priority 0, 100% = Priority 10)
 }
 
 export interface MatrixData {
@@ -195,6 +197,10 @@ export function computeMatrixData(
     else quadrant = "q4"; // Not Urgent & Not Important
 
     const category = categoryMap.get(t.categoryId);
+    const MAX_DAYS = 30; // Anything >= 30 days is plotted at the far right
+    const boundedDays = Math.max(0, Math.min(daysLeft, MAX_DAYS));
+    const x = (boundedDays / MAX_DAYS) * 100; // 0 to 100%
+    const y = (t.priority / 10) * 100; // 0 to 100%
 
     return {
       id: t.id,
@@ -204,6 +210,8 @@ export function computeMatrixData(
       categoryName: category?.name ?? "Unknown",
       priority: t.priority,
       daysLeft,
+      x,
+      y,
     };
   });
 

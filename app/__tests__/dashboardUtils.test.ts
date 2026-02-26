@@ -421,4 +421,51 @@ describe("computeMatrixData", () => {
     expect(suggested[1].id).toBe("t3");
     expect(suggested[2].id).toBe("t1");
   });
+
+  it("calculates accurate scatter plot continuous x and y coordinates", () => {
+    // Math:
+    // X (Urgency) = boundedDays / 30 * 100
+    // Y (Importance) = priority / 10 * 100
+
+    // Test 1: Max Urgent (0 days), Max Important (Priority 10) -> Top Left Drop
+    const tOverdue = makeTask({
+      id: "t1",
+      priority: 10,
+      dueDate: { start: "1999-01-01", end: null },
+    });
+
+    // Test 2: Min Urgent (30+ days), Min Important (Priority 0) -> Bottom Right Drop
+    // Note: Due Date is far future
+    const tFar = makeTask({
+      id: "t2",
+      priority: 0,
+      dueDate: { start: "2099-01-01", end: null },
+    });
+
+    // Test 3: Dead Center
+    // Priority 5 (50%), Due in 15 days (15/30 = 50%)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const fifteen = new Date(today);
+    fifteen.setDate(today.getDate() + 15);
+    const tCenter = makeTask({
+      id: "t3",
+      priority: 5,
+      dueDate: { start: fifteen.toISOString(), end: null },
+    });
+
+    const { tasks } = computeMatrixData([tOverdue, tFar, tCenter], categories);
+
+    const match1 = tasks.find((t) => t.id === "t1");
+    expect(match1?.x).toBe(0);
+    expect(match1?.y).toBe(100);
+
+    const match2 = tasks.find((t) => t.id === "t2");
+    expect(match2?.x).toBe(100);
+    expect(match2?.y).toBe(0);
+
+    const match3 = tasks.find((t) => t.id === "t3");
+    expect(match3?.x).toBe(50);
+    expect(match3?.y).toBe(50);
+  });
 });
