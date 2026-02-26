@@ -14,7 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MC-Todo | Modern Task Management",
+  title: {
+    template: "%s | MC-Todo",
+    default: "MC-Todo | Modern Task Management",
+  },
   description:
     "A modern, high-performance To-Do List application built with Next.js",
 };
