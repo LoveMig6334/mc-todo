@@ -1,8 +1,9 @@
 import {
-  computeSummaryStats,
   computeCategoryBreakdown,
+  computeMatrixData,
   computePriorityDistribution,
   computeStatusDistribution,
+  computeSummaryStats,
   computeUpcomingDeadlines,
 } from "@/app/lib/dashboardUtils";
 import { Category, Task } from "@/app/types/task";
@@ -250,10 +251,99 @@ describe("computeUpcomingDeadlines", () => {
   });
 
   it("uses fallback color for unknown category", () => {
-    const tasks = [
-      makeTask({ id: "1", categoryId: "nonexistent" }),
-    ];
+    const tasks = [makeTask({ id: "1", categoryId: "nonexistent" })];
     const result = computeUpcomingDeadlines(tasks, categories);
     expect(result[0].categoryColor).toBe("#71717a");
+  });
+});
+
+describe("computeMatrixData", () => {
+  it("returns defaults for empty array", () => {
+    const { tasks, suggested } = computeMatrixData([], categories);
+    expect(tasks).toEqual([]);
+    expect(suggested).toEqual([]);
+  });
+
+  it("excludes completed tasks", () => {
+    const activeTask = makeTask({ id: "1", completed: false });
+    const completedTask = makeTask({ id: "2", completed: true });
+    const { tasks } = computeMatrixData(
+      [activeTask, completedTask],
+      categories,
+    );
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0].id).toBe("1");
+  });
+
+  it("assigns tasks to correct quadrants", () => {
+    // Today is 2026-02-26, so +1 day is 2026-02-27, +5 days is 2026-03-03
+    const q1Task = makeTask({
+      id: "q1",
+      priority: 8,
+      dueDate: { start: "2026-02-27", end: null },
+    }); // Urgent, Important
+    const q2Task = makeTask({
+      id: "q2",
+      priority: 8,
+      dueDate: { start: "2026-03-03", end: null },
+    }); // Not Urgent, Important
+    const q3Task = makeTask({
+      id: "q3",
+      priority: 2,
+      dueDate: { start: "2026-02-27", end: null },
+    }); // Urgent, Not Important
+    const q4Task = makeTask({
+      id: "q4",
+      priority: 2,
+      dueDate: { start: "2026-03-03", end: null },
+    }); // Not Urgent, Not Important
+
+    const { tasks } = computeMatrixData(
+      [q1Task, q2Task, q3Task, q4Task],
+      categories,
+    );
+
+    expect(tasks.find((t) => t.id === "q1")?.quadrant).toBe("q1");
+    expect(tasks.find((t) => t.id === "q2")?.quadrant).toBe("q2");
+    expect(tasks.find((t) => t.id === "q3")?.quadrant).toBe("q3");
+    expect(tasks.find((t) => t.id === "q4")?.quadrant).toBe("q4");
+  });
+
+  it("sorts suggested tasks correctly", () => {
+    // Testing sorting: Q1 > Q2, then by Priority (higher), then by Days Left (fewer)
+    const t1 = makeTask({
+      id: "t1",
+      priority: 8,
+      dueDate: { start: "2026-02-28", end: null },
+    }); // Q1: Priority 8, Due in 2 days
+    const t2 = makeTask({
+      id: "t2",
+      priority: 10,
+      dueDate: { start: "2026-02-25", end: null },
+    }); // Q1: Priority 10, Due -1 days (overdue)
+    const t3 = makeTask({
+      id: "t3",
+      priority: 10,
+      dueDate: { start: "2026-02-27", end: null },
+    }); // Q1: Priority 10, Due 1 day
+    const t4 = makeTask({
+      id: "t4",
+      priority: 9,
+      dueDate: { start: "2026-03-05", end: null },
+    }); // Q2: Priority 9, Due 7 days
+
+    const { suggested } = computeMatrixData([t1, t2, t3, t4], categories);
+
+    // Max 3 suggestions
+    expect(suggested).toHaveLength(3);
+
+    // Priority order expected:
+    // 1. t2 (Q1, priority 10, overdue)
+    // 2. t3 (Q1, priority 10, due in 1)
+    // 3. t1 (Q1, priority 8, due in 2)
+    // t4 (Q2) should be excluded
+    expect(suggested[0].id).toBe("t2");
+    expect(suggested[1].id).toBe("t3");
+    expect(suggested[2].id).toBe("t1");
   });
 });
