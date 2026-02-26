@@ -18,8 +18,11 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     priority: 5,
     status: "pending",
     dueDate: { start: "2099-06-15", end: null },
+    subtasks: [],
     referenceLinks: [],
     completed: false,
+    completedAt: null,
+    archived: false,
     createdAt: "2024-01-01T00:00:00Z",
     updatedAt: "2024-01-01T00:00:00Z",
     ...overrides,
@@ -180,6 +183,8 @@ describe("computeStatusDistribution", () => {
     expect(result).toHaveLength(4);
     expect(result.find((s) => s.status === "pending")?.count).toBe(2);
     expect(result.find((s) => s.status === "in_progress")?.count).toBe(1);
+    expect(result.find((s) => s.status === "paused")?.count).toBe(1);
+    expect(result.find((s) => s.status === "needs_approval")?.count).toBe(1);
   });
 
   it("filters out statuses with zero count", () => {
@@ -255,9 +260,31 @@ describe("computeUpcomingDeadlines", () => {
     const result = computeUpcomingDeadlines(tasks, categories);
     expect(result[0].categoryColor).toBe("#71717a");
   });
+
+  it("uses dueDate.end over dueDate.start when end is present", () => {
+    const tasks = [
+      makeTask({
+        id: "1",
+        title: "Has End",
+        dueDate: { start: "2020-01-01", end: "2099-12-31" },
+      }),
+    ];
+    const result = computeUpcomingDeadlines(tasks, categories);
+    // Should not be excluded as overdue — end date is far future
+    expect(result).toHaveLength(1);
+    expect(result[0].title).toBe("Has End");
+  });
 });
 
 describe("computeMatrixData", () => {
+  // Freeze time so date-relative tests don't break
+  beforeEach(() => {
+    jest.useFakeTimers({ now: new Date("2026-02-26T00:00:00") });
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it("returns defaults for empty array", () => {
     const { tasks, suggested } = computeMatrixData([], categories);
     expect(tasks).toEqual([]);
@@ -307,6 +334,54 @@ describe("computeMatrixData", () => {
     expect(tasks.find((t) => t.id === "q2")?.quadrant).toBe("q2");
     expect(tasks.find((t) => t.id === "q3")?.quadrant).toBe("q3");
     expect(tasks.find((t) => t.id === "q4")?.quadrant).toBe("q4");
+  });
+
+  it("treats daysLeft === 3 as urgent and daysLeft === 4 as not urgent", () => {
+    // Exactly 3 days out (2026-03-01) should be urgent
+    const urgentBoundary = makeTask({
+      id: "boundary-urgent",
+      priority: 8,
+      dueDate: { start: "2026-03-01", end: null },
+    });
+    // Exactly 4 days out (2026-03-02) should NOT be urgent
+    const notUrgentBoundary = makeTask({
+      id: "boundary-not-urgent",
+      priority: 8,
+      dueDate: { start: "2026-03-02", end: null },
+    });
+
+    const { tasks } = computeMatrixData(
+      [urgentBoundary, notUrgentBoundary],
+      categories,
+    );
+
+    expect(tasks.find((t) => t.id === "boundary-urgent")?.quadrant).toBe("q1");
+    expect(tasks.find((t) => t.id === "boundary-not-urgent")?.quadrant).toBe(
+      "q2",
+    );
+  });
+
+  it("maps category color and name with fallback for unknown", () => {
+    const knownCat = makeTask({
+      id: "known",
+      categoryId: "personal",
+      dueDate: { start: "2026-02-27", end: null },
+    });
+    const unknownCat = makeTask({
+      id: "unknown",
+      categoryId: "nonexistent",
+      dueDate: { start: "2026-02-27", end: null },
+    });
+
+    const { tasks } = computeMatrixData([knownCat, unknownCat], categories);
+
+    const known = tasks.find((t) => t.id === "known");
+    expect(known?.categoryColor).toBe("#3b82f6");
+    expect(known?.categoryName).toBe("Personal");
+
+    const unknown = tasks.find((t) => t.id === "unknown");
+    expect(unknown?.categoryColor).toBe("#71717a");
+    expect(unknown?.categoryName).toBe("Unknown");
   });
 
   it("sorts suggested tasks correctly", () => {
