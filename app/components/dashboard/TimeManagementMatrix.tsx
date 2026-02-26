@@ -77,32 +77,32 @@ export default function TimeManagementMatrix({ data }: Props) {
         {data.tasks.map((t) => (
           <div
             key={t.id}
-            className="absolute w-5 h-5 rounded-full shadow-lg shrink-0 cursor-crosshair transition-all duration-300 hover:scale-150 group z-10 border-2 border-zinc-900 ring-2 ring-transparent hover:ring-white/30 hover:z-50"
+            className="absolute w-3.5 h-3.5 rounded-full shadow-lg shrink-0 cursor-crosshair transition-all duration-300 hover:scale-150 group z-10 border-2 border-zinc-900 ring-2 ring-transparent hover:ring-white/30 hover:z-50"
             // Note: HTML/CSS coords are calculated from top-left.
             // - Left (X): 0% = urgent (left), 100% = not urgent (right).
             // - Top (Y): 0% priority = 100% top (bottom), 100% priority = 0% top (top).
             // We subtract 10px (0.625rem) to center the dot accurately on its literal point.
             style={{
               backgroundColor: t.categoryColor,
-              left: `calc(${t.x}% - 10px)`,
-              top: `calc(${100 - t.y}% - 10px)`,
+              left: `calc(${t.x}% - 7px)`,
+              top: `calc(${100 - t.y}% - 7px)`,
             }}
           >
-            <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-zinc-800/95 backdrop-blur-sm border items-start justify-start border-zinc-600/50 shadow-2xl rounded-xl p-3 left-1/2 -translate-x-1/2 bottom-7 pointer-events-none z-50 w-max min-w-[220px] max-w-[260px]">
-              <p className="text-zinc-50 text-sm font-semibold mb-1.5 leading-tight">
+            <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-zinc-800/95 backdrop-blur-sm border items-start justify-start border-zinc-600/50 shadow-xl rounded-lg px-2.5 py-2 left-1/2 -translate-x-1/2 bottom-6 pointer-events-none z-50 w-max min-w-40 max-w-52">
+              <p className="text-zinc-50 text-[11px] font-semibold mb-1 leading-tight">
                 {t.title}
               </p>
-              <div className="flex flex-col gap-1.5 text-xs text-zinc-400">
+              <div className="flex flex-col gap-1 text-[10px] text-zinc-400">
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-2 font-medium">
+                  <span className="flex items-center gap-1.5 font-medium">
                     <span
-                      className="w-2.5 h-2.5 rounded-full inline-block shadow-sm"
+                      className="w-2 h-2 rounded-full inline-block shadow-sm"
                       style={{ backgroundColor: t.categoryColor }}
                     />
                     {t.categoryName}
                   </span>
                   <span
-                    className={`px-2 py-0.5 rounded-md font-bold text-[10px] uppercase tracking-wider ${
+                    className={`px-1.5 py-px rounded font-bold text-[9px] uppercase tracking-wider ${
                       t.quadrant === "q1"
                         ? "text-red-400 bg-red-400/10 border border-red-400/20"
                         : t.quadrant === "q2"
@@ -115,7 +115,7 @@ export default function TimeManagementMatrix({ data }: Props) {
                     {t.quadrant}
                   </span>
                 </div>
-                <div className="flex items-center justify-between mt-1.5 border-t border-zinc-700/50 pt-2">
+                <div className="flex items-center justify-between mt-1 border-t border-zinc-700/50 pt-1.5">
                   <span className="flex gap-1">
                     Priority{" "}
                     <span className="text-white font-medium">
