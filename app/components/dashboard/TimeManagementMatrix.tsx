@@ -19,9 +19,9 @@ export default function TimeManagementMatrix({ data }: Props) {
         </p>
       </div>
 
-      <div className="relative ml-8 mb-8 mt-8 lg:ml-12 lg:mb-12 h-96 rounded-xl border-2 border-zinc-700/50 bg-zinc-900/50 overflow-hidden shadow-2xl">
+      <div className="relative ml-8 mb-8 mt-8 lg:ml-12 lg:mb-12 h-96 rounded-xl border-2 border-zinc-700/50 bg-zinc-900/50 shadow-2xl">
         {/* Background Quadrants */}
-        <div className="pointer-events-none absolute inset-0 grid grid-cols-2 grid-rows-2">
+        <div className="pointer-events-none absolute inset-0 grid grid-cols-2 grid-rows-2 rounded-[10px] overflow-hidden">
           {/* Top Left: Q1 Urgent & Important */}
           <div className="bg-red-500/10 transition-colors border-r-2 border-b-2 border-zinc-700/80 flex flex-col p-4 relative overflow-hidden">
             <div className="absolute inset-0 bg-linear-to-br from-red-500/5 to-transparent"></div>
