@@ -24,7 +24,7 @@ function Quadrant({
       <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300 mb-3 opacity-80">
         {title}
       </h4>
-      <div className="flex flex-wrap gap-2 overflow-y-auto content-start flex-1 relative z-10">
+      <div className="flex flex-wrap gap-2 overflow-visible content-start flex-1 relative z-10">
         {tasks.map((t) => (
           <div
             key={t.id}

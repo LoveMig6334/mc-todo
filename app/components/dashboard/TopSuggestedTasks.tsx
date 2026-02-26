@@ -6,6 +6,13 @@ interface Props {
   tasks: MatrixTask[];
 }
 
+const QUADRANT_LABELS: Record<string, string> = {
+  q1: "Do First",
+  q2: "Schedule",
+  q3: "Delegate",
+  q4: "Eliminate",
+};
+
 export default function TopSuggestedTasks({ tasks }: Props) {
   if (tasks.length === 0) return null;
 
@@ -72,7 +79,7 @@ export default function TopSuggestedTasks({ tasks }: Props) {
                       : "bg-zinc-700/50 border-zinc-600 text-zinc-400"
               }`}
             >
-              {t.quadrant.toUpperCase()}
+              {QUADRANT_LABELS[t.quadrant]}
             </div>
           </div>
         ))}
