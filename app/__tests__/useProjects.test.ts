@@ -2,23 +2,24 @@ import { useProjects } from "@/app/hooks/useProjects";
 import { ProjectFormData } from "@/app/types/task";
 import { act, renderHook } from "@testing-library/react";
 
-// Mock useLocalStorage
-const mockStorage: Record<string, unknown> = {};
-jest.mock("@/app/hooks/useLocalStorage", () => ({
-  useLocalStorage: <T>(key: string, initialValue: T) => {
-    if (!(key in mockStorage)) {
-      mockStorage[key] = initialValue;
-    }
-    const setValue = (updater: T | ((prev: T) => T)) => {
-      if (typeof updater === "function") {
-        mockStorage[key] = (updater as (prev: T) => T)(mockStorage[key] as T);
-      } else {
-        mockStorage[key] = updater;
-      }
-    };
-    return [mockStorage[key] as T, setValue];
-  },
-}));
+// Mock localStorage (same pattern as useViewPreference.test.ts)
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => store[key] ?? null,
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+  };
+})();
+
+Object.defineProperty(window, "localStorage", { value: localStorageMock });
 
 const baseFormData: ProjectFormData = {
   title: "Test Project",
@@ -29,8 +30,7 @@ const baseFormData: ProjectFormData = {
 
 describe("useProjects", () => {
   beforeEach(() => {
-    // Reset storage before each test
-    delete mockStorage["mc-todo-projects"];
+    localStorageMock.clear();
   });
 
   describe("addProject", () => {
@@ -61,6 +61,20 @@ describe("useProjects", () => {
       const ids = result.current.projects.map((p) => p.id);
       expect(new Set(ids).size).toBe(2);
     });
+
+    it("persists to localStorage", () => {
+      const { result } = renderHook(() => useProjects());
+
+      act(() => {
+        result.current.addProject(baseFormData);
+      });
+
+      const stored = localStorageMock.getItem("mc-todo-projects");
+      expect(stored).not.toBeNull();
+      const parsed = JSON.parse(stored!);
+      expect(parsed).toHaveLength(1);
+      expect(parsed[0].title).toBe("Test Project");
+    });
   });
 
   describe("updateProject", () => {
@@ -77,8 +91,9 @@ describe("useProjects", () => {
         result.current.updateProject(id!, { title: "Updated Title" });
       });
 
-      expect(result.current.projects[0].title).toBe("Updated Title");
-      expect(result.current.projects[0].description).toBe("A test project");
+      const updated = result.current.projects.find((p) => p.id === id);
+      expect(updated?.title).toBe("Updated Title");
+      expect(updated?.description).toBe("A test project");
     });
 
     it("does not affect other projects", () => {
@@ -182,14 +197,31 @@ describe("useProjects", () => {
   });
 
   describe("normalization (backward compat)", () => {
-    it("provides default description when missing", () => {
+    it("reads back from localStorage on fresh hook mount", () => {
+      // Write directly to storage as if from a prior session
+      localStorageMock.setItem(
+        "mc-todo-projects",
+        JSON.stringify([
+          {
+            id: "old-id",
+            title: "Old Project",
+            description: "",
+            color: "#3b82f6",
+            dueDate: { start: "2024-01-01", end: null },
+            createdAt: "2024-01-01T00:00:00Z",
+            updatedAt: "2024-01-01T00:00:00Z",
+          },
+        ]),
+      );
+
       const { result } = renderHook(() => useProjects());
+      expect(result.current.projects).toHaveLength(1);
+      expect(result.current.projects[0].title).toBe("Old Project");
+    });
 
-      act(() => {
-        result.current.addProject({ ...baseFormData, description: "" });
-      });
-
-      expect(result.current.projects[0].description).toBe("");
+    it("provides empty array as default when no storage", () => {
+      const { result } = renderHook(() => useProjects());
+      expect(result.current.projects).toEqual([]);
     });
   });
 });

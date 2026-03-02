@@ -81,8 +81,7 @@ describe("ProjectItem", () => {
         {...mockHandlers}
       />,
     );
-    const accentBar = container.querySelector('div[style*="background-color: rgb(249, 115, 22)"], div[style*="backgroundColor"]');
-    // Check that the element with the accent color exists
+    // Check that an element with the accent color exists
     const allDivs = container.querySelectorAll("div");
     const hasAccentColor = Array.from(allDivs).some(
       (el) => el.getAttribute("style")?.includes("#f97316") || el.getAttribute("style")?.includes("rgb(249, 115, 22)"),
