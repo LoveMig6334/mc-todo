@@ -2,7 +2,6 @@
 
 # MC-Todo
 
-A modern, high-performance To-Do List application built with **Next.js**.\
 Task management, calendar visualization, productivity analytics, and a per-task playground — all in one place.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.1.6-000?logo=nextdotjs)](https://nextjs.org/)
@@ -15,47 +14,68 @@ Task management, calendar visualization, productivity analytics, and a per-task 
 
 ---
 
-## About
+## Design System & Architecture
 
-MC-Todo is designed with a **"Dark Modern"** aesthetic:
+```mermaid
+graph TD
+    subgraph DS["Design System"]
+        BG["Background\n#18181b"]
+        ACC["Accent\n#f97316 Orange"]
+        UI["UI\nWhite"]
+        PRIN["Flat · Geometric · No glassmorphism\nZero external runtime dependencies"]
+    end
 
-- Minimalist, geometric design with solid colors (Flat Design)
-- Deep dark grey background with white UI elements
-- Orange as the primary accent color
-- Clean, text-centric interface
+    subgraph ROUTES["Routes"]
+        R1["/ — Task Management"]
+        R2["/calendar — Calendar View"]
+        R3["/dashboard — Analytics"]
+        R4["/playground/:id — Playground"]
+    end
 
-> Zero external runtime dependencies — custom date math, custom drag handling, no third-party UI libraries.
+    subgraph STATE["Shared State — localStorage"]
+        TM["useTaskManager\nCRUD · archive · stats"]
+        UP["useProjects\nCRUD · date bounds"]
+        UC["useCategories\nCRUD · color rotation"]
+    end
+
+    subgraph FEAT["Features"]
+        F1["Tasks + Projects\nColored cards · Indented child tasks\nCollapsible · Drag-to-reorder subtasks"]
+        F2["Calendar Overlays\nProject color bands · Lane stacking\nDrag & resize constrained to project bounds"]
+        F3["Analytics\nEisenhower matrix · Donut · Bar charts\nUpcoming deadlines · Top suggestions"]
+        F4["Canvas Playground\nNote · Todo · Flowchart blocks\nInfinite pan & zoom"]
+    end
+
+    R1 --> TM & UP & UC
+    R2 --> UP
+    R3 --> TM & UC
+    R4 --> TM
+
+    UP -- "date constraints" --> R2
+    TM <-- "child tasks" --> UP
+
+    TM & UP & UC --> LS[(localStorage)]
+
+    R1 --- F1
+    R2 --- F2
+    R3 --- F3
+    R4 --- F4
+```
 
 ---
 
 ## Getting Started
 
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v18+)
-- npm
-
-### Installation
-
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/mc-todo.git
-cd mc-todo
-
 # Install dependencies
 npm install
-```
 
-### Usage
-
-```bash
-# Start the development server
+# Development server
 npm run dev
 
 # Run tests
 npm test
 
-# Build for production
+# Production build
 npm run build
 ```
 
@@ -65,87 +85,34 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Features
 
-### Task Management
+### Task Management `/`
+- **Projects** — color-coded, time-bounded containers with collapsible indented child tasks; inline add/edit/delete
+- **Tasks** — title, details, priority (0–10), status, due date range, reference links, subtasks
+- **Date Picker** — single-click or drag to select a range; highlights project time frame and dims out-of-bounds days when a project is selected
+- **Auto-Archive** — completed tasks archived after 3 / 7 / 14 / 30 days; restore or bulk-delete
+- **Search & Filter** — full-text, status (6 options), and category filters with active-filter counter
+- **View Modes** — Priority list (table) and Category board (Kanban), persisted preference
+- **Keyboard Shortcuts** — `N` new task · `/` focus search
 
-> **Route:** `/`
+### Calendar View `/calendar`
+- **Project Overlays** — translucent color bands spanning each project's date range, rendered behind events
+- **Drag & Drop** — reschedule events with live preview; project tasks snap back if dropped outside project bounds
+- **Edge Resize** — extend or shrink multi-day events; clamped to project bounds for project tasks
+- **Smart Stacking** — lane allocation prevents event collisions; collapses to lines when dense
+- **Quick Create** — double-click any cell to open the task modal with that date pre-filled
+- **Trash Zone** — drag any event to delete it
 
-| Feature | Description |
-|---------|-------------|
-| CRUD Operations | Create, edit, and delete tasks with title, details, priority (0–10), status, due dates, and reference links |
-| Projects | Group tasks into time-bounded, color-coded projects; project cards appear above standalone tasks with indented child tasks, expand/collapse, and inline add/edit/delete |
-| Categories | Custom user-manageable categories with color coding |
-| View Modes | Priority list (table) and category board (Kanban-style) with persistent preference |
-| Date Picker | Single-click for a day, click-and-hold to drag a date range; shows project time frame overlay when a task belongs to a project |
-| Subtasks | Add, reorder (drag), complete, and delete subtasks; each subtask has its own status, priority, and reference link |
-| Reference Links | Attach URLs to tasks and individual subtasks |
-| Search & Filter | Full-text search (title + details), status filter (6 options), category filter; active-filter counter with clear-all |
-| Keyboard Shortcuts | `N` — new task · `/` — focus search |
-| Auto-Archive | Completed tasks are automatically archived after a configurable threshold (3 / 7 / 14 / 30 days); restore or delete individually or in bulk |
-| Greeting Banner | Time-based greeting with the current date and rotating productivity tips |
-| Progress Bar | Visual completion percentage across all tasks |
-| Persistence | All data stored locally via `localStorage` |
+### Dashboard `/dashboard`
+- Key metrics — total, completed %, overdue, in-progress
+- Eisenhower-style scatter plot (urgency × importance), donut chart, category & priority bar charts
+- Upcoming deadlines, top 3 suggested tasks, inline category editor
 
-### Calendar View
-
-> **Route:** `/calendar`
-
-| Feature | Description |
-|---------|-------------|
-| Monthly Grid | English + Thai date display |
-| Project Overlays | Translucent color bands spanning each project's date range; rendered behind task events |
-| Drag & Drop | Drag events to reschedule; drag preview shows the new date range while dragging; project-task drags are constrained to the project's time frame |
-| Edge Resizing | Drag the start or end edge of a multi-day event to extend or shrink its date range; constrained to project bounds for project tasks |
-| Quick Create | Double-click any cell to open the task modal with that date prefilled |
-| Smart Stacking | Lane allocation algorithm places overlapping events side-by-side without collision |
-| Crowding Logic | Collapses to colored lines when cells are dense; hover to expand and see all events |
-| Trash Drop Zone | Drag any event onto the trash zone to delete it |
-| Event Popover | Hover an event to see a summary with quick edit and delete buttons |
-
-### Dashboard Analytics
-
-> **Route:** `/dashboard`
-
-| Feature | Description |
-|---------|-------------|
-| Key Metrics | Total, completed (with %), overdue, and in-progress task counts |
-| Category Breakdown | Horizontal stacked bar chart with per-category completion rates and a manage button |
-| Priority Distribution | Vertical bar chart across four buckets: Low, Medium, High, Urgent |
-| Status Overview | SVG donut chart for Pending, In Progress, Paused, and Needs Approval statuses |
-| Upcoming Deadlines | Next 5 upcoming incomplete tasks, color-coded by urgency |
-| Time Management Matrix | Eisenhower-style scatter plot — X-axis: Urgency (days left), Y-axis: Importance (priority); four color-coded quadrants (Q1 Do First, Q2 Schedule, Q3 Delegate, Q4 Eliminate); hover dots for task details |
-| Top Suggested Tasks | Top 3 recommended tasks ranked by quadrant (Q1 → Q2) then priority |
-| Category Editor | Add, rename, recolor, and delete categories without leaving the dashboard |
-
-### Project Management
-
-Projects are available across Task Management and Calendar View.
-
-| Feature | Description |
-|---------|-------------|
-| Project CRUD | Create, edit, and delete projects with title, description, color (8 presets), and a date range |
-| Visual Hierarchy | Projects render as full-width bordered cards above standalone tasks; child tasks are indented inside |
-| Expand / Collapse | Toggle the project body to hide or reveal its tasks |
-| Task Assignment | Assign tasks to a project via the Task modal's project dropdown, or use "Add task to project" from the project card |
-| Date Validation | Task due dates are validated against the project's time frame; the date picker highlights in-project days and dims out-of-bounds days |
-| Orphan Handling | Deleting a project unlinks all its child tasks (they become standalone) rather than deleting them |
-| Calendar Overlays | Each project renders a translucent color band across its date range on the calendar |
-| Drag/Resize Constraints | Task events belonging to a project cannot be dragged or resized outside the project's start/end bounds |
-
-### Playground
-
-> **Route:** `/playground/[taskId]`
-
-A per-task interactive canvas workspace. Every task gets its own playground, persisted in `localStorage`.
-
-| Feature | Description |
-|---------|-------------|
-| Canvas | Infinite panning (click-drag) and zooming (Ctrl/Cmd + scroll, 0.25×–2×); zoom is cursor-centered |
-| Note Block | Rich-text note with editable title; formatting toolbar (Bold, Italic, Bullet List, Ordered List); 6 background color themes |
-| Todo List Block | Inline checklist with add/remove items, checkbox completion, drag-to-reorder, completion progress indicator, and 6 color themes |
-| Flowchart Block | Node/edge diagram builder — three node shapes (Rectangle, Diamond, Circle), straight and adaptive (curved) edge lines, four arrow directions (Forward, Backward, Both, None), edge labels, auto port selection, 6 color themes |
-| Block System | All blocks support: drag to reposition, resize via handles, z-index management (bring to front), and deletion |
-| Toolbar | Floating toolbar to add Note, Todo, and Flowchart blocks; zoom controls (fit, in, out, reset) |
-| Persistence | All block data serialized to JSON per task; debounced auto-save on every change |
+### Playground `/playground/:taskId`
+- Infinite canvas with pan and zoom (0.25×–2×, cursor-centered)
+- **Note** — rich-text editor with formatting toolbar and 6 color themes
+- **Todo List** — checklist with drag-to-reorder and completion indicator
+- **Flowchart** — node/edge diagram with 3 shapes, 4 edge styles, labels, and auto port selection
+- All blocks: drag, resize, z-index, delete; debounced auto-save per task
 
 ---
 
@@ -154,10 +121,10 @@ A per-task interactive canvas workspace. Every task gets its own playground, per
 | Layer | Technology |
 |-------|-----------|
 | Framework | Next.js 16.1.6 (App Router) |
-| UI Library | React 19.2.3 |
+| UI | React 19.2.3 |
 | Language | TypeScript 5 |
 | Styling | Tailwind CSS v4 |
-| Testing | Jest 30 (28+ test files, 395+ tests) |
+| Testing | Jest 30 — 28 test files · 395 tests |
 | State | Custom hooks + `localStorage` via `useSyncExternalStore` |
 
 ---
@@ -165,41 +132,23 @@ A per-task interactive canvas workspace. Every task gets its own playground, per
 ## Project Structure
 
 ```
-mc-todo/
-├── app/
-│   ├── components/
-│   │   ├── layout/        # FloatingNav
-│   │   ├── task/          # TaskModal, TaskList, TaskItem, TaskCard,
-│   │   │                  # DatePicker, CategoryBoardView, PriorityListView,
-│   │   │                  # SubtaskList, ReferenceLinks, TaskFilterBar,
-│   │   │                  # ArchivedTasksPanel, GreetingBanner, ProgressBar,
-│   │   │                  # ProjectItem, ProjectModal
-│   │   ├── calendar/      # CalendarGrid, CalendarDayCell, CalendarEvent,
-│   │   │                  # CalendarHeader, CalendarEventPopover,
-│   │   │                  # DragPreviewEvent, TrashDropZone, ProjectOverlay
-│   │   ├── dashboard/     # StatCard, CategoryBarChart, PriorityBarChart,
-│   │   │                  # StatusDonutChart, UpcomingDeadlines,
-│   │   │                  # TimeManagementMatrix, TopSuggestedTasks,
-│   │   │                  # CategoryEditModal
-│   │   ├── playground/    # PlaygroundCanvas, PlaygroundToolbar,
-│   │   │                  # NoteBlock, TodoListBlock, FlowchartBlock,
-│   │   │                  # BlockWrapper
-│   │   └── ui/            # Button, Dropdown, Input, Modal, ConfirmModal,
-│   │                      # Slider, Textarea, ShortcutHint
-│   ├── hooks/             # useTaskManager, useCategories, useLocalStorage,
-│   │                      # useTaskFilter, useViewPreference, useKeyboardShortcuts,
-│   │                      # useAutoArchive, useDashboardStats,
-│   │                      # useCalendarGrid, useEventResize, useEventDrag,
-│   │                      # usePlayground, useProjects
-│   ├── lib/               # utils, calendarUtils, dashboardUtils
-│   ├── types/             # task.ts, calendar.ts, playground.ts
-│   ├── calendar/          # /calendar route
-│   ├── dashboard/         # /dashboard route
-│   ├── playground/[taskId]/ # /playground/[taskId] route
-│   └── __tests__/         # Jest test suite
-├── public/                # Static assets
-├── CLAUDE.md              # Development knowledge base
-└── README.md
+app/
+├── components/
+│   ├── task/       # TaskModal · TaskList · TaskItem · DatePicker
+│   │               # PriorityListView · CategoryBoardView
+│   │               # ProjectItem · ProjectModal · SubtaskList
+│   ├── calendar/   # CalendarGrid · CalendarEvent · ProjectOverlay
+│   │               # CalendarEventPopover · DragPreviewEvent · TrashDropZone
+│   ├── dashboard/  # StatCard · Charts · TimeManagementMatrix
+│   │               # UpcomingDeadlines · CategoryEditModal
+│   ├── playground/ # PlaygroundCanvas · NoteBlock · TodoListBlock · FlowchartBlock
+│   └── ui/         # Button · Dropdown · Input · Modal · Slider · Textarea
+├── hooks/          # useTaskManager · useProjects · useCategories
+│                   # useEventDrag · useEventResize · useDashboardStats
+│                   # useLocalStorage · useTaskFilter · usePlayground
+├── lib/            # utils · calendarUtils · dashboardUtils
+├── types/          # task.ts · calendar.ts · playground.ts
+└── __tests__/      # Jest test suite
 ```
 
 ---
