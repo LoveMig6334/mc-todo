@@ -81,3 +81,45 @@ A per-task interactive workspace where users can create flowcharts, take notes, 
 - [x] Playground data serialization/deserialization
 - [ ] Navigation between task and playground
 - [x] Individual block type rendering
+
+---
+
+## Feature 5: Project Management
+
+A project is a time-bounded, color-coded container that groups related tasks. Projects appear as large bordered cards on the task manager page (containing indented child tasks), as translucent color overlays on the calendar, and their child-tasks count as normal tasks on the dashboard.
+
+---
+
+### 5.1 Foundation — Types & Hook
+
+- [ ] Add `Project` interface and `ProjectFormData` to `types/task.ts`
+- [ ] Add optional `projectId?: string` to `Task` interface
+- [ ] Create `useProjects` hook with full CRUD + normalization
+- [ ] Add `projectId` to `useTaskManager` normalization (backward-compat default `undefined`)
+
+### 5.2 Project Creation UI
+
+- [ ] Rework floating Add button: pill-tab selector (Task | Project)
+- [ ] Create `ProjectModal` (Title, Description, Date Range, Color picker)
+- [ ] Wire project creation/editing in `app/page.tsx`
+
+### 5.3 Task Manager Page
+
+- [ ] Create `ProjectItem` component (bordered card, left color accent bar, collapsible indented tasks, expand/collapse)
+- [ ] Update `TaskList` to render Projects above standalone tasks
+- [ ] Add `prefilledProjectId` + project dropdown to `TaskModal`
+- [ ] "Add task to project" inline action inside `ProjectItem`
+
+### 5.4 Calendar Integration
+
+- [ ] Create `ProjectOverlay` component (translucent color band, pointer-events: none)
+- [ ] Render overlays in `CalendarGrid` behind task events
+- [ ] Constrain task drag/resize to project date range in `useEventDrag` / `useEventResize`
+
+### 5.5 Dashboard & Tests
+
+- [ ] Audit `useDashboardStats` / `dashboardUtils` — verify project child-tasks counted correctly
+- [ ] Jest: `useProjects` CRUD tests
+- [ ] Jest: `ProjectItem` rendering tests
+- [ ] Jest: `ProjectModal` form validation tests
+- [ ] Jest: calendar drag-constraint tests

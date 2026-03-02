@@ -4,6 +4,21 @@ export type TaskStatus =
   | "pending"
   | "paused";
 
+export interface Project {
+  id: string;
+  title: string;
+  description: string;
+  color: string; // User-selected hex color (e.g. "#f97316")
+  dueDate: {
+    start: string; // ISO date string (YYYY-MM-DD)
+    end: string | null;
+  };
+  createdAt: string; // ISO datetime string
+  updatedAt: string; // ISO datetime string
+}
+
+export type ProjectFormData = Omit<Project, "id" | "createdAt" | "updatedAt">;
+
 export type SubtaskPriority = "low" | "medium" | "high";
 
 export interface Subtask {
