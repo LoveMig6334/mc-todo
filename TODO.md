@@ -53,11 +53,11 @@ A per-task interactive workspace where users can create flowcharts, take notes, 
 
 ### 4.6 Drawing Block
 
-- [ ] Freehand drawing canvas (pen tool)
-- [ ] Stroke color and width picker
-- [ ] Eraser tool
-- [ ] Clear canvas action
-- [ ] Export drawing as image (optional)
+- [x] Freehand drawing canvas (pen tool)
+- [x] Stroke color and width picker
+- [x] Eraser tool
+- [x] Clear canvas action
+- [x] Export drawing as image (optional)
 
 ### 4.7 Toolbar & UX
 
