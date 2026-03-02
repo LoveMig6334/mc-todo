@@ -36,10 +36,11 @@ export default function Home() {
     archiveTask,
     archiveAllCompleted,
     restoreTask,
+    unlinkProjectTasks,
   } = useTaskManager();
   const { categories, addCategory } = useCategories();
   const { viewMode, setViewMode } = useViewPreference();
-  const { addProject, updateProject } = useProjects();
+  const { projects, addProject, updateProject, deleteProject } = useProjects();
 
   // Auto-archive completed tasks after threshold
   const { archiveThreshold, setArchiveThreshold } = useAutoArchive(
@@ -62,11 +63,17 @@ export default function Home() {
   // Task modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [prefilledProjectId, setPrefilledProjectId] = useState<
+    string | undefined
+  >(undefined);
   const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
 
   // Project modal state
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [deletingProjectId, setDeletingProjectId] = useState<string | null>(
+    null,
+  );
 
   // Floating add menu
   const [addMenuOpen, setAddMenuOpen] = useState(false);
@@ -86,30 +93,47 @@ export default function Home() {
   const handleOpenModal = useCallback(() => {
     setAddMenuOpen(false);
     setEditingTask(null);
+    setPrefilledProjectId(undefined);
     setIsModalOpen(true);
   }, []);
 
-  const handleEditTask = (task: Task) => {
-    setEditingTask(task);
+  const handleOpenTaskForProject = useCallback((projectId: string) => {
+    setEditingTask(null);
+    setPrefilledProjectId(projectId);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseModal = () => {
+  const handleEditTask = useCallback((task: Task) => {
+    setEditingTask(task);
+    setPrefilledProjectId(undefined);
+    setIsModalOpen(true);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
     setEditingTask(null);
-  };
+    setPrefilledProjectId(undefined);
+  }, []);
 
-  const handleSubmitTask = (formData: TaskFormData) => {
-    if (editingTask) {
-      updateTask(editingTask.id, formData);
-    } else {
-      addTask(formData);
-    }
-  };
+  const handleSubmitTask = useCallback(
+    (formData: TaskFormData) => {
+      if (editingTask) {
+        updateTask(editingTask.id, formData);
+      } else {
+        addTask(formData);
+      }
+    },
+    [editingTask, updateTask, addTask],
+  );
 
   const handleOpenProjectModal = useCallback(() => {
     setAddMenuOpen(false);
     setEditingProject(null);
+    setIsProjectModalOpen(true);
+  }, []);
+
+  const handleEditProject = useCallback((project: Project) => {
+    setEditingProject(project);
     setIsProjectModalOpen(true);
   }, []);
 
@@ -133,15 +157,30 @@ export default function Home() {
     setDeletingTaskId(id);
   }, []);
 
+  const handleDeleteProject = useCallback((id: string) => {
+    setDeletingProjectId(id);
+  }, []);
+
   const handleConfirmDelete = useCallback(() => {
     if (deletingTaskId) {
       deleteTask(deletingTaskId);
       setDeletingTaskId(null);
+    } else if (deletingProjectId) {
+      deleteProject(deletingProjectId);
+      unlinkProjectTasks(deletingProjectId);
+      setDeletingProjectId(null);
     }
-  }, [deletingTaskId, deleteTask]);
+  }, [
+    deletingTaskId,
+    deletingProjectId,
+    deleteTask,
+    deleteProject,
+    unlinkProjectTasks,
+  ]);
 
   const handleCancelDelete = useCallback(() => {
     setDeletingTaskId(null);
+    setDeletingProjectId(null);
   }, []);
 
   const handleFocusSearch = useCallback(() => {
@@ -216,6 +255,10 @@ export default function Home() {
             onEdit={handleEditTask}
             onDelete={handleDeleteTask}
             onUpdate={updateTask}
+            projects={projects}
+            onAddTask={handleOpenTaskForProject}
+            onEditProject={handleEditProject}
+            onDeleteProject={handleDeleteProject}
           />
         ) : (
           <CategoryBoardView
@@ -321,6 +364,8 @@ export default function Home() {
           categories={categories}
           onAddCategory={addCategory}
           editingTask={editingTask}
+          prefilledProjectId={prefilledProjectId}
+          projects={projects}
         />
 
         {/* Project Modal */}
@@ -333,7 +378,7 @@ export default function Home() {
 
         {/* Delete Confirmation Modal */}
         <ConfirmModal
-          isOpen={deletingTaskId !== null}
+          isOpen={deletingTaskId !== null || deletingProjectId !== null}
           onClose={handleCancelDelete}
           onConfirm={handleConfirmDelete}
         />

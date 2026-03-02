@@ -9,6 +9,7 @@ import Textarea from "@/app/components/ui/Textarea";
 import {
   Category,
   DateRange,
+  Project,
   Subtask,
   Task,
   TaskFormData,
@@ -26,9 +27,14 @@ interface TaskModalProps {
   onAddCategory: (name: string) => Category;
   editingTask?: Task | null;
   prefilledDate?: string;
+  prefilledProjectId?: string;
+  projects?: Project[];
 }
 
-const getDefaultFormData = (prefilledDate?: string): TaskFormData => {
+const getDefaultFormData = (
+  prefilledDate?: string,
+  prefilledProjectId?: string,
+): TaskFormData => {
   const today = new Date().toISOString().split("T")[0];
   return {
     title: "",
@@ -45,6 +51,7 @@ const getDefaultFormData = (prefilledDate?: string): TaskFormData => {
     completed: false,
     completedAt: null,
     archived: false,
+    projectId: prefilledProjectId,
   };
 };
 
@@ -55,6 +62,8 @@ function TaskModalContent({
   onAddCategory,
   editingTask,
   prefilledDate,
+  prefilledProjectId,
+  projects,
 }: Omit<TaskModalProps, "isOpen">) {
   const initialFormData = useMemo(() => {
     if (editingTask) {
@@ -70,10 +79,11 @@ function TaskModalContent({
         completed: editingTask.completed,
         completedAt: editingTask.completedAt,
         archived: editingTask.archived,
+        projectId: editingTask.projectId,
       };
     }
-    return getDefaultFormData(prefilledDate);
-  }, [editingTask, prefilledDate]);
+    return getDefaultFormData(prefilledDate, prefilledProjectId);
+  }, [editingTask, prefilledDate, prefilledProjectId]);
 
   const [formData, setFormData] = useState<TaskFormData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -180,6 +190,22 @@ function TaskModalContent({
         />
       </div>
 
+      {/* Project (optional) */}
+      {projects && projects.length > 0 && (
+        <Dropdown
+          label="Project (optional)"
+          options={[
+            { id: "", label: "None" },
+            ...projects.map((p) => ({ id: p.id, label: p.title, color: p.color })),
+          ]}
+          value={formData.projectId ?? ""}
+          onChange={(value) =>
+            updateFormData("projectId", value || undefined)
+          }
+          placeholder="No project"
+        />
+      )}
+
       {/* Priority */}
       <Slider
         label="Priority"
@@ -269,9 +295,13 @@ export default function TaskModal({
   onAddCategory,
   editingTask,
   prefilledDate,
+  prefilledProjectId,
+  projects,
 }: TaskModalProps) {
-  // Generate a unique key when modal opens with different task
-  const modalKey = isOpen ? (editingTask?.id ?? "new") : "closed";
+  // Generate a unique key when modal opens with different task or project context
+  const modalKey = isOpen
+    ? (editingTask?.id ?? prefilledProjectId ?? "new")
+    : "closed";
 
   return (
     <Modal
@@ -288,6 +318,8 @@ export default function TaskModal({
         onAddCategory={onAddCategory}
         editingTask={editingTask}
         prefilledDate={prefilledDate}
+        prefilledProjectId={prefilledProjectId}
+        projects={projects}
       />
     </Modal>
   );

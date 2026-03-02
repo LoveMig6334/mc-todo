@@ -100,6 +100,20 @@ export function useTaskManager() {
     );
   }, [setTasks]);
 
+  const unlinkProjectTasks = useCallback(
+    (projectId: string) => {
+      const now = new Date().toISOString();
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.projectId === projectId
+            ? { ...task, projectId: undefined, updatedAt: now }
+            : task,
+        ),
+      );
+    },
+    [setTasks],
+  );
+
   const getTaskById = useCallback(
     (id: string) => {
       return tasks.find((task) => task.id === id);
@@ -177,5 +191,6 @@ export function useTaskManager() {
     archiveAllCompleted,
     restoreTask,
     getTaskById,
+    unlinkProjectTasks,
   };
 }
