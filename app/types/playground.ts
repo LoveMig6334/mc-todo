@@ -45,11 +45,26 @@ export interface FlowchartBlockData {
   color: string;
 }
 
-export type BlockData = NoteBlockData | TodoBlockData | FlowchartBlockData;
+export interface DrawingStroke {
+  points: { x: number; y: number }[];
+  color: string;
+  width: number;
+}
+
+export interface DrawingBlockData {
+  strokes: DrawingStroke[];
+  color: string;
+}
+
+export type BlockData =
+  | NoteBlockData
+  | TodoBlockData
+  | FlowchartBlockData
+  | DrawingBlockData;
 
 export interface PlaygroundBlock {
   id: string;
-  type: "note" | "todo" | "flowchart";
+  type: "note" | "todo" | "flowchart" | "drawing";
   position: { x: number; y: number };
   size: { width: number; height: number };
   zIndex: number;

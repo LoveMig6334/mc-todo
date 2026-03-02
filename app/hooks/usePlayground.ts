@@ -34,8 +34,14 @@ const DEFAULT_FLOWCHART_DATA: BlockData = {
   color: "#27272a", // zinc-800
 };
 
+const DEFAULT_DRAWING_DATA: BlockData = {
+  strokes: [],
+  color: "#27272a", // zinc-800
+};
+
 const DEFAULT_BLOCK_SIZE = { width: 280, height: 200 };
 const FLOWCHART_BLOCK_SIZE = { width: 400, height: 300 };
+const DRAWING_BLOCK_SIZE = { width: 400, height: 300 };
 
 export function usePlayground(taskId: string) {
   const [state, setState] = useLocalStorage<PlaygroundState>(
@@ -49,16 +55,20 @@ export function usePlayground(taskId: string) {
       const defaultData =
         type === "flowchart"
           ? { ...DEFAULT_FLOWCHART_DATA }
-          : type === "todo"
-            ? { ...DEFAULT_TODO_DATA }
-            : { ...DEFAULT_NOTE_DATA };
+          : type === "drawing"
+            ? { ...DEFAULT_DRAWING_DATA }
+            : type === "todo"
+              ? { ...DEFAULT_TODO_DATA }
+              : { ...DEFAULT_NOTE_DATA };
       const newBlock: PlaygroundBlock = {
         id: generateId(),
         type,
         position,
         size:
-          type === "flowchart"
-            ? { ...FLOWCHART_BLOCK_SIZE }
+          type === "flowchart" || type === "drawing"
+            ? type === "flowchart"
+              ? { ...FLOWCHART_BLOCK_SIZE }
+              : { ...DRAWING_BLOCK_SIZE }
             : { ...DEFAULT_BLOCK_SIZE },
         zIndex: maxZ + 1,
         data: defaultData,

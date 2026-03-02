@@ -54,6 +54,13 @@ export default function PlaygroundPage({ params }: PlaygroundPageProps) {
     setSelectedBlockId(id);
   }, [viewport, addBlock]);
 
+  const handleAddDrawing = useCallback(() => {
+    const centerX = (-viewport.x + 400) / viewport.zoom;
+    const centerY = (-viewport.y + 300) / viewport.zoom;
+    const id = addBlock("drawing", { x: centerX, y: centerY });
+    setSelectedBlockId(id);
+  }, [viewport, addBlock]);
+
   const handleUpdateBlock = useCallback(
     (id: string, data: Partial<BlockData>) => {
       updateBlock(id, data);
@@ -139,6 +146,7 @@ export default function PlaygroundPage({ params }: PlaygroundPageProps) {
           onAddNote={handleAddNote}
           onAddTodo={handleAddTodo}
           onAddFlowchart={handleAddFlowchart}
+          onAddDrawing={handleAddDrawing}
         />
       </div>
     </div>

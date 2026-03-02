@@ -2,6 +2,7 @@
 
 import {
   BlockData,
+  DrawingBlockData,
   FlowchartBlockData,
   NoteBlockData,
   PlaygroundBlock,
@@ -10,6 +11,7 @@ import {
 } from "@/app/types/playground";
 import { useCallback, useRef } from "react";
 import BlockWrapper from "./BlockWrapper";
+import DrawingBlock from "./DrawingBlock";
 import FlowchartBlock from "./FlowchartBlock";
 import NoteBlock from "./NoteBlock";
 import TodoListBlock from "./TodoListBlock";
@@ -171,6 +173,14 @@ export default function PlaygroundCanvas({
             {block.type === "flowchart" && (
               <FlowchartBlock
                 data={block.data as FlowchartBlockData}
+                isSelected={selectedBlockId === block.id}
+                onUpdate={(data) => onUpdateBlock(block.id, data)}
+                blockSize={block.size}
+              />
+            )}
+            {block.type === "drawing" && (
+              <DrawingBlock
+                data={block.data as DrawingBlockData}
                 isSelected={selectedBlockId === block.id}
                 onUpdate={(data) => onUpdateBlock(block.id, data)}
                 blockSize={block.size}
