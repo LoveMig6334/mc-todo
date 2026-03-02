@@ -6,6 +6,7 @@ import Input from "@/app/components/ui/Input";
 import Modal from "@/app/components/ui/Modal";
 import Slider from "@/app/components/ui/Slider";
 import Textarea from "@/app/components/ui/Textarea";
+import { formatDateRange } from "@/app/lib/utils";
 import {
   Category,
   DateRange,
@@ -88,6 +89,20 @@ function TaskModalContent({
   const [formData, setFormData] = useState<TaskFormData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Derive active project to pass bounds to DatePicker and validate dates
+  const activeProject = useMemo(() => {
+    if (!formData.projectId || !projects) return undefined;
+    return projects.find((p) => p.id === formData.projectId);
+  }, [formData.projectId, projects]);
+
+  const projectBounds = activeProject
+    ? {
+        start: activeProject.dueDate.start,
+        end: activeProject.dueDate.end ?? activeProject.dueDate.start,
+        color: activeProject.color,
+      }
+    : undefined;
+
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -101,6 +116,14 @@ function TaskModalContent({
 
     if (!formData.dueDate.start) {
       newErrors.dueDate = "Please select a due date";
+    } else if (projectBounds) {
+      const taskEnd = formData.dueDate.end ?? formData.dueDate.start;
+      if (
+        formData.dueDate.start < projectBounds.start ||
+        taskEnd > projectBounds.end
+      ) {
+        newErrors.dueDate = `Due date must be within the project's time frame (${formatDateRange(projectBounds.start, projectBounds.end)})`;
+      }
     }
 
     setErrors(newErrors);
@@ -219,6 +242,7 @@ function TaskModalContent({
       <DatePicker
         label="Due Date"
         value={formData.dueDate}
+        projectBounds={projectBounds}
         onChange={(value: DateRange) => {
           updateFormData("dueDate", value);
           if (errors.dueDate) {

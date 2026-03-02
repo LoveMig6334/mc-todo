@@ -8,6 +8,15 @@ interface DatePickerProps {
   label?: string;
   value: DateRange;
   onChange: (value: DateRange) => void;
+  projectBounds?: { start: string; end: string; color: string };
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
 const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -46,6 +55,7 @@ export default function DatePicker({
   label,
   value,
   onChange,
+  projectBounds,
 }: DatePickerProps) {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(
@@ -201,6 +211,11 @@ export default function DatePicker({
     return value.end === dateStr;
   };
 
+  const isInProjectBounds = (dateStr: string): boolean => {
+    if (!projectBounds) return false;
+    return dateStr >= projectBounds.start && dateStr <= projectBounds.end;
+  };
+
   return (
     <div className="w-full">
       {label && (
@@ -280,6 +295,15 @@ export default function DatePicker({
             const inRange = isDateInRange(dateStr);
             const inDragRange = isDateInDragRange(dateStr);
             const showRange = isDragging ? inDragRange : inRange;
+            const inProject = isInProjectBounds(dateStr);
+            const outsideProject = projectBounds && !inProject;
+            const selected = isStartDate(day) || isEndDate(day);
+
+            // Project bounds background — only when not selected/ranged
+            const projectStyle =
+              inProject && !selected && !showRange
+                ? { backgroundColor: hexToRgba(projectBounds!.color, 0.18) }
+                : undefined;
 
             return (
               <button
@@ -289,17 +313,15 @@ export default function DatePicker({
                 onMouseUp={() => handleMouseUp(day)}
                 onMouseEnter={() => handleMouseEnter(day)}
                 onMouseLeave={handleMouseLeave}
+                style={projectStyle}
                 className={cn(
                   "h-8 rounded text-sm transition-colors select-none",
                   "hover:bg-zinc-600",
                   isToday(day) && !showRange && "ring-1 ring-orange-500",
                   showRange && "bg-orange-500/30",
-                  (isStartDate(day) || isEndDate(day)) &&
-                    "bg-orange-500 text-white hover:bg-orange-600",
-                  !showRange &&
-                    !isStartDate(day) &&
-                    !isEndDate(day) &&
-                    "text-zinc-300",
+                  selected && "bg-orange-500 text-white hover:bg-orange-600",
+                  !showRange && !selected && !outsideProject && "text-zinc-300",
+                  outsideProject && "text-zinc-600",
                 )}
               >
                 {day}
@@ -332,6 +354,19 @@ export default function DatePicker({
         <p className="mt-2 text-xs text-zinc-500">
           Click for single date. Drag to select a range.
         </p>
+
+        {/* Project bounds legend */}
+        {projectBounds && (
+          <div className="mt-2 flex items-center gap-1.5 text-xs text-zinc-400">
+            <span
+              className="inline-block w-3 h-3 rounded-sm shrink-0"
+              style={{ backgroundColor: hexToRgba(projectBounds.color, 0.6) }}
+            />
+            Project:{" "}
+            {new Date(projectBounds.start + "T00:00:00").toLocaleDateString()} –{" "}
+            {new Date(projectBounds.end + "T00:00:00").toLocaleDateString()}
+          </div>
+        )}
       </div>
     </div>
   );
