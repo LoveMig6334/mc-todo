@@ -6,6 +6,7 @@ import CategoryBoardView from "@/app/components/task/CategoryBoardView";
 import GreetingBanner from "@/app/components/task/GreetingBanner";
 import PriorityListView from "@/app/components/task/PriorityListView";
 import ProgressBar from "@/app/components/task/ProgressBar";
+import ProjectModal from "@/app/components/task/ProjectModal";
 import TaskFilterBar from "@/app/components/task/TaskFilterBar";
 import TaskModal from "@/app/components/task/TaskModal";
 import TaskPageStats from "@/app/components/task/TaskPageStats";
@@ -16,11 +17,12 @@ import ShortcutHint from "@/app/components/ui/ShortcutHint";
 import { useAutoArchive } from "@/app/hooks/useAutoArchive";
 import { useCategories } from "@/app/hooks/useCategories";
 import { useKeyboardShortcuts } from "@/app/hooks/useKeyboardShortcuts";
+import { useProjects } from "@/app/hooks/useProjects";
 import { useTaskFilter } from "@/app/hooks/useTaskFilter";
 import { useTaskManager } from "@/app/hooks/useTaskManager";
 import { useViewPreference } from "@/app/hooks/useViewPreference";
-import { Task, TaskFormData } from "@/app/types/task";
-import { useCallback, useState } from "react";
+import { Project, ProjectFormData, Task, TaskFormData } from "@/app/types/task";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function Home() {
   const {
@@ -37,6 +39,7 @@ export default function Home() {
   } = useTaskManager();
   const { categories, addCategory } = useCategories();
   const { viewMode, setViewMode } = useViewPreference();
+  const { addProject, updateProject } = useProjects();
 
   // Auto-archive completed tasks after threshold
   const { archiveThreshold, setArchiveThreshold } = useAutoArchive(
@@ -56,11 +59,32 @@ export default function Home() {
     clearAllFilters,
   } = useTaskFilter(tasks, categories);
 
+  // Task modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
 
+  // Project modal state
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+
+  // Floating add menu
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
+  const addMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!addMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!addMenuRef.current?.contains(e.target as Node)) {
+        setAddMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [addMenuOpen]);
+
   const handleOpenModal = useCallback(() => {
+    setAddMenuOpen(false);
     setEditingTask(null);
     setIsModalOpen(true);
   }, []);
@@ -82,6 +106,28 @@ export default function Home() {
       addTask(formData);
     }
   };
+
+  const handleOpenProjectModal = useCallback(() => {
+    setAddMenuOpen(false);
+    setEditingProject(null);
+    setIsProjectModalOpen(true);
+  }, []);
+
+  const handleCloseProjectModal = useCallback(() => {
+    setIsProjectModalOpen(false);
+    setEditingProject(null);
+  }, []);
+
+  const handleSubmitProject = useCallback(
+    (formData: ProjectFormData) => {
+      if (editingProject) {
+        updateProject(editingProject.id, formData);
+      } else {
+        addProject(formData);
+      }
+    },
+    [editingProject, updateProject, addProject],
+  );
 
   const handleDeleteTask = useCallback((id: string) => {
     setDeletingTaskId(id);
@@ -193,10 +239,56 @@ export default function Home() {
           hasCompletedTasks={tasks.some((t) => t.completed)}
         />
 
-        {/* Floating Add Button */}
-        <div className="fixed bottom-6 right-6">
+        {/* Floating Add Button with Type Menu */}
+        <div
+          ref={addMenuRef}
+          className="fixed bottom-6 right-6 flex flex-col items-end gap-2"
+        >
+          {addMenuOpen && (
+            <div className="flex flex-col items-end gap-2 mb-1">
+              <button
+                onClick={handleOpenProjectModal}
+                className="flex items-center gap-2 rounded-full bg-zinc-800 border border-zinc-700 pl-3 pr-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 hover:border-zinc-600 transition-colors shadow-lg whitespace-nowrap"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                </svg>
+                Project
+              </button>
+              <button
+                onClick={handleOpenModal}
+                className="flex items-center gap-2 rounded-full bg-zinc-800 border border-zinc-700 pl-3 pr-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 hover:border-zinc-600 transition-colors shadow-lg whitespace-nowrap"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Task
+              </button>
+            </div>
+          )}
           <Button
-            onClick={handleOpenModal}
+            onClick={() => setAddMenuOpen((v) => !v)}
             variant="primary"
             size="lg"
             className="rounded-full w-15 h-15 p-0 shadow-lg shadow-orange-500/20"
@@ -229,6 +321,14 @@ export default function Home() {
           categories={categories}
           onAddCategory={addCategory}
           editingTask={editingTask}
+        />
+
+        {/* Project Modal */}
+        <ProjectModal
+          isOpen={isProjectModalOpen}
+          onClose={handleCloseProjectModal}
+          onSubmit={handleSubmitProject}
+          editingProject={editingProject}
         />
 
         {/* Delete Confirmation Modal */}
