@@ -1,13 +1,14 @@
 "use client";
 
 import { DragState } from "@/app/types/calendar";
-import { Task, TaskFormData } from "@/app/types/task";
+import { Project, Task, TaskFormData } from "@/app/types/task";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface UseEventDragOptions {
   updateTask: (id: string, updates: Partial<TaskFormData>) => void;
   deleteTask: (id: string) => void;
   getTaskById: (id: string) => Task | undefined;
+  getProjectById?: (id: string) => Project | undefined;
 }
 
 interface PendingUpdate {
@@ -73,6 +74,7 @@ export function useEventDrag({
   updateTask,
   deleteTask,
   getTaskById,
+  getProjectById,
 }: UseEventDragOptions) {
   const [dragState, setDragState] = useState<DragState | null>(null);
   const isDragging = dragState !== null;
@@ -128,6 +130,20 @@ export function useEventDrag({
       const task = getTaskById(prev.taskId);
       if (task && prev.offsetDays !== 0) {
         const newDueDate = computeNewDueDate(task, prev.offsetDays);
+
+        // Block moves that go outside the task's project bounds
+        if (task.projectId && getProjectById) {
+          const project = getProjectById(task.projectId);
+          if (project) {
+            const pStart = project.dueDate.start;
+            const pEnd = project.dueDate.end ?? project.dueDate.start;
+            const taskEnd = newDueDate.end ?? newDueDate.start;
+            if (newDueDate.start < pStart || taskEnd > pEnd) {
+              return null; // Reject the move — task snaps back
+            }
+          }
+        }
+
         pendingUpdateRef.current = {
           type: "move",
           taskId: prev.taskId,
@@ -137,7 +153,7 @@ export function useEventDrag({
 
       return null;
     });
-  }, [getTaskById]);
+  }, [getTaskById, getProjectById]);
 
   // Apply pending updates after render to avoid setState-during-render
   useEffect(() => {

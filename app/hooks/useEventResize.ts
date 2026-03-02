@@ -1,12 +1,13 @@
 "use client";
 
 import { ResizeEdge, ResizeState } from "@/app/types/calendar";
-import { Task, TaskFormData } from "@/app/types/task";
+import { Project, Task, TaskFormData } from "@/app/types/task";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface UseEventResizeOptions {
   updateTask: (id: string, updates: Partial<TaskFormData>) => void;
   getTaskById: (id: string) => Task | undefined;
+  getProjectById?: (id: string) => Project | undefined;
 }
 
 interface PendingUpdate {
@@ -76,6 +77,7 @@ export function computeResizePreviewDates(
 export function useEventResize({
   updateTask,
   getTaskById,
+  getProjectById,
 }: UseEventResizeOptions) {
   const [resizeState, setResizeState] = useState<ResizeState | null>(null);
   const isResizing = resizeState !== null;
@@ -109,13 +111,27 @@ export function useEventResize({
       const task = getTaskById(prev.taskId);
       if (task && prev.currentDateStr !== prev.originalDateStr) {
         const newDueDate = computeNewDueDate(task, prev);
+
+        // Block resizes that go outside the task's project bounds
+        if (task.projectId && getProjectById) {
+          const project = getProjectById(task.projectId);
+          if (project) {
+            const pStart = project.dueDate.start;
+            const pEnd = project.dueDate.end ?? project.dueDate.start;
+            const taskEnd = newDueDate.end ?? newDueDate.start;
+            if (newDueDate.start < pStart || taskEnd > pEnd) {
+              return null; // Reject the resize — edge snaps back
+            }
+          }
+        }
+
         // Queue the update to be applied in useEffect (after render)
         pendingUpdateRef.current = { taskId: prev.taskId, dueDate: newDueDate };
       }
 
       return null;
     });
-  }, [getTaskById]);
+  }, [getTaskById, getProjectById]);
 
   // Apply pending updates after render to avoid setState-during-render
   useEffect(() => {

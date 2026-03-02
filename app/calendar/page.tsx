@@ -12,6 +12,7 @@ import {
   computeResizePreviewDates,
   useEventResize,
 } from "@/app/hooks/useEventResize";
+import { useProjects } from "@/app/hooks/useProjects";
 import { useTaskManager } from "@/app/hooks/useTaskManager";
 import { Task, TaskFormData } from "@/app/types/task";
 import { useMemo, useState } from "react";
@@ -20,6 +21,7 @@ export default function CalendarPage() {
   const { tasks, addTask, updateTask, deleteTask, getTaskById } =
     useTaskManager();
   const { categories, addCategory } = useCategories();
+  const { projects, getProjectById } = useProjects();
 
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
@@ -35,12 +37,14 @@ export default function CalendarPage() {
   const { resizeState, startResize, updateResize } = useEventResize({
     updateTask,
     getTaskById,
+    getProjectById,
   });
 
   const { dragState, startDrag, updateDrag, setOverTrash } = useEventDrag({
     updateTask,
     deleteTask,
     getTaskById,
+    getProjectById,
   });
 
   // Ensure resize and drag are mutually exclusive
@@ -192,6 +196,7 @@ export default function CalendarPage() {
           previewDates={previewDates}
           draggedTask={previewTask}
           draggedCategory={previewCategory}
+          projects={projects}
         />
       </main>
 

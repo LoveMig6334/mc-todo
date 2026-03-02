@@ -13,11 +13,12 @@ import {
   ResizeEdge,
   ResizeState,
 } from "@/app/types/calendar";
-import { Category, Task } from "@/app/types/task";
+import { Category, Project, Task } from "@/app/types/task";
 import { useMemo } from "react";
 import CalendarDayCell from "./CalendarDayCell";
 import CalendarEventPopover from "./CalendarEventPopover";
 import CalendarWeekEvents from "./CalendarWeekEvents";
+import ProjectOverlay from "./ProjectOverlay";
 
 interface CalendarGridProps {
   grid: CalendarDay[][];
@@ -35,6 +36,7 @@ interface CalendarGridProps {
   previewDates?: string[];
   draggedTask?: Task;
   draggedCategory?: Category;
+  projects?: Project[];
 }
 
 export default function CalendarGrid({
@@ -52,6 +54,7 @@ export default function CalendarGrid({
   previewDates,
   draggedTask,
   draggedCategory,
+  projects = [],
 }: CalendarGridProps) {
   const isResizing = resizeState !== null;
   const isDragging = dragState !== null;
@@ -123,6 +126,15 @@ export default function CalendarGrid({
 
         return (
           <div key={weekIdx} className="relative">
+            {/* Project color overlays — rendered behind all other content */}
+            {projects.map((project) => (
+              <ProjectOverlay
+                key={project.id}
+                project={project}
+                weekDays={weekDays}
+              />
+            ))}
+
             {/* Week events overlay using CSS Grid column spanning */}
             <CalendarWeekEvents
               weekDays={weekDays}
