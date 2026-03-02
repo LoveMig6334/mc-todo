@@ -72,9 +72,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | Feature | Description |
 |---------|-------------|
 | CRUD Operations | Create, edit, and delete tasks with title, details, priority (0–10), status, due dates, and reference links |
+| Projects | Group tasks into time-bounded, color-coded projects; project cards appear above standalone tasks with indented child tasks, expand/collapse, and inline add/edit/delete |
 | Categories | Custom user-manageable categories with color coding |
 | View Modes | Priority list (table) and category board (Kanban-style) with persistent preference |
-| Date Picker | Single-click for a day, click-and-hold to drag a date range |
+| Date Picker | Single-click for a day, click-and-hold to drag a date range; shows project time frame overlay when a task belongs to a project |
 | Subtasks | Add, reorder (drag), complete, and delete subtasks; each subtask has its own status, priority, and reference link |
 | Reference Links | Attach URLs to tasks and individual subtasks |
 | Search & Filter | Full-text search (title + details), status filter (6 options), category filter; active-filter counter with clear-all |
@@ -91,8 +92,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | Feature | Description |
 |---------|-------------|
 | Monthly Grid | English + Thai date display |
-| Drag & Drop | Drag events to reschedule; drag preview shows the new date range while dragging |
-| Edge Resizing | Drag the start or end edge of a multi-day event to extend or shrink its date range |
+| Project Overlays | Translucent color bands spanning each project's date range; rendered behind task events |
+| Drag & Drop | Drag events to reschedule; drag preview shows the new date range while dragging; project-task drags are constrained to the project's time frame |
+| Edge Resizing | Drag the start or end edge of a multi-day event to extend or shrink its date range; constrained to project bounds for project tasks |
 | Quick Create | Double-click any cell to open the task modal with that date prefilled |
 | Smart Stacking | Lane allocation algorithm places overlapping events side-by-side without collision |
 | Crowding Logic | Collapses to colored lines when cells are dense; hover to expand and see all events |
@@ -113,6 +115,21 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | Time Management Matrix | Eisenhower-style scatter plot — X-axis: Urgency (days left), Y-axis: Importance (priority); four color-coded quadrants (Q1 Do First, Q2 Schedule, Q3 Delegate, Q4 Eliminate); hover dots for task details |
 | Top Suggested Tasks | Top 3 recommended tasks ranked by quadrant (Q1 → Q2) then priority |
 | Category Editor | Add, rename, recolor, and delete categories without leaving the dashboard |
+
+### Project Management
+
+Projects are available across Task Management and Calendar View.
+
+| Feature | Description |
+|---------|-------------|
+| Project CRUD | Create, edit, and delete projects with title, description, color (8 presets), and a date range |
+| Visual Hierarchy | Projects render as full-width bordered cards above standalone tasks; child tasks are indented inside |
+| Expand / Collapse | Toggle the project body to hide or reveal its tasks |
+| Task Assignment | Assign tasks to a project via the Task modal's project dropdown, or use "Add task to project" from the project card |
+| Date Validation | Task due dates are validated against the project's time frame; the date picker highlights in-project days and dims out-of-bounds days |
+| Orphan Handling | Deleting a project unlinks all its child tasks (they become standalone) rather than deleting them |
+| Calendar Overlays | Each project renders a translucent color band across its date range on the calendar |
+| Drag/Resize Constraints | Task events belonging to a project cannot be dragged or resized outside the project's start/end bounds |
 
 ### Playground
 
@@ -140,7 +157,7 @@ A per-task interactive canvas workspace. Every task gets its own playground, per
 | UI Library | React 19.2.3 |
 | Language | TypeScript 5 |
 | Styling | Tailwind CSS v4 |
-| Testing | Jest 30 (23+ test files) |
+| Testing | Jest 30 (28+ test files, 395+ tests) |
 | State | Custom hooks + `localStorage` via `useSyncExternalStore` |
 
 ---
@@ -155,10 +172,11 @@ mc-todo/
 │   │   ├── task/          # TaskModal, TaskList, TaskItem, TaskCard,
 │   │   │                  # DatePicker, CategoryBoardView, PriorityListView,
 │   │   │                  # SubtaskList, ReferenceLinks, TaskFilterBar,
-│   │   │                  # ArchivedTasksPanel, GreetingBanner, ProgressBar
+│   │   │                  # ArchivedTasksPanel, GreetingBanner, ProgressBar,
+│   │   │                  # ProjectItem, ProjectModal
 │   │   ├── calendar/      # CalendarGrid, CalendarDayCell, CalendarEvent,
 │   │   │                  # CalendarHeader, CalendarEventPopover,
-│   │   │                  # DragPreviewEvent, TrashDropZone
+│   │   │                  # DragPreviewEvent, TrashDropZone, ProjectOverlay
 │   │   ├── dashboard/     # StatCard, CategoryBarChart, PriorityBarChart,
 │   │   │                  # StatusDonutChart, UpcomingDeadlines,
 │   │   │                  # TimeManagementMatrix, TopSuggestedTasks,
@@ -172,7 +190,7 @@ mc-todo/
 │   │                      # useTaskFilter, useViewPreference, useKeyboardShortcuts,
 │   │                      # useAutoArchive, useDashboardStats,
 │   │                      # useCalendarGrid, useEventResize, useEventDrag,
-│   │                      # usePlayground
+│   │                      # usePlayground, useProjects
 │   ├── lib/               # utils, calendarUtils, dashboardUtils
 │   ├── types/             # task.ts, calendar.ts, playground.ts
 │   ├── calendar/          # /calendar route
