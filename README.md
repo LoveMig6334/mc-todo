@@ -3,7 +3,7 @@
 # MC-Todo
 
 A modern, high-performance To-Do List application built with **Next.js**.\
-Task management, calendar visualization, and productivity analytics — all in one place.
+Task management, calendar visualization, productivity analytics, and a per-task playground — all in one place.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.1.6-000?logo=nextdotjs)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.2.3-61DAFB?logo=react&logoColor=fff)](https://react.dev/)
@@ -71,12 +71,18 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 | Feature | Description |
 |---------|-------------|
-| CRUD Operations | Create, edit, and delete tasks with title, details, priority (0–10), due dates, and reference links |
+| CRUD Operations | Create, edit, and delete tasks with title, details, priority (0–10), status, due dates, and reference links |
 | Categories | Custom user-manageable categories with color coding |
-| View Modes | List, table, category board, and priority list |
-| Date Picker | Single-click and drag-and-hold for date ranges |
-| Subtasks | Inline status and priority cycling |
-| Persistence | Data stored locally via `localStorage` |
+| View Modes | Priority list (table) and category board (Kanban-style) with persistent preference |
+| Date Picker | Single-click for a day, click-and-hold to drag a date range |
+| Subtasks | Add, reorder (drag), complete, and delete subtasks; each subtask has its own status, priority, and reference link |
+| Reference Links | Attach URLs to tasks and individual subtasks |
+| Search & Filter | Full-text search (title + details), status filter (6 options), category filter; active-filter counter with clear-all |
+| Keyboard Shortcuts | `N` — new task · `/` — focus search |
+| Auto-Archive | Completed tasks are automatically archived after a configurable threshold (3 / 7 / 14 / 30 days); restore or delete individually or in bulk |
+| Greeting Banner | Time-based greeting with the current date and rotating productivity tips |
+| Progress Bar | Visual completion percentage across all tasks |
+| Persistence | All data stored locally via `localStorage` |
 
 ### Calendar View
 
@@ -85,10 +91,13 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | Feature | Description |
 |---------|-------------|
 | Monthly Grid | English + Thai date display |
-| Drag & Drop | Event repositioning and edge-drag resizing |
-| Quick Create | Double-click any cell to create a task |
-| Smart Stacking | Lane allocation algorithm for overlapping events |
-| Crowding Logic | Collapses to colored lines when cells are dense, with hover expand |
+| Drag & Drop | Drag events to reschedule; drag preview shows the new date range while dragging |
+| Edge Resizing | Drag the start or end edge of a multi-day event to extend or shrink its date range |
+| Quick Create | Double-click any cell to open the task modal with that date prefilled |
+| Smart Stacking | Lane allocation algorithm places overlapping events side-by-side without collision |
+| Crowding Logic | Collapses to colored lines when cells are dense; hover to expand and see all events |
+| Trash Drop Zone | Drag any event onto the trash zone to delete it |
+| Event Popover | Hover an event to see a summary with quick edit and delete buttons |
 
 ### Dashboard Analytics
 
@@ -96,11 +105,30 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 | Feature | Description |
 |---------|-------------|
-| Key Metrics | Total, completed, and overdue task counts |
-| Category Breakdown | Horizontal bar chart |
-| Priority Distribution | Vertical bar chart |
-| Status Overview | SVG donut chart |
-| Upcoming Deadlines | Sorted deadline list |
+| Key Metrics | Total, completed (with %), overdue, and in-progress task counts |
+| Category Breakdown | Horizontal stacked bar chart with per-category completion rates and a manage button |
+| Priority Distribution | Vertical bar chart across four buckets: Low, Medium, High, Urgent |
+| Status Overview | SVG donut chart for Pending, In Progress, Paused, and Needs Approval statuses |
+| Upcoming Deadlines | Next 5 upcoming incomplete tasks, color-coded by urgency |
+| Time Management Matrix | Eisenhower-style scatter plot — X-axis: Urgency (days left), Y-axis: Importance (priority); four color-coded quadrants (Q1 Do First, Q2 Schedule, Q3 Delegate, Q4 Eliminate); hover dots for task details |
+| Top Suggested Tasks | Top 3 recommended tasks ranked by quadrant (Q1 → Q2) then priority |
+| Category Editor | Add, rename, recolor, and delete categories without leaving the dashboard |
+
+### Playground
+
+> **Route:** `/playground/[taskId]`
+
+A per-task interactive canvas workspace. Every task gets its own playground, persisted in `localStorage`.
+
+| Feature | Description |
+|---------|-------------|
+| Canvas | Infinite panning (click-drag) and zooming (Ctrl/Cmd + scroll, 0.25×–2×); zoom is cursor-centered |
+| Note Block | Rich-text note with editable title; formatting toolbar (Bold, Italic, Bullet List, Ordered List); 6 background color themes |
+| Todo List Block | Inline checklist with add/remove items, checkbox completion, drag-to-reorder, completion progress indicator, and 6 color themes |
+| Flowchart Block | Node/edge diagram builder — three node shapes (Rectangle, Diamond, Circle), straight and adaptive (curved) edge lines, four arrow directions (Forward, Backward, Both, None), edge labels, auto port selection, 6 color themes |
+| Block System | All blocks support: drag to reposition, resize via handles, z-index management (bring to front), and deletion |
+| Toolbar | Floating toolbar to add Note, Todo, and Flowchart blocks; zoom controls (fit, in, out, reset) |
+| Persistence | All block data serialized to JSON per task; debounced auto-save on every change |
 
 ---
 
@@ -112,7 +140,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | UI Library | React 19.2.3 |
 | Language | TypeScript 5 |
 | Styling | Tailwind CSS v4 |
-| Testing | Jest 30 (17 test files) |
+| Testing | Jest 30 (23+ test files) |
 | State | Custom hooks + `localStorage` via `useSyncExternalStore` |
 
 ---
@@ -125,18 +153,31 @@ mc-todo/
 │   ├── components/
 │   │   ├── layout/        # FloatingNav
 │   │   ├── task/          # TaskModal, TaskList, TaskItem, TaskCard,
-│   │   │                  # DatePicker, CategoryBoardView, PriorityListView
+│   │   │                  # DatePicker, CategoryBoardView, PriorityListView,
+│   │   │                  # SubtaskList, ReferenceLinks, TaskFilterBar,
+│   │   │                  # ArchivedTasksPanel, GreetingBanner, ProgressBar
 │   │   ├── calendar/      # CalendarGrid, CalendarDayCell, CalendarEvent,
-│   │   │                  # CalendarHeader, DragPreviewEvent, TrashDropZone
+│   │   │                  # CalendarHeader, CalendarEventPopover,
+│   │   │                  # DragPreviewEvent, TrashDropZone
 │   │   ├── dashboard/     # StatCard, CategoryBarChart, PriorityBarChart,
-│   │   │                  # StatusDonutChart, UpcomingDeadlines
-│   │   └── ui/            # Button, Dropdown, Input, Modal, Slider, Textarea
+│   │   │                  # StatusDonutChart, UpcomingDeadlines,
+│   │   │                  # TimeManagementMatrix, TopSuggestedTasks,
+│   │   │                  # CategoryEditModal
+│   │   ├── playground/    # PlaygroundCanvas, PlaygroundToolbar,
+│   │   │                  # NoteBlock, TodoListBlock, FlowchartBlock,
+│   │   │                  # BlockWrapper
+│   │   └── ui/            # Button, Dropdown, Input, Modal, ConfirmModal,
+│   │                      # Slider, Textarea, ShortcutHint
 │   ├── hooks/             # useTaskManager, useCategories, useLocalStorage,
-│   │                      # useCalendarGrid, useEventResize, useEventDrag
+│   │                      # useTaskFilter, useViewPreference, useKeyboardShortcuts,
+│   │                      # useAutoArchive, useDashboardStats,
+│   │                      # useCalendarGrid, useEventResize, useEventDrag,
+│   │                      # usePlayground
 │   ├── lib/               # utils, calendarUtils, dashboardUtils
-│   ├── types/             # task.ts, calendar.ts
+│   ├── types/             # task.ts, calendar.ts, playground.ts
 │   ├── calendar/          # /calendar route
 │   ├── dashboard/         # /dashboard route
+│   ├── playground/[taskId]/ # /playground/[taskId] route
 │   └── __tests__/         # Jest test suite
 ├── public/                # Static assets
 ├── CLAUDE.md              # Development knowledge base

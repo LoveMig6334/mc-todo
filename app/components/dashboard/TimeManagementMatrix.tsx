@@ -6,6 +6,13 @@ interface Props {
   data: MatrixData;
 }
 
+const QUADRANT_STYLES: Record<string, string> = {
+  q1: "text-red-400 bg-red-400/10 border border-red-400/20",
+  q2: "text-blue-400 bg-blue-400/10 border border-blue-400/20",
+  q3: "text-yellow-400 bg-yellow-400/10 border border-yellow-400/20",
+  q4: "text-zinc-400 bg-zinc-400/10 border border-zinc-400/20",
+};
+
 export default function TimeManagementMatrix({ data }: Props) {
   return (
     <div className="rounded-xl border border-zinc-700 bg-zinc-800 p-5 mt-4">
@@ -81,7 +88,7 @@ export default function TimeManagementMatrix({ data }: Props) {
             // Note: HTML/CSS coords are calculated from top-left.
             // - Left (X): 0% = urgent (left), 100% = not urgent (right).
             // - Top (Y): 0% priority = 100% top (bottom), 100% priority = 0% top (top).
-            // We subtract 10px (0.625rem) to center the dot accurately on its literal point.
+            // We subtract 7px (half of w-3.5 = 14px) to center the dot accurately on its literal point.
             style={{
               backgroundColor: t.categoryColor,
               left: `calc(${t.x}% - 7px)`,
@@ -102,15 +109,7 @@ export default function TimeManagementMatrix({ data }: Props) {
                     {t.categoryName}
                   </span>
                   <span
-                    className={`px-1.5 py-px rounded font-bold text-[9px] uppercase tracking-wider ${
-                      t.quadrant === "q1"
-                        ? "text-red-400 bg-red-400/10 border border-red-400/20"
-                        : t.quadrant === "q2"
-                          ? "text-blue-400 bg-blue-400/10 border border-blue-400/20"
-                          : t.quadrant === "q3"
-                            ? "text-yellow-400 bg-yellow-400/10 border border-yellow-400/20"
-                            : "text-zinc-400 bg-zinc-400/10 border border-zinc-400/20"
-                    }`}
+                    className={`px-1.5 py-px rounded font-bold text-[9px] uppercase tracking-wider ${QUADRANT_STYLES[t.quadrant] ?? QUADRANT_STYLES.q4}`}
                   >
                     {t.quadrant}
                   </span>

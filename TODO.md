@@ -47,6 +47,9 @@ A per-task interactive workspace where users can create flowcharts, take notes, 
 - [x] Node dragging with connected edges following
 - [x] Edge labels
 - [x] Basic node shapes (rectangle, diamond, circle)
+- [x] Edge line types (straight and adaptive/curved)
+- [x] Arrow direction control (forward, backward, both, none)
+- [x] Automatic port selection (nearest-neighbor matching between nodes)
 
 ### 4.6 Drawing Block
 
