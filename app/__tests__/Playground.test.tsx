@@ -551,6 +551,22 @@ const defaultDrawingData: DrawingBlockData = {
 };
 
 describe("DrawingBlock", () => {
+  // Mock HTMLCanvasElement.getContext for jsdom
+  const mockGetContext = jest.fn(() => ({
+    clearRect: jest.fn(),
+    save: jest.fn(),
+    restore: jest.fn(),
+    beginPath: jest.fn(),
+    moveTo: jest.fn(),
+    lineTo: jest.fn(),
+    stroke: jest.fn(),
+    toDataURL: jest.fn(() => "data:image/png;base64,mock"),
+  }));
+
+  beforeAll(() => {
+    HTMLCanvasElement.prototype.getContext = mockGetContext as never;
+  });
+
   const defaultProps = {
     data: defaultDrawingData,
     isSelected: false,
@@ -605,7 +621,8 @@ describe("DrawingBlock", () => {
     expect(screen.getByTitle("White")).toBeInTheDocument();
     expect(screen.getByTitle("Orange")).toBeInTheDocument();
     expect(screen.getByTitle("Red")).toBeInTheDocument();
-    expect(screen.getByTitle("Blue")).toBeInTheDocument();
+    // "Blue" appears in both stroke colors and block colors
+    expect(screen.getAllByTitle("Blue").length).toBeGreaterThanOrEqual(1);
   });
 
   it("shows stroke width buttons when selected", () => {

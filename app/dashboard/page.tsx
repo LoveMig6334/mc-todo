@@ -40,7 +40,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-zinc-900">
       <FloatingNav currentPath="/dashboard" />
 
-      <main className="mx-auto max-w-[60%] px-4 pb-12 pt-24">
+      <main className="mx-auto max-w-[70%] px-4 pb-12 pt-24">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-white">Dashboard</h1>
