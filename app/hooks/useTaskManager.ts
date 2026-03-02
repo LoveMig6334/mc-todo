@@ -114,6 +114,7 @@ export function useTaskManager() {
       subtasks: t.subtasks ?? [],
       completedAt: t.completedAt ?? null,
       archived: t.archived ?? false,
+      projectId: t.projectId ?? undefined,
     }));
   }, [tasks]);
 

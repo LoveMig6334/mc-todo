@@ -35,6 +35,7 @@ export interface Task {
   title: string;
   details: string;
   categoryId: string;
+  projectId?: string; // undefined = standalone task
   priority: number; // 0-10, where 10 is most urgent
   status: TaskStatus;
   dueDate: {
