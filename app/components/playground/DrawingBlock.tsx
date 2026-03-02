@@ -12,6 +12,31 @@ interface DrawingBlockProps {
 
 const CANVAS_PADDING = 6; // px padding inside the block wrapper
 
+function drawStroke(ctx: CanvasRenderingContext2D, stroke: DrawingStroke) {
+  if (stroke.points.length < 2) return;
+
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.lineWidth = stroke.width;
+
+  if (stroke.color === "eraser") {
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.strokeStyle = "rgba(0,0,0,1)";
+  } else {
+    ctx.globalCompositeOperation = "source-over";
+    ctx.strokeStyle = stroke.color;
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+  for (let i = 1; i < stroke.points.length; i++) {
+    ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
 export default function DrawingBlock({
   data,
   isSelected,
@@ -45,31 +70,6 @@ export default function DrawingBlock({
       drawStroke(ctx, stroke);
     }
   }, [data.strokes, canvasWidth, canvasHeight]);
-
-  const drawStroke = (ctx: CanvasRenderingContext2D, stroke: DrawingStroke) => {
-    if (stroke.points.length < 2) return;
-
-    ctx.save();
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.lineWidth = stroke.width;
-
-    if (stroke.color === "eraser") {
-      ctx.globalCompositeOperation = "destination-out";
-      ctx.strokeStyle = "rgba(0,0,0,1)";
-    } else {
-      ctx.globalCompositeOperation = "source-over";
-      ctx.strokeStyle = stroke.color;
-    }
-
-    ctx.beginPath();
-    ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
-    for (let i = 1; i < stroke.points.length; i++) {
-      ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
-    }
-    ctx.stroke();
-    ctx.restore();
-  };
 
   const getCanvasPoint = useCallback((e: React.PointerEvent) => {
     const canvas = canvasRef.current;
