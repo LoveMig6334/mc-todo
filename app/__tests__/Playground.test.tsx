@@ -1,8 +1,10 @@
 import BlockWrapper from "@/app/components/playground/BlockWrapper";
+import DrawingBlock from "@/app/components/playground/DrawingBlock";
 import NoteBlock from "@/app/components/playground/NoteBlock";
 import PlaygroundToolbar from "@/app/components/playground/PlaygroundToolbar";
 import TodoListBlock from "@/app/components/playground/TodoListBlock";
 import {
+  DrawingBlockData,
   NoteBlockData,
   PlaygroundBlock,
   TodoBlockData,
@@ -298,6 +300,7 @@ describe("PlaygroundToolbar", () => {
     onAddNote: jest.fn(),
     onAddTodo: jest.fn(),
     onAddFlowchart: jest.fn(),
+    onAddDrawing: jest.fn(),
   };
 
   it("renders zoom percentage", () => {
@@ -366,6 +369,12 @@ describe("PlaygroundToolbar", () => {
     render(<PlaygroundToolbar {...defaultProps} />);
     fireEvent.click(screen.getByTitle("Add Flowchart"));
     expect(defaultProps.onAddFlowchart).toHaveBeenCalled();
+  });
+
+  it("calls onAddDrawing when Draw button clicked", () => {
+    render(<PlaygroundToolbar {...defaultProps} />);
+    fireEvent.click(screen.getByTitle("Add Drawing"));
+    expect(defaultProps.onAddDrawing).toHaveBeenCalled();
   });
 });
 
@@ -531,5 +540,108 @@ describe("TodoListBlock", () => {
       target: { value: "New Title" },
     });
     expect(onUpdate).toHaveBeenCalledWith({ title: "New Title" });
+  });
+});
+
+// --- DrawingBlock ---
+
+const defaultDrawingData: DrawingBlockData = {
+  strokes: [],
+  color: "#27272a",
+};
+
+describe("DrawingBlock", () => {
+  const defaultProps = {
+    data: defaultDrawingData,
+    isSelected: false,
+    onUpdate: jest.fn(),
+    blockSize: { width: 400, height: 300 },
+  };
+
+  it("renders canvas element", () => {
+    render(<DrawingBlock {...defaultProps} />);
+    expect(screen.getByTestId("drawing-canvas")).toBeInTheDocument();
+  });
+
+  it("shows empty state text when not selected and no strokes", () => {
+    render(<DrawingBlock {...defaultProps} />);
+    expect(screen.getByText("Click to draw")).toBeInTheDocument();
+  });
+
+  it("hides empty state text when has strokes", () => {
+    const dataWithStrokes: DrawingBlockData = {
+      ...defaultDrawingData,
+      strokes: [
+        {
+          points: [
+            { x: 0, y: 0 },
+            { x: 10, y: 10 },
+          ],
+          color: "#ffffff",
+          width: 3,
+        },
+      ],
+    };
+    render(<DrawingBlock {...defaultProps} data={dataWithStrokes} />);
+    expect(screen.queryByText("Click to draw")).not.toBeInTheDocument();
+  });
+
+  it("shows toolbar when selected", () => {
+    render(<DrawingBlock {...defaultProps} isSelected={true} />);
+    expect(screen.getByTestId("drawing-toolbar")).toBeInTheDocument();
+    expect(screen.getByTitle("Pen tool")).toBeInTheDocument();
+    expect(screen.getByTitle("Eraser tool")).toBeInTheDocument();
+    expect(screen.getByTitle("Clear canvas")).toBeInTheDocument();
+    expect(screen.getByTitle("Export as PNG")).toBeInTheDocument();
+  });
+
+  it("hides toolbar when not selected", () => {
+    render(<DrawingBlock {...defaultProps} isSelected={false} />);
+    expect(screen.queryByTestId("drawing-toolbar")).not.toBeInTheDocument();
+  });
+
+  it("shows stroke color buttons when selected", () => {
+    render(<DrawingBlock {...defaultProps} isSelected={true} />);
+    expect(screen.getByTitle("White")).toBeInTheDocument();
+    expect(screen.getByTitle("Orange")).toBeInTheDocument();
+    expect(screen.getByTitle("Red")).toBeInTheDocument();
+    expect(screen.getByTitle("Blue")).toBeInTheDocument();
+  });
+
+  it("shows stroke width buttons when selected", () => {
+    render(<DrawingBlock {...defaultProps} isSelected={true} />);
+    expect(screen.getByTitle("Thin")).toBeInTheDocument();
+    expect(screen.getByTitle("Medium")).toBeInTheDocument();
+    expect(screen.getByTitle("Thick")).toBeInTheDocument();
+  });
+
+  it("calls onUpdate with empty strokes when clear is clicked", () => {
+    const onUpdate = jest.fn();
+    render(
+      <DrawingBlock {...defaultProps} isSelected={true} onUpdate={onUpdate} />,
+    );
+    fireEvent.click(screen.getByTitle("Clear canvas"));
+    expect(onUpdate).toHaveBeenCalledWith({ strokes: [] });
+  });
+
+  it("shows block color picker when selected", () => {
+    render(<DrawingBlock {...defaultProps} isSelected={true} />);
+    // Block color palette (same as NoteBlock)
+    expect(screen.getByTitle("Zinc")).toBeInTheDocument();
+    expect(screen.getByTitle("Amber")).toBeInTheDocument();
+  });
+
+  it("hides block color picker when not selected", () => {
+    render(<DrawingBlock {...defaultProps} isSelected={false} />);
+    expect(screen.queryByTitle("Zinc")).not.toBeInTheDocument();
+  });
+
+  it("calls onUpdate with new block color when color dot clicked", () => {
+    const onUpdate = jest.fn();
+    render(
+      <DrawingBlock {...defaultProps} isSelected={true} onUpdate={onUpdate} />,
+    );
+    fireEvent.click(screen.getByTitle("Amber"));
+    expect(onUpdate).toHaveBeenCalledWith({ color: "#3d2b1a" });
   });
 });
