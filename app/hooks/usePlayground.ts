@@ -40,8 +40,14 @@ const DEFAULT_DRAWING_DATA: BlockData = {
 };
 
 const DEFAULT_BLOCK_SIZE = { width: 280, height: 200 };
-const FLOWCHART_BLOCK_SIZE = { width: 400, height: 300 };
-const DRAWING_BLOCK_SIZE = { width: 400, height: 300 };
+const LARGE_BLOCK_SIZE = { width: 400, height: 300 };
+
+const DEFAULT_BLOCK_DATA: Record<PlaygroundBlock["type"], BlockData> = {
+  note: DEFAULT_NOTE_DATA,
+  todo: DEFAULT_TODO_DATA,
+  flowchart: DEFAULT_FLOWCHART_DATA,
+  drawing: DEFAULT_DRAWING_DATA,
+};
 
 export function usePlayground(taskId: string) {
   const [state, setState] = useLocalStorage<PlaygroundState>(
@@ -52,23 +58,14 @@ export function usePlayground(taskId: string) {
   const addBlock = useCallback(
     (type: PlaygroundBlock["type"], position: { x: number; y: number }) => {
       const maxZ = state.blocks.reduce((max, b) => Math.max(max, b.zIndex), 0);
-      const defaultData =
-        type === "flowchart"
-          ? { ...DEFAULT_FLOWCHART_DATA }
-          : type === "drawing"
-            ? { ...DEFAULT_DRAWING_DATA }
-            : type === "todo"
-              ? { ...DEFAULT_TODO_DATA }
-              : { ...DEFAULT_NOTE_DATA };
+      const defaultData = { ...DEFAULT_BLOCK_DATA[type] };
       const newBlock: PlaygroundBlock = {
         id: generateId(),
         type,
         position,
         size:
           type === "flowchart" || type === "drawing"
-            ? type === "flowchart"
-              ? { ...FLOWCHART_BLOCK_SIZE }
-              : { ...DRAWING_BLOCK_SIZE }
+            ? { ...LARGE_BLOCK_SIZE }
             : { ...DEFAULT_BLOCK_SIZE },
         zIndex: maxZ + 1,
         data: defaultData,

@@ -1,7 +1,7 @@
 "use client";
 
 import { DrawingBlockData, DrawingStroke } from "@/app/types/playground";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface DrawingBlockProps {
   data: DrawingBlockData;
@@ -37,22 +37,28 @@ const BLOCK_COLORS = [
   { hex: "#2d1b4e", label: "Purple" },
 ];
 
-function drawStroke(ctx: CanvasRenderingContext2D, stroke: DrawingStroke) {
-  if (stroke.points.length < 2) return;
-
-  ctx.save();
+function applyStrokeStyle(
+  ctx: CanvasRenderingContext2D,
+  color: string,
+  width: number,
+) {
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
-  ctx.lineWidth = stroke.width;
-
-  if (stroke.color === "eraser") {
+  ctx.lineWidth = width;
+  if (color === "eraser") {
     ctx.globalCompositeOperation = "destination-out";
     ctx.strokeStyle = "rgba(0,0,0,1)";
   } else {
     ctx.globalCompositeOperation = "source-over";
-    ctx.strokeStyle = stroke.color;
+    ctx.strokeStyle = color;
   }
+}
 
+function drawStroke(ctx: CanvasRenderingContext2D, stroke: DrawingStroke) {
+  if (stroke.points.length < 2) return;
+
+  ctx.save();
+  applyStrokeStyle(ctx, stroke.color, stroke.width);
   ctx.beginPath();
   ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
   for (let i = 1; i < stroke.points.length; i++) {
@@ -80,23 +86,21 @@ export default function DrawingBlock({
   // Refs for pointer event callbacks (avoid stale closures)
   const strokeColorRef = useRef(activeColor);
   const strokeWidthRef = useRef(activeWidth);
-  const isEraserRef = useRef(isEraser);
 
   useEffect(() => {
     strokeColorRef.current = isEraser ? "eraser" : activeColor;
-  }, [activeColor, isEraser]);
-
-  useEffect(() => {
     strokeWidthRef.current = isEraser ? 16 : activeWidth;
-  }, [activeWidth, isEraser]);
-
-  useEffect(() => {
-    isEraserRef.current = isEraser;
-  }, [isEraser]);
+  }, [activeColor, activeWidth, isEraser]);
 
   // Canvas pixel dimensions
-  const canvasWidth = Math.max(1, blockSize.width - CANVAS_PADDING * 2);
-  const canvasHeight = Math.max(1, blockSize.height - CANVAS_PADDING * 2);
+  const canvasWidth = useMemo(
+    () => Math.max(1, blockSize.width - CANVAS_PADDING * 2),
+    [blockSize.width],
+  );
+  const canvasHeight = useMemo(
+    () => Math.max(1, blockSize.height - CANVAS_PADDING * 2),
+    [blockSize.height],
+  );
 
   // Redraw all strokes whenever data.strokes or canvas dimensions change
   useEffect(() => {
@@ -134,18 +138,7 @@ export default function DrawingBlock({
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.lineWidth = strokeWidthRef.current;
-
-      if (strokeColorRef.current === "eraser") {
-        ctx.globalCompositeOperation = "destination-out";
-        ctx.strokeStyle = "rgba(0,0,0,1)";
-      } else {
-        ctx.globalCompositeOperation = "source-over";
-        ctx.strokeStyle = strokeColorRef.current;
-      }
-
+      applyStrokeStyle(ctx, strokeColorRef.current, strokeWidthRef.current);
       ctx.beginPath();
       const pt = currentPoints.current[0];
       ctx.moveTo(pt.x, pt.y);
