@@ -217,6 +217,7 @@ export default function CalendarPage() {
         onAddCategory={addCategory}
         editingTask={editingTask}
         prefilledDate={prefilledDate}
+        projects={projects}
       />
     </div>
   );
