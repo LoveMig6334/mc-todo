@@ -89,6 +89,19 @@ function TaskModalContent({
   const [formData, setFormData] = useState<TaskFormData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Filter projects to only those whose timeframe contains the task's due date
+  const availableProjects = useMemo(() => {
+    if (!projects) return [];
+    if (!formData.dueDate.start) return projects;
+    const taskStart = formData.dueDate.start;
+    const taskEnd = formData.dueDate.end ?? formData.dueDate.start;
+    return projects.filter((p) => {
+      const projStart = p.dueDate.start;
+      const projEnd = p.dueDate.end ?? p.dueDate.start;
+      return taskStart >= projStart && taskEnd <= projEnd;
+    });
+  }, [projects, formData.dueDate]);
+
   // Derive active project to pass bounds to DatePicker and validate dates
   const activeProject = useMemo(() => {
     if (!formData.projectId || !projects) return undefined;
@@ -214,12 +227,12 @@ function TaskModalContent({
       </div>
 
       {/* Project (optional) */}
-      {projects && projects.length > 0 && (
+      {availableProjects.length > 0 && (
         <Dropdown
           label="Project (optional)"
           options={[
             { id: "", label: "None" },
-            ...projects.map((p) => ({ id: p.id, label: p.title, color: p.color })),
+            ...availableProjects.map((p) => ({ id: p.id, label: p.title, color: p.color })),
           ]}
           value={formData.projectId ?? ""}
           onChange={(value) =>
@@ -244,10 +257,21 @@ function TaskModalContent({
         value={formData.dueDate}
         projectBounds={projectBounds}
         onChange={(value: DateRange) => {
-          updateFormData("dueDate", value);
-          if (errors.dueDate) {
-            setErrors((prev) => ({ ...prev, dueDate: "" }));
+          const taskStart = value.start;
+          const taskEnd = value.end ?? value.start;
+          let newProjectId = formData.projectId;
+          if (newProjectId && projects) {
+            const proj = projects.find((p) => p.id === newProjectId);
+            if (proj) {
+              const projStart = proj.dueDate.start;
+              const projEnd = proj.dueDate.end ?? proj.dueDate.start;
+              if (taskStart < projStart || taskEnd > projEnd) {
+                newProjectId = undefined;
+              }
+            }
           }
+          setFormData((prev) => ({ ...prev, dueDate: value, projectId: newProjectId }));
+          if (errors.dueDate) setErrors((prev) => ({ ...prev, dueDate: "" }));
         }}
       />
       {errors.dueDate && (
