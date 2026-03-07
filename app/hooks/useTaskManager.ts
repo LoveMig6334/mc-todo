@@ -167,15 +167,14 @@ export function useTaskManager() {
       if (a.completed !== b.completed) {
         return a.completed ? 1 : -1;
       }
-      // Sort by priority (higher first)
-      if (a.priority !== b.priority) {
-        return b.priority - a.priority;
+      // Sort by due date (earlier first)
+      const aTime = new Date(a.dueDate.start).getTime();
+      const bTime = new Date(b.dueDate.start).getTime();
+      if (aTime !== bTime) {
+        return aTime - bTime;
       }
-      // Then by due date
-      return (
-        new Date(a.dueDate.start).getTime() -
-        new Date(b.dueDate.start).getTime()
-      );
+      // Then by priority (higher first) as tiebreaker
+      return b.priority - a.priority;
     });
   }, [activeTasks]);
 
