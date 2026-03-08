@@ -1,7 +1,9 @@
 "use client";
 
+import { springSnappy } from "@/app/lib/animation";
 import { cn } from "@/app/lib/utils";
 import { PlaygroundViewport } from "@/app/types/playground";
+import { motion } from "motion/react";
 
 interface PlaygroundToolbarProps {
   viewport: PlaygroundViewport;
@@ -46,7 +48,12 @@ export default function PlaygroundToolbar({
   );
 
   return (
-    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 rounded-xl bg-zinc-900 border border-zinc-800 px-2 py-1.5 shadow-lg">
+    <motion.div
+      initial={{ y: 20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={springSnappy}
+      className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 rounded-xl bg-zinc-900 border border-zinc-800 px-2 py-1.5 shadow-lg"
+    >
       {/* Add Note button */}
       <button
         onClick={onAddNote}
@@ -180,6 +187,6 @@ export default function PlaygroundToolbar({
           <line x1="5" y1="12" x2="19" y2="12" />
         </svg>
       </button>
-    </div>
+    </motion.div>
   );
 }

@@ -37,10 +37,16 @@ export default function TopSuggestedTasks({ tasks }: Props) {
         </svg>
         Top 3 Tasks To Do Now
       </h3>
-      <div className="space-y-2">
+      <motion.div
+        className="space-y-2"
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+      >
         {tasks.map((t, i) => (
-          <div
+          <motion.div
             key={t.id}
+            variants={fadeInUp}
             className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg bg-zinc-700/30 border border-zinc-700/50 hover:border-zinc-600 transition-colors"
           >
             <div className="w-6 h-6 rounded-full bg-zinc-800 hidden sm:flex items-center justify-center text-xs font-bold text-zinc-400 border border-zinc-700 shrink-0 shadow-inner">
@@ -83,9 +89,9 @@ export default function TopSuggestedTasks({ tasks }: Props) {
             >
               {QUADRANT_LABELS[t.quadrant]}
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </div>
   );
 }

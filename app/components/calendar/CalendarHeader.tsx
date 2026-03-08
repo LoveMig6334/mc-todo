@@ -1,6 +1,7 @@
 "use client";
 
 import { MONTHS, THAI_MONTHS } from "@/app/lib/calendarUtils";
+import { AnimatePresence, motion } from "motion/react";
 
 interface CalendarHeaderProps {
   currentMonth: number;
@@ -44,12 +45,19 @@ export default function CalendarHeader({
           </svg>
         </button>
 
-        <h2
-          className="text-xl font-semibold text-white min-w-50 text-center"
-          title={thaiMonth}
-        >
-          {monthName} {currentYear}
-        </h2>
+        <AnimatePresence mode="wait">
+          <motion.h2
+            key={`${currentYear}-${currentMonth}`}
+            initial={{ opacity: 0, x: 6 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -6 }}
+            transition={{ duration: 0.15 }}
+            className="text-xl font-semibold text-white min-w-50 text-center"
+            title={thaiMonth}
+          >
+            {monthName} {currentYear}
+          </motion.h2>
+        </AnimatePresence>
 
         <button
           type="button"
