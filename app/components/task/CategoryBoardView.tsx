@@ -1,6 +1,8 @@
 "use client";
 
+import { springSnappy } from "@/app/lib/animation";
 import { Category, Task, TaskFormData } from "@/app/types/task";
+import { AnimatePresence, motion } from "motion/react";
 import { useMemo } from "react";
 import TaskCard from "./TaskCard";
 
@@ -139,17 +141,27 @@ export default function CategoryBoardView({
             {column.tasks.length === 0 ? (
               <p className="py-8 text-center text-sm text-zinc-600">No tasks</p>
             ) : (
-              column.tasks.map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  category={getCategoryById(task.categoryId)}
-                  onToggleComplete={onToggleComplete}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  onUpdate={onUpdate}
-                />
-              ))
+              <AnimatePresence mode="popLayout" initial={false}>
+                {column.tasks.map((task) => (
+                  <motion.div
+                    key={task.id}
+                    layout
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4, transition: { duration: 0.15 } }}
+                    transition={springSnappy}
+                  >
+                    <TaskCard
+                      task={task}
+                      category={getCategoryById(task.categoryId)}
+                      onToggleComplete={onToggleComplete}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                      onUpdate={onUpdate}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             )}
           </div>
         </div>

@@ -1,7 +1,9 @@
 "use client";
 
+import { springSnappy } from "@/app/lib/animation";
 import { formatDateRange } from "@/app/lib/utils";
 import { Category, Project, Task, TaskFormData } from "@/app/types/task";
+import { motion } from "motion/react";
 import { useState } from "react";
 import TaskItem from "./TaskItem";
 
@@ -54,7 +56,7 @@ export default function ProjectItem({
               className="shrink-0 text-zinc-400 hover:text-white transition-colors"
               aria-label={collapsed ? "Expand project" : "Collapse project"}
             >
-              <svg
+              <motion.svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
                 height="16"
@@ -64,10 +66,11 @@ export default function ProjectItem({
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className={`transition-transform duration-200 ${collapsed ? "-rotate-90" : ""}`}
+                animate={{ rotate: collapsed ? -90 : 0 }}
+                transition={springSnappy}
               >
                 <polyline points="6 9 12 15 18 9" />
-              </svg>
+              </motion.svg>
             </button>
 
             {/* Color dot */}
@@ -160,7 +163,15 @@ export default function ProjectItem({
           )}
 
           {/* Collapsible body */}
-          {!collapsed && (
+          <motion.div
+            initial={false}
+            animate={{
+              height: collapsed ? 0 : "auto",
+              opacity: collapsed ? 0 : 1,
+            }}
+            transition={springSnappy}
+            style={{ overflow: "hidden" }}
+          >
             <div className="border-t border-zinc-800">
               {/* Child tasks — indented one level */}
               {tasks.length > 0 ? (
@@ -207,7 +218,7 @@ export default function ProjectItem({
                 </button>
               </div>
             </div>
-          )}
+          </motion.div>
         </div>
       </div>
     </div>

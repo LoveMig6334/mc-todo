@@ -1,6 +1,8 @@
 "use client";
 
+import { springSnappy } from "@/app/lib/animation";
 import { Category, Task, TaskFormData } from "@/app/types/task";
+import { AnimatePresence, motion } from "motion/react";
 import TaskItem from "./TaskItem";
 
 interface TaskListProps {
@@ -53,17 +55,27 @@ export default function TaskList({
 
   return (
     <div className="space-y-3">
-      {tasks.map((task) => (
-        <TaskItem
-          key={task.id}
-          task={task}
-          category={getCategoryById(task.categoryId)}
-          onToggleComplete={onToggleComplete}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onUpdate={onUpdate}
-        />
-      ))}
+      <AnimatePresence mode="popLayout" initial={false}>
+        {tasks.map((task) => (
+          <motion.div
+            key={task.id}
+            layout
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4, transition: { duration: 0.15 } }}
+            transition={springSnappy}
+          >
+            <TaskItem
+              task={task}
+              category={getCategoryById(task.categoryId)}
+              onToggleComplete={onToggleComplete}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onUpdate={onUpdate}
+            />
+          </motion.div>
+        ))}
+      </AnimatePresence>
     </div>
   );
 }

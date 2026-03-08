@@ -1,7 +1,9 @@
 "use client";
 
+import { springSnappy } from "@/app/lib/animation";
 import { formatDate } from "@/app/lib/utils";
 import { Task } from "@/app/types/task";
+import { motion } from "motion/react";
 import { useState } from "react";
 
 interface ArchivedTasksPanelProps {
@@ -60,11 +62,16 @@ export default function ArchivedTasksPanel({
           <span className="text-sm font-medium text-zinc-300">
             Archived Tasks
           </span>
-          <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-zinc-500">
+          <motion.span
+            key={archivedTasks.length}
+            animate={{ scale: [1, 1.25, 1] }}
+            transition={{ duration: 0.3 }}
+            className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-zinc-500 inline-block"
+          >
             {archivedTasks.length}
-          </span>
+          </motion.span>
         </div>
-        <svg
+        <motion.svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
           height="16"
@@ -74,14 +81,24 @@ export default function ArchivedTasksPanel({
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={`text-zinc-500 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+          className="text-zinc-500"
+          animate={{ rotate: isExpanded ? 180 : 0 }}
+          transition={springSnappy}
         >
           <polyline points="6 9 12 15 18 9" />
-        </svg>
+        </motion.svg>
       </button>
 
       {/* Expanded content */}
-      {isExpanded && (
+      <motion.div
+        initial={false}
+        animate={{
+          height: isExpanded ? "auto" : 0,
+          opacity: isExpanded ? 1 : 0,
+        }}
+        transition={springSnappy}
+        style={{ overflow: "hidden" }}
+      >
         <div className="border-t border-zinc-800">
           {/* Settings bar */}
           <div className="flex items-center justify-between gap-2 px-4 py-2.5 bg-zinc-800/30">
@@ -157,7 +174,7 @@ export default function ArchivedTasksPanel({
             </div>
           )}
         </div>
-      )}
+      </motion.div>
     </div>
   );
 }
