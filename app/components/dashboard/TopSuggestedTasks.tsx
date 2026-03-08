@@ -1,6 +1,8 @@
 "use client";
 
+import { fadeInUp, staggerContainer } from "@/app/lib/animation";
 import { MatrixTask } from "@/app/lib/dashboardUtils";
+import { motion } from "motion/react";
 
 interface Props {
   tasks: MatrixTask[];

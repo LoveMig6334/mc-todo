@@ -1,5 +1,9 @@
+"use client";
+
+import { fadeInUp, staggerContainer } from "@/app/lib/animation";
 import { UpcomingTask } from "@/app/lib/dashboardUtils";
 import { cn } from "@/app/lib/utils";
+import { motion } from "motion/react";
 
 interface UpcomingDeadlinesProps {
   tasks: UpcomingTask[];
@@ -27,10 +31,16 @@ export default function UpcomingDeadlines({ tasks }: UpcomingDeadlinesProps) {
           No upcoming deadlines.
         </p>
       ) : (
-        <div className="mt-4 space-y-2">
+        <motion.div
+          className="mt-4 space-y-2"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+        >
           {tasks.map((task) => (
-            <div
+            <motion.div
               key={task.id}
+              variants={fadeInUp}
               className="flex items-center gap-3 rounded-lg bg-zinc-900/50 px-3 py-2.5"
             >
               <span
@@ -48,9 +58,9 @@ export default function UpcomingDeadlines({ tasks }: UpcomingDeadlinesProps) {
               >
                 {formatDaysLeft(task.daysLeft)}
               </span>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );

@@ -1,4 +1,8 @@
+"use client";
+
+import { springBouncy } from "@/app/lib/animation";
 import { StatusStat } from "@/app/lib/dashboardUtils";
+import { motion } from "motion/react";
 
 interface StatusDonutChartProps {
   data: StatusStat[];
@@ -55,7 +59,7 @@ export default function StatusDonutChart({
             />
             {/* Data segments */}
             {segments.map((seg, i) => (
-              <circle
+              <motion.circle
                 key={data[i].status}
                 cx={CENTER}
                 cy={CENTER}
@@ -64,7 +68,9 @@ export default function StatusDonutChart({
                 stroke={seg.color}
                 strokeWidth={STROKE_WIDTH}
                 strokeDasharray={seg.dashArray}
-                strokeDashoffset={seg.dashOffset}
+                initial={{ strokeDashoffset: CIRCUMFERENCE }}
+                animate={{ strokeDashoffset: seg.dashOffset }}
+                transition={{ ...springBouncy, delay: i * 0.1 }}
                 strokeLinecap="butt"
               />
             ))}

@@ -1,4 +1,8 @@
+"use client";
+
+import { springBouncy } from "@/app/lib/animation";
 import { CategoryStat } from "@/app/lib/dashboardUtils";
+import { motion } from "motion/react";
 
 interface CategoryBarChartProps {
   data: CategoryStat[];
@@ -42,7 +46,7 @@ export default function CategoryBarChart({ data, onManage }: CategoryBarChartPro
         </p>
       ) : (
         <div className="mt-4 space-y-3">
-          {data.map((cat) => {
+          {data.map((cat, index) => {
             const totalPct = (cat.total / maxTotal) * 100;
             const completedPct =
               cat.total > 0 ? (cat.completed / cat.total) * 100 : 0;
@@ -61,18 +65,20 @@ export default function CategoryBarChart({ data, onManage }: CategoryBarChartPro
                     {cat.completed}/{cat.total}
                   </span>
                 </div>
-                <div
+                <motion.div
                   className="h-2 overflow-hidden rounded-full bg-zinc-700"
-                  style={{ width: `${totalPct}%` }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${totalPct}%` }}
+                  transition={{ ...springBouncy, delay: index * 0.06 }}
                 >
-                  <div
-                    className="h-full rounded-full transition-all duration-300"
-                    style={{
-                      width: `${completedPct}%`,
-                      backgroundColor: cat.color,
-                    }}
+                  <motion.div
+                    className="h-full rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${completedPct}%` }}
+                    transition={{ ...springBouncy, delay: index * 0.06 + 0.1 }}
+                    style={{ backgroundColor: cat.color }}
                   />
-                </div>
+                </motion.div>
               </div>
             );
           })}

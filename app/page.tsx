@@ -21,7 +21,9 @@ import { useProjects } from "@/app/hooks/useProjects";
 import { useTaskFilter } from "@/app/hooks/useTaskFilter";
 import { useTaskManager } from "@/app/hooks/useTaskManager";
 import { useViewPreference } from "@/app/hooks/useViewPreference";
+import { fadeInUp, springSnappy, staggerContainer } from "@/app/lib/animation";
 import { Project, ProjectFormData, Task, TaskFormData } from "@/app/types/task";
+import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function Home() {
@@ -287,54 +289,67 @@ export default function Home() {
           ref={addMenuRef}
           className="fixed bottom-6 right-6 flex flex-col items-end gap-2"
         >
-          {addMenuOpen && (
-            <div className="flex flex-col items-end gap-2 mb-1">
-              <button
-                onClick={handleOpenProjectModal}
-                className="flex items-center gap-2 rounded-full bg-zinc-800 border border-zinc-700 pl-3 pr-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 hover:border-zinc-600 transition-colors shadow-lg whitespace-nowrap"
+          <AnimatePresence>
+            {addMenuOpen && (
+              <motion.div
+                key="submenu"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                className="flex flex-col items-end gap-2 mb-1"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                <motion.button
+                  variants={fadeInUp}
+                  onClick={handleOpenProjectModal}
+                  className="flex items-center gap-2 rounded-full bg-zinc-800 border border-zinc-700 pl-3 pr-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 hover:border-zinc-600 transition-colors shadow-lg whitespace-nowrap"
                 >
-                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                </svg>
-                Project
-              </button>
-              <button
-                onClick={handleOpenModal}
-                className="flex items-center gap-2 rounded-full bg-zinc-800 border border-zinc-700 pl-3 pr-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 hover:border-zinc-600 transition-colors shadow-lg whitespace-nowrap"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                  </svg>
+                  Project
+                </motion.button>
+                <motion.button
+                  variants={fadeInUp}
+                  onClick={handleOpenModal}
+                  className="flex items-center gap-2 rounded-full bg-zinc-800 border border-zinc-700 pl-3 pr-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 hover:border-zinc-600 transition-colors shadow-lg whitespace-nowrap"
                 >
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Task
-              </button>
-            </div>
-          )}
-          <Button
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  Task
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <motion.button
             onClick={() => setAddMenuOpen((v) => !v)}
-            variant="primary"
-            size="lg"
-            className="rounded-full w-15 h-15 p-0 shadow-lg shadow-orange-500/20"
+            animate={{ rotate: addMenuOpen ? 45 : 0 }}
+            whileTap={{ scale: 0.9 }}
+            transition={springSnappy}
+            className="w-15 h-15 rounded-full bg-orange-500 text-white flex items-center justify-center shadow-lg shadow-orange-500/20 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-zinc-900"
+            aria-label="Open add menu"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -350,7 +365,7 @@ export default function Home() {
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
-          </Button>
+          </motion.button>
         </div>
 
         {/* Keyboard Shortcuts Hint */}
