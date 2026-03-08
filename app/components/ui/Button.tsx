@@ -1,7 +1,9 @@
 "use client";
 
+import { springFast } from "@/app/lib/animation";
 import { cn } from "@/app/lib/utils";
 import { ButtonHTMLAttributes, forwardRef } from "react";
+import { motion } from "motion/react";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "ghost" | "danger";
@@ -30,13 +32,15 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     return (
-      <button
+      <motion.button
         ref={ref}
         className={cn(baseStyles, variants[variant], sizes[size], className)}
+        whileTap={{ scale: 0.95 }}
+        transition={springFast}
         {...props}
       >
         {children}
-      </button>
+      </motion.button>
     );
   },
 );
