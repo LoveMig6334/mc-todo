@@ -1,5 +1,6 @@
 "use client";
 
+import { springBouncy, springSnappy } from "@/app/lib/animation";
 import {
   cn,
   formatDateRange,
@@ -7,6 +8,7 @@ import {
   isOverdue,
 } from "@/app/lib/utils";
 import { Category, Task, TaskFormData } from "@/app/types/task";
+import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useState } from "react";
 import SubtaskList from "./SubtaskList";
 
@@ -53,33 +55,46 @@ export default function TaskCard({
     >
       {/* Header: Checkbox + Title */}
       <div className="flex items-start gap-2">
-        <button
+        <motion.button
           onClick={() => onToggleComplete(task.id)}
+          whileTap={{ scale: 0.8 }}
+          transition={springBouncy}
           className={cn(
-            "mt-0.5 h-4 w-4 shrink-0 rounded border-2 transition-all duration-200",
+            "mt-0.5 h-4 w-4 shrink-0 rounded border-2 transition-colors duration-200",
             "flex items-center justify-center",
             task.completed
               ? "border-orange-500 bg-orange-500"
               : "border-zinc-500 hover:border-orange-500",
           )}
         >
-          {task.completed && (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="10"
-              height="10"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-white"
-            >
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          )}
-        </button>
+          <AnimatePresence>
+            {task.completed && (
+              <motion.span
+                key="check"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                transition={springBouncy}
+                style={{ display: "inline-flex" }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-white"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.button>
         <h4
           className={cn(
             "flex-1 text-sm font-medium text-white line-clamp-2",
@@ -174,7 +189,7 @@ export default function TaskCard({
           className="mt-1 inline-flex items-center rounded-full p-0.5 text-zinc-500 hover:text-zinc-300 transition-colors"
           aria-label={expanded ? "Collapse subtasks" : "Expand subtasks"}
         >
-          <svg
+          <motion.svg
             xmlns="http://www.w3.org/2000/svg"
             width="12"
             height="12"
@@ -184,13 +199,11 @@ export default function TaskCard({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={cn(
-              "transition-transform duration-200",
-              expanded && "rotate-180",
-            )}
+            animate={{ rotate: expanded ? 180 : 0 }}
+            transition={springSnappy}
           >
             <polyline points="6 9 12 15 18 9" />
-          </svg>
+          </motion.svg>
         </button>
       )}
 

@@ -1,6 +1,8 @@
 "use client";
 
+import { fadeInUp, slideDown, staggerContainer } from "@/app/lib/animation";
 import { cn } from "@/app/lib/utils";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
 interface DropdownOption {
@@ -102,7 +104,7 @@ export default function Dropdown({
             )}
             {selectedOption?.label || placeholder}
           </span>
-          <svg
+          <motion.svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
             height="16"
@@ -112,87 +114,103 @@ export default function Dropdown({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={cn("transition-transform", isOpen && "rotate-180")}
+            animate={{ rotate: isOpen ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
           >
             <polyline points="6 9 12 15 18 9" />
-          </svg>
+          </motion.svg>
         </button>
 
-        {isOpen && (
-          <div className="absolute z-10 mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-800 py-1 shadow-lg">
-            {options.map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                onClick={() => {
-                  onChange(option.id);
-                  setIsOpen(false);
-                }}
-                className={cn(
-                  "w-full px-3 py-2 text-left text-sm flex items-center gap-2",
-                  "hover:bg-zinc-700 transition-colors",
-                  option.id === value ? "text-orange-500" : "text-white",
-                )}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              variants={slideDown}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              className="absolute z-10 mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-800 py-1 shadow-lg"
+            >
+              <motion.div
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
               >
-                {option.color && (
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: option.color }}
-                  />
-                )}
-                {option.label}
-              </button>
-            ))}
+                {options.map((option) => (
+                  <motion.button
+                    key={option.id}
+                    type="button"
+                    variants={fadeInUp}
+                    onClick={() => {
+                      onChange(option.id);
+                      setIsOpen(false);
+                    }}
+                    className={cn(
+                      "w-full px-3 py-2 text-left text-sm flex items-center gap-2",
+                      "hover:bg-zinc-700 transition-colors",
+                      option.id === value ? "text-orange-500" : "text-white",
+                    )}
+                  >
+                    {option.color && (
+                      <span
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: option.color }}
+                      />
+                    )}
+                    {option.label}
+                  </motion.button>
+                ))}
+              </motion.div>
 
-            {allowAdd && (
-              <>
-                <div className="my-1 border-t border-zinc-700" />
-                {isAdding ? (
-                  <div className="px-3 py-2 flex gap-2">
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      value={newItemName}
-                      onChange={(e) => setNewItemName(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="New category name"
-                      className="flex-1 rounded border border-zinc-600 bg-zinc-700 px-2 py-1 text-sm text-white placeholder-zinc-500 focus:border-orange-500 focus:outline-none"
-                    />
+              {allowAdd && (
+                <>
+                  <div className="my-1 border-t border-zinc-700" />
+                  {isAdding ? (
+                    <div className="px-3 py-2 flex gap-2">
+                      <input
+                        ref={inputRef}
+                        type="text"
+                        value={newItemName}
+                        onChange={(e) => setNewItemName(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="New category name"
+                        className="flex-1 rounded border border-zinc-600 bg-zinc-700 px-2 py-1 text-sm text-white placeholder-zinc-500 focus:border-orange-500 focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddNew}
+                        className="rounded bg-orange-500 px-2 py-1 text-sm text-white hover:bg-orange-600"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  ) : (
                     <button
                       type="button"
-                      onClick={handleAddNew}
-                      className="rounded bg-orange-500 px-2 py-1 text-sm text-white hover:bg-orange-600"
+                      onClick={() => setIsAdding(true)}
+                      className="w-full px-3 py-2 text-left text-sm text-orange-500 hover:bg-zinc-700 transition-colors flex items-center gap-2"
                     >
-                      Add
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                      Add new category
                     </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setIsAdding(true)}
-                    className="w-full px-3 py-2 text-left text-sm text-orange-500 hover:bg-zinc-700 transition-colors flex items-center gap-2"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <line x1="12" y1="5" x2="12" y2="19" />
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                    </svg>
-                    Add new category
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-        )}
+                  )}
+                </>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

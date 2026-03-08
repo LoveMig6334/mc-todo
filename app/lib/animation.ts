@@ -12,7 +12,7 @@ export const fadeInUp = {
 };
 
 export const staggerContainer = {
-  hidden:  { transition: { staggerChildren: 0.04, staggerDirection: -1 as const } },
+  hidden:  { transition: { staggerChildren: 0.04, staggerDirection: -1 } },
   visible: { transition: { staggerChildren: 0.05 } },
 };
 

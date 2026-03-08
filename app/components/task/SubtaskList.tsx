@@ -1,5 +1,6 @@
 "use client";
 
+import { springBouncy } from "@/app/lib/animation";
 import {
   cn,
   generateId,
@@ -9,6 +10,7 @@ import {
   getSubtaskPriorityColor,
 } from "@/app/lib/utils";
 import { Subtask, TaskStatus, SubtaskPriority } from "@/app/types/task";
+import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
 interface SubtaskListProps {
@@ -161,33 +163,46 @@ export default function SubtaskList({
               {/* Row 1: Checkbox + Title */}
               <div className="flex items-center gap-2">
                 {/* Checkbox */}
-                <button
+                <motion.button
                   onClick={() => !readOnly && handleToggle(subtask.id)}
                   disabled={readOnly}
+                  whileTap={!readOnly ? { scale: 0.75 } : undefined}
+                  transition={springBouncy}
                   className={cn(
-                    "h-3.5 w-3.5 shrink-0 rounded border transition-all duration-200 flex items-center justify-center",
+                    "h-3.5 w-3.5 shrink-0 rounded border transition-colors duration-200 flex items-center justify-center",
                     subtask.completed
                       ? "border-emerald-500 bg-emerald-500"
                       : "border-zinc-500 hover:border-emerald-500",
                   )}
                 >
-                  {subtask.completed && (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="8"
-                      height="8"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-white"
-                    >
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  )}
-                </button>
+                  <AnimatePresence>
+                    {subtask.completed && (
+                      <motion.span
+                        key="check"
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        transition={springBouncy}
+                        style={{ display: "inline-flex" }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="8"
+                          height="8"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="text-white"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
 
                 {/* Title */}
                 <span
