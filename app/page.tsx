@@ -11,7 +11,6 @@ import TaskFilterBar from "@/app/components/task/TaskFilterBar";
 import TaskModal from "@/app/components/task/TaskModal";
 import TaskPageStats from "@/app/components/task/TaskPageStats";
 import ViewControls from "@/app/components/task/ViewControls";
-import Button from "@/app/components/ui/Button";
 import ConfirmModal from "@/app/components/ui/ConfirmModal";
 import ShortcutHint from "@/app/components/ui/ShortcutHint";
 import { useAutoArchive } from "@/app/hooks/useAutoArchive";

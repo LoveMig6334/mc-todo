@@ -1,7 +1,9 @@
 "use client";
 
+import { springBouncy } from "@/app/lib/animation";
 import { cn } from "@/app/lib/utils";
 import { PlaygroundBlock } from "@/app/types/playground";
+import { motion } from "motion/react";
 import { useCallback, useRef } from "react";
 
 interface BlockWrapperProps {
@@ -111,14 +113,12 @@ export default function BlockWrapper({
   );
 
   return (
-    <div
+    <motion.div
       role="button"
       tabIndex={0}
       className={cn(
-        "absolute rounded-xl border transition-shadow duration-150 outline-none",
-        isSelected
-          ? "border-orange-500 shadow-lg shadow-orange-500/10"
-          : "border-zinc-700 hover:border-zinc-600",
+        "absolute rounded-xl border outline-none",
+        isSelected && "shadow-lg shadow-orange-500/10",
       )}
       style={{
         left: block.position.x,
@@ -127,7 +127,15 @@ export default function BlockWrapper({
         height: block.size.height,
         zIndex: block.zIndex,
         backgroundColor: block.data.color || "#27272a",
+        borderColor: "rgb(63,63,70)",
       }}
+      initial={{ scale: 0.85, opacity: 0 }}
+      animate={{
+        scale: 1,
+        opacity: 1,
+        borderColor: isSelected ? "rgb(249,115,22)" : "rgb(63,63,70)",
+      }}
+      transition={springBouncy}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -178,6 +186,6 @@ export default function BlockWrapper({
           <circle cx="2" cy="6" r="1.5" />
         </svg>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -2,10 +2,10 @@
 
 import { springFast } from "@/app/lib/animation";
 import { cn } from "@/app/lib/utils";
-import { ButtonHTMLAttributes, forwardRef } from "react";
-import { motion } from "motion/react";
+import { HTMLMotionProps, motion } from "motion/react";
+import { forwardRef } from "react";
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends HTMLMotionProps<"button"> {
   variant?: "primary" | "secondary" | "ghost" | "danger";
   size?: "sm" | "md" | "lg";
 }
