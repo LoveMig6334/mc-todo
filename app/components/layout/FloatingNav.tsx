@@ -3,6 +3,7 @@
 import { cn, getPriorityLabel } from "@/app/lib/utils";
 import { useTaskManager } from "@/app/hooks/useTaskManager";
 import { useState, useEffect, useMemo, useRef } from "react";
+import { motion } from "motion/react";
 
 interface NavItem {
   id: string;
@@ -81,6 +82,47 @@ const navItems: NavItem[] = [
   },
 ];
 
+const labelsContainerVariants = {
+  expanded: {
+    transition: {
+      staggerChildren: 0.06,
+      delayChildren: 0,
+    },
+  },
+  collapsed: {
+    transition: {
+      staggerChildren: 0.04,
+      staggerDirection: -1 as const,
+    },
+  },
+};
+
+const labelVariants = {
+  expanded: {
+    opacity: 1,
+    maxWidth: 120,
+    marginLeft: 8,
+    transition: { duration: 0.35, ease: [0.4, 0, 0.2, 1] },
+  },
+  collapsed: {
+    opacity: 0,
+    maxWidth: 0,
+    marginLeft: 0,
+    transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
+  },
+};
+
+const dividerVariants = {
+  expanded: {
+    opacity: 1,
+    transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
+  },
+  collapsed: {
+    opacity: 0,
+    transition: { duration: 0.25, ease: [0.4, 0, 0.2, 1] },
+  },
+};
+
 interface FloatingNavProps {
   currentPath?: string;
 }
@@ -90,6 +132,7 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const collapseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { tasks } = useTaskManager();
 
   const isPlaygroundActive = currentPath.startsWith("/playground");
@@ -120,82 +163,96 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
     return () => document.removeEventListener("mousedown", handleMouseDown);
   }, []);
 
+  // Cleanup collapse timer on unmount
+  useEffect(() => {
+    return () => {
+      if (collapseTimer.current) clearTimeout(collapseTimer.current);
+    };
+  }, []);
+
+  function handleMouseEnter() {
+    if (collapseTimer.current) {
+      clearTimeout(collapseTimer.current);
+      collapseTimer.current = null;
+    }
+    setIsExpanded(true);
+  }
+
+  function handleMouseLeave() {
+    collapseTimer.current = setTimeout(() => {
+      setIsExpanded(false);
+      setIsDropdownOpen(false);
+      setSearchQuery("");
+    }, 500);
+  }
+
   return (
     <nav
       className="fixed top-0 left-1/2 -translate-x-1/2 z-50 px-10 pt-2 pb-8"
-      onMouseEnter={() => setIsExpanded(true)}
-      onMouseLeave={() => {
-        setIsExpanded(false);
-        setIsDropdownOpen(false);
-        setSearchQuery("");
-      }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
-      <div
-        className={cn(
-          "flex items-center gap-1 rounded-full bg-zinc-900 border border-zinc-800 px-2 py-2 shadow-lg transition-all duration-500 ease-out",
-          isExpanded ? "px-4" : "px-2",
-        )}
+      <motion.div
+        className="flex items-center gap-1 rounded-full bg-zinc-900 border border-zinc-800 px-3 py-2 shadow-lg"
+        animate={isExpanded ? "expanded" : "collapsed"}
+        variants={labelsContainerVariants}
       >
         {/* Logo/Brand */}
-        <div className="flex items-center gap-2 px-2">
+        <motion.div className="flex items-center gap-2 px-2">
           <div className="w-6 h-6 rounded-md bg-orange-500 flex items-center justify-center">
             <span className="text-white text-xs font-bold">M</span>
           </div>
-          <span
-            className={cn(
-              "text-white font-medium text-sm whitespace-nowrap overflow-hidden transition-all duration-500",
-              isExpanded ? "w-auto opacity-100" : "w-0 opacity-0",
-            )}
+          <motion.span
+            className="text-white font-medium text-sm whitespace-nowrap"
+            style={{ overflow: "hidden", display: "inline-block" }}
+            variants={labelVariants}
           >
             MC-Todo
-          </span>
-        </div>
+          </motion.span>
+        </motion.div>
 
         {/* Divider */}
-        <div
-          className={cn(
-            "h-6 w-px bg-zinc-700 transition-opacity duration-500",
-            isExpanded ? "opacity-100" : "opacity-0",
-          )}
+        <motion.div
+          className="h-6 w-px bg-zinc-700"
+          variants={dividerVariants}
         />
 
         {/* Nav Items */}
-        <div className="flex items-center gap-1">
+        <motion.div className="flex items-center gap-1">
           {navItems.map((item) => {
             const isActive = currentPath === item.href;
             return (
-              <a
+              <motion.a
                 key={item.id}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-500",
+                  "flex items-center gap-2 px-3 py-2 rounded-full transition-colors duration-200",
                   isActive
                     ? "bg-zinc-800 text-orange-500"
                     : "text-zinc-400 hover:text-white hover:bg-zinc-800",
                 )}
               >
                 {item.icon}
-                <span
-                  className={cn(
-                    "text-sm whitespace-nowrap overflow-hidden transition-all duration-500",
-                    isExpanded ? "w-auto opacity-100" : "w-0 opacity-0",
-                  )}
+                <motion.span
+                  className="text-sm whitespace-nowrap"
+                  style={{ overflow: "hidden", display: "inline-block" }}
+                  variants={labelVariants}
                 >
                   {item.label}
-                </span>
-              </a>
+                </motion.span>
+              </motion.a>
             );
           })}
 
           {/* Playground Nav Item with Dropdown */}
-          <div ref={dropdownRef} className="relative">
-            <button
+          <motion.div ref={dropdownRef} className="relative">
+            <motion.button
               onClick={() => {
                 setIsDropdownOpen((prev) => !prev);
                 if (isDropdownOpen) setSearchQuery("");
               }}
               className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-500",
+                "flex items-center gap-2 px-3 py-2 rounded-full transition-colors duration-200",
                 isPlaygroundActive
                   ? "bg-zinc-800 text-orange-500"
                   : "text-zinc-400 hover:text-white hover:bg-zinc-800",
@@ -224,15 +281,14 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
                   strokeDasharray="3 2"
                 />
               </svg>
-              <span
-                className={cn(
-                  "text-sm whitespace-nowrap overflow-hidden transition-all duration-500",
-                  isExpanded ? "w-auto opacity-100" : "w-0 opacity-0",
-                )}
+              <motion.span
+                className="text-sm whitespace-nowrap"
+                style={{ overflow: "hidden", display: "inline-block" }}
+                variants={labelVariants}
               >
                 Playground
-              </span>
-            </button>
+              </motion.span>
+            </motion.button>
 
             {/* Dropdown */}
             {isDropdownOpen && (
@@ -294,9 +350,9 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      </div>
+          </motion.div>
+        </motion.div>
+      </motion.div>
     </nav>
   );
 }
