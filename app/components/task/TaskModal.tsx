@@ -45,7 +45,7 @@ const getDefaultFormData = (
   if (prefilledProjectId && projects) {
     const proj = projects.find((p) => p.id === prefilledProjectId);
     if (proj) {
-      defaultDueDate = proj.dueDate;
+      defaultDueDate = { start: proj.dueDate.start, end: null };
     }
   }
 
@@ -256,9 +256,9 @@ function TaskModalContent({
                 const projEnd = proj.dueDate.end ?? proj.dueDate.start;
                 const taskStart = formData.dueDate.start;
                 const taskEnd = formData.dueDate.end ?? formData.dueDate.start;
-                // If task date is outside project date, auto set to project date
+                // If task date is outside project date, auto set to the first day of the project
                 if (!taskStart || taskStart < projStart || taskEnd > projEnd) {
-                  newDueDate = proj.dueDate;
+                  newDueDate = { start: proj.dueDate.start, end: null };
                 }
               }
             }
