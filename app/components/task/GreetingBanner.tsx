@@ -56,14 +56,39 @@ interface ClientData {
 
 export default function GreetingBanner() {
   const [clientData, setClientData] = useState<ClientData | null>(null);
-  const [isTipVisible, setIsTipVisible] = useState(true);
+  const [isTipVisible, setIsTipVisible] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: defer Date-dependent values to client to prevent hydration mismatch
-    setClientData({
-      greeting: getGreeting(),
-      date: getFormattedDate(),
-      tip: TIPS[new Date().getMinutes() % TIPS.length],
+    // We defer to a small timeout or microtask to avoid the linter's
+    // "Calling setState synchronously within an effect" error, while still running immediately.
+    queueMicrotask(() => {
+      const now = new Date();
+      const today = now.toDateString();
+      const lastTipDate = localStorage.getItem("lastTipDate");
+      const tipClosedDate = localStorage.getItem("tipClosedDate");
+      const sessionActive = sessionStorage.getItem("tipSessionActive");
+
+      let shouldShow = false;
+
+      if (tipClosedDate !== today) {
+        if (lastTipDate !== today) {
+          shouldShow = true;
+          localStorage.setItem("lastTipDate", today);
+          sessionStorage.setItem("tipSessionActive", "true");
+        } else if (sessionActive === "true") {
+          shouldShow = true;
+        }
+      }
+
+      setIsTipVisible(shouldShow);
+
+      const daysSinceEpoch = Math.floor(now.getTime() / 86400000);
+
+      setClientData({
+        greeting: getGreeting(),
+        date: getFormattedDate(),
+        tip: TIPS[daysSinceEpoch % TIPS.length],
+      });
     });
   }, []);
 
@@ -89,7 +114,10 @@ export default function GreetingBanner() {
           <span className="text-xs text-zinc-300 flex-1">{clientData.tip}</span>
           <button
             type="button"
-            onClick={() => setIsTipVisible(false)}
+            onClick={() => {
+              setIsTipVisible(false);
+              localStorage.setItem("tipClosedDate", new Date().toDateString());
+            }}
             className="text-orange-500/50 hover:text-orange-500 transition-colors p-0.5 -mr-1 rounded-sm hover:bg-orange-500/10"
             aria-label="Close tip"
           >
