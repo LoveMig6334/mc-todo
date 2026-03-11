@@ -11,14 +11,12 @@ import {
   Category,
   DateRange,
   Project,
-  Subtask,
   Task,
   TaskFormData,
 } from "@/app/types/task";
 import { useMemo, useState } from "react";
 import DatePicker from "./DatePicker";
 import ReferenceLinks from "./ReferenceLinks";
-import SubtaskList from "./SubtaskList";
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -278,18 +276,7 @@ function TaskModalContent({
         <p className="-mt-3 text-xs text-red-500">{errors.dueDate}</p>
       )}
 
-      {/* Subtasks */}
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-zinc-300">
-          Subtasks
-        </label>
-        <SubtaskList
-          subtasks={formData.subtasks}
-          onChange={(subtasks: Subtask[]) =>
-            updateFormData("subtasks", subtasks)
-          }
-        />
-      </div>
+
 
       {/* Reference Links */}
       <ReferenceLinks
