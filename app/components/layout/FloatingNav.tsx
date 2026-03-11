@@ -1,11 +1,11 @@
 "use client";
 
-import { cn, getPriorityLabel } from "@/app/lib/utils";
 import { useTaskManager } from "@/app/hooks/useTaskManager";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { cn, getPriorityLabel } from "@/app/lib/utils";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 interface NavItem {
   id: string;
@@ -313,9 +313,7 @@ export default function FloatingNav() {
                 <div className="max-h-80 overflow-y-auto">
                   {filteredTasks.length === 0 ? (
                     <div className="px-4 py-6 text-center text-sm text-zinc-500">
-                      {searchQuery
-                        ? "No matching tasks"
-                        : "No active tasks"}
+                      {searchQuery ? "No matching tasks" : "No active tasks"}
                     </div>
                   ) : (
                     filteredTasks.map((task) => {

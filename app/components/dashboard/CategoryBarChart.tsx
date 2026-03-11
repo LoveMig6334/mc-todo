@@ -9,7 +9,10 @@ interface CategoryBarChartProps {
   onManage?: () => void;
 }
 
-export default function CategoryBarChart({ data, onManage }: CategoryBarChartProps) {
+export default function CategoryBarChart({
+  data,
+  onManage,
+}: CategoryBarChartProps) {
   const maxTotal = Math.max(...data.map((d) => d.total), 1);
 
   return (
