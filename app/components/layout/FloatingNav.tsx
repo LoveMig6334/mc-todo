@@ -106,12 +106,14 @@ const labelVariants = {
     opacity: 1,
     maxWidth: 120,
     marginLeft: 8,
+    clipPath: "inset(0 0% 0 0%)",
     transition: { duration: 0.35, ease: EASE_SMOOTH },
   },
   collapsed: {
     opacity: 0,
     maxWidth: 0,
     marginLeft: 0,
+    clipPath: "inset(0 50% 0 50%)",
     transition: { duration: 0.3, ease: EASE_SMOOTH },
   },
 };
