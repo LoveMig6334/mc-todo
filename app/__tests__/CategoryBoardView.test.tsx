@@ -136,6 +136,6 @@ describe("CategoryBoardView", () => {
       />,
     );
 
-    expect(screen.getByText("Urgent")).toBeInTheDocument();
+    expect(screen.getByText("Very High")).toBeInTheDocument();
   });
 });

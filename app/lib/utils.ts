@@ -45,7 +45,7 @@ export function getPriorityColor(priority: number): string {
 }
 
 export function getPriorityLabel(priority: number): string {
-  if (priority >= 8) return "Urgent";
+  if (priority >= 8) return "Very High";
   if (priority >= 5) return "High";
   if (priority >= 3) return "Medium";
   return "Low";

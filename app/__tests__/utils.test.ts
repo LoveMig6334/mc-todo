@@ -102,9 +102,9 @@ describe('getPriorityColor', () => {
 });
 
 describe('getPriorityLabel', () => {
-  it('returns Urgent for high priority', () => {
-    expect(getPriorityLabel(10)).toBe('Urgent');
-    expect(getPriorityLabel(8)).toBe('Urgent');
+  it('returns Very High for high priority', () => {
+    expect(getPriorityLabel(10)).toBe('Very High');
+    expect(getPriorityLabel(8)).toBe('Very High');
   });
 
   it('returns High for medium-high priority', () => {

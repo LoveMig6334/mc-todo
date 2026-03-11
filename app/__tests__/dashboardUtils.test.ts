@@ -136,7 +136,7 @@ describe("computePriorityDistribution", () => {
     expect(result[0]).toMatchObject({ label: "Low", count: 2 });
     expect(result[1]).toMatchObject({ label: "Medium", count: 1 });
     expect(result[2]).toMatchObject({ label: "High", count: 1 });
-    expect(result[3]).toMatchObject({ label: "Urgent", count: 1 });
+    expect(result[3]).toMatchObject({ label: "Very High", count: 1 });
   });
 
   it("excludes completed tasks", () => {

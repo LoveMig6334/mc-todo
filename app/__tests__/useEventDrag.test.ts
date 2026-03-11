@@ -12,7 +12,10 @@ describe("useEventDrag", () => {
     status: "pending",
     dueDate: { start: "2024-01-15", end: "2024-01-20" },
     referenceLinks: [],
+    subtasks: [],
     completed: false,
+    completedAt: null,
+    archived: false,
     createdAt: "2024-01-01T00:00:00Z",
     updatedAt: "2024-01-01T00:00:00Z",
   };

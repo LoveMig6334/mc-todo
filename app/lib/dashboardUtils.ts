@@ -122,7 +122,7 @@ const PRIORITY_BUCKETS: {
   { label: "Low", min: 0, max: 2, color: "#71717a" },
   { label: "Medium", min: 3, max: 4, color: "#eab308" },
   { label: "High", min: 5, max: 7, color: "#f97316" },
-  { label: "Urgent", min: 8, max: 10, color: "#ef4444" },
+  { label: "Very High", min: 8, max: 10, color: "#ef4444" },
 ];
 
 export function computePriorityDistribution(tasks: Task[]): PriorityStat[] {
