@@ -56,6 +56,7 @@ interface ClientData {
 
 export default function GreetingBanner() {
   const [clientData, setClientData] = useState<ClientData | null>(null);
+  const [isTipVisible, setIsTipVisible] = useState(true);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: defer Date-dependent values to client to prevent hydration mismatch
@@ -82,10 +83,18 @@ export default function GreetingBanner() {
           </p>
         </div>
       </div>
-      {clientData?.tip && (
-        <div className="mt-3 flex items-center gap-2 rounded-lg bg-linear-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 px-3 py-2">
-          <span className="text-xs text-orange-300/80">💡 Tip:</span>
-          <span className="text-xs text-zinc-300">{clientData.tip}</span>
+      {clientData?.tip && isTipVisible && (
+        <div className="mt-3 flex items-start sm:items-center gap-2 rounded-lg bg-linear-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 px-3 py-2">
+          <span className="text-xs text-orange-300/80 mt-0.5 sm:mt-0">💡 Tip:</span>
+          <span className="text-xs text-zinc-300 flex-1">{clientData.tip}</span>
+          <button
+            type="button"
+            onClick={() => setIsTipVisible(false)}
+            className="text-orange-500/50 hover:text-orange-500 transition-colors p-0.5 -mr-1 rounded-sm hover:bg-orange-500/10"
+            aria-label="Close tip"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
         </div>
       )}
     </motion.div>

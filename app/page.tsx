@@ -1,7 +1,6 @@
 "use client";
 
 import FloatingNav from "@/app/components/layout/FloatingNav";
-import ArchivedTasksPanel from "@/app/components/task/ArchivedTasksPanel";
 import CategoryBoardView from "@/app/components/task/CategoryBoardView";
 import GreetingBanner from "@/app/components/task/GreetingBanner";
 import PriorityListView from "@/app/components/task/PriorityListView";
@@ -13,7 +12,6 @@ import TaskPageStats from "@/app/components/task/TaskPageStats";
 import ViewControls from "@/app/components/task/ViewControls";
 import ConfirmModal from "@/app/components/ui/ConfirmModal";
 import ShortcutHint from "@/app/components/ui/ShortcutHint";
-import { useAutoArchive } from "@/app/hooks/useAutoArchive";
 import { useCategories } from "@/app/hooks/useCategories";
 import { useKeyboardShortcuts } from "@/app/hooks/useKeyboardShortcuts";
 import { useProjects } from "@/app/hooks/useProjects";
@@ -23,6 +21,7 @@ import { useViewPreference } from "@/app/hooks/useViewPreference";
 import { fadeInUp, springSnappy, staggerContainer } from "@/app/lib/animation";
 import { Project, ProjectFormData, Task, TaskFormData } from "@/app/types/task";
 import { AnimatePresence, motion } from "motion/react";
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function Home() {
@@ -35,19 +34,13 @@ export default function Home() {
     deleteTask,
     toggleComplete,
     archiveTask,
-    archiveAllCompleted,
-    restoreTask,
     unlinkProjectTasks,
   } = useTaskManager();
   const { categories, addCategory } = useCategories();
   const { viewMode, setViewMode } = useViewPreference();
   const { projects, addProject, updateProject, deleteProject } = useProjects();
 
-  // Auto-archive completed tasks after threshold
-  const { archiveThreshold, setArchiveThreshold } = useAutoArchive(
-    tasks,
-    archiveTask,
-  );
+
 
   const {
     searchQuery,
@@ -272,16 +265,50 @@ export default function Home() {
           />
         )}
 
-        {/* Archived Tasks Panel */}
-        <ArchivedTasksPanel
-          archivedTasks={archivedTasks}
-          archiveThreshold={archiveThreshold}
-          onThresholdChange={setArchiveThreshold}
-          onRestore={restoreTask}
-          onDelete={deleteTask}
-          onArchiveAllCompleted={archiveAllCompleted}
-          hasCompletedTasks={tasks.some((t) => t.completed)}
-        />
+        {/* View Archives Link */}
+        <div className="mt-6 flex justify-end">
+          <Link
+            href="/archive"
+            className="group flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-orange-500/80 transition-transform group-hover:scale-110"
+            >
+              <polyline points="21 8 21 21 3 21 3 8" />
+              <rect x="1" y="3" width="22" height="5" />
+              <line x1="10" y1="12" x2="14" y2="12" />
+            </svg>
+            Archived Tasks
+            {archivedTasks.length > 0 && (
+              <span className="ml-1.5 rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-zinc-500">
+                {archivedTasks.length}
+              </span>
+            )}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="ml-1 opacity-50 transition-transform group-hover:translate-x-0.5"
+            >
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </Link>
+        </div>
 
         {/* Floating Add Button with Type Menu */}
         <div
