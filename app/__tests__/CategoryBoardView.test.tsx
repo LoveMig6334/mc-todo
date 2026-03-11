@@ -29,6 +29,7 @@ const mockHandlers = {
   onToggleComplete: jest.fn(),
   onEdit: jest.fn(),
   onDelete: jest.fn(),
+  onUpdate: jest.fn(),
 };
 
 describe("CategoryBoardView", () => {
