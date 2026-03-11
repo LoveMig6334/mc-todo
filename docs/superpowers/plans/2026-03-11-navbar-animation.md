@@ -4,7 +4,7 @@
 
 **Goal:** Replace FloatingNav's CSS transitions with Motion variants for smooth expand/collapse with 0.5s collapse delay and staggered label cascade.
 
-**Architecture:** Use a `collapseTimer` ref + `setTimeout` for the 0.5s delay. Parent `motion.div` drives a `variants` state (`"expanded"` / `"collapsed"`) with `staggerChildren` so labels animate in cascade. Each label becomes a `motion.span` animating `maxWidth` + `opacity`. All CSS `transition-*` classes are removed from Motion-controlled elements. Follow CLAUDE.md Motion + Tailwind v4 rules (explicit `style` with `rgba()`/`rgb()` on any motion element that animates color).
+**Architecture:** Use a `collapseTimer` ref + `setTimeout` for the 0.5s delay. Parent `motion.div` drives a `variants` state (`"expanded"` / `"collapsed"`) with `staggerChildren` so labels animate in cascade. Each label becomes a `motion.span` animating `maxWidth` + `opacity`. All CSS `transition-*` classes are removed from Motion-controlled elements. Intermediate wrappers (`<div>`, `<a>`, `<button>`) between the orchestrating parent and leaf `motion.span` labels must be `motion.*` elements so variant context propagates reliably. Follow CLAUDE.md Motion + Tailwind v4 rules (explicit `style` with `rgba()`/`rgb()` on any motion element that animates color).
 
 **Tech Stack:** Next.js 16 App Router · React 19 · Motion v12 (`motion/react`) · Tailwind CSS v4
 
@@ -21,10 +21,9 @@
 - Motion v12 import: `import { motion } from "motion/react"` (no AnimatePresence needed)
 - `maxWidth` is used instead of `width` because Motion cannot reliably interpolate to `"auto"`. Set `overflow: "hidden"` on each label span.
 - The collapse delay is handled in React (setTimeout), NOT in Motion's transition `delay`, so hover-back-in correctly cancels the pending collapse.
-- Nav item hover states stay as CSS `hover:bg-zinc-800` (no Motion color animation on these — CLAUDE.md: don't mix Tailwind hover classes with Motion whileHover backgroundColor).
+- Nav item hover states stay as CSS `hover:bg-zinc-800` (no Motion color animation on these — CLAUDE.md: don't mix Tailwind hover classes with Motion whileHover backgroundColor). Converting `<a>`/`<button>` to `motion.a`/`motion.button` does NOT change this — CSS hover classes still work on motion elements.
 - The navbar container's bg/border are NOT animated by Motion, so no `style={{ backgroundColor }}` override is needed there.
-- The brand label wrapper `<div className="flex items-center gap-2 px-2">` must become a `motion.div` so that Motion's variant propagation reaches the nested `motion.span`. Without this, stagger does not fire for the brand label.
-- The `<a>` and `<button>` wrappers use `transition-colors duration-200` (not `transition-all duration-500`) so their CSS transition only applies to color changes and does not interfere with the Motion-driven label width animations.
+- **Variant propagation:** Motion's stagger/variant context propagates through `motion.*` elements only. All elements in the path from the orchestrating parent `motion.div` down to each leaf `motion.span` label must be `motion.*` (brand wrapper div → `motion.div`, nav items wrapper div → `motion.div`, `<a>` → `motion.a`, `<button>` → `motion.button`).
 
 ---
 
@@ -117,7 +116,7 @@ Update the `<nav>` element to use these handlers:
 >
 ```
 
-Add a new `useEffect` for timer cleanup on unmount (separate from the existing click-outside mousedown effect):
+Add a **new** `useEffect` for timer cleanup on unmount (separate from the existing click-outside mousedown effect):
 
 ```tsx
 useEffect(() => {
@@ -131,7 +130,7 @@ useEffect(() => {
 
 Replace the inner `<div className={cn(...)} >` with a `motion.div`. Remove all CSS `transition-all` and conditional padding classes. The container width is driven entirely by label content appearing/disappearing.
 
-> **Note on padding:** Fixed `px-3` replaces the old `px-2`/`px-4` toggle. This intentionally keeps the collapsed pill slightly wider (12px vs 8px sides) for a less cramped icon-only state while keeping the implementation simple. If tighter collapsed padding is needed, `px-2` can be used here without functional impact.
+> **Note on padding:** Fixed `px-3` replaces the old `px-2`/`px-4` toggle. This intentionally keeps the collapsed pill slightly wider (12px vs 8px sides) for a less cramped icon-only state. If tighter collapsed padding is needed, `px-2` can be used here without functional impact.
 
 ```tsx
 <motion.div
@@ -143,7 +142,7 @@ Replace the inner `<div className={cn(...)} >` with a `motion.div`. Remove all C
 
 - [ ] **Step 4: Convert the brand logo wrapper div to motion.div**
 
-The brand `motion.span` is nested inside a plain `div`. Motion's variant propagation only flows through `motion.*` elements, so the stagger will not reach the brand label unless its parent is also a motion element.
+The brand `motion.span` is nested inside a plain `div`. Motion's variant propagation requires all ancestors to be `motion.*` elements.
 
 Replace `<div className="flex items-center gap-2 px-2">` with:
 
@@ -189,14 +188,30 @@ With:
 />
 ```
 
-- [ ] **Step 7: Convert each nav item label to motion.span, fix wrapper transition**
+- [ ] **Step 7: Convert nav items wrapper div to motion.div**
+
+The `<div className="flex items-center gap-1">` that wraps `navItems.map(...)` sits between the orchestrating `motion.div` container and the leaf `motion.span` labels. It must be a `motion.div` for variant propagation to flow through.
+
+Replace:
+```tsx
+<div className="flex items-center gap-1">
+```
+
+With:
+```tsx
+<motion.div className="flex items-center gap-1">
+```
+
+Close it with `</motion.div>`.
+
+- [ ] **Step 8: Convert nav item `<a>` elements to `motion.a`, update labels**
 
 For each `<a>` element in `navItems.map(...)`:
 
-1. Change `transition-all duration-500` on the `<a>` to `transition-colors duration-200` so only color/background changes transition via CSS (not width):
+1. Change `<a>` to `<motion.a>` and replace `transition-all duration-500` with `transition-colors duration-200` (CSS transition only for color changes, not width):
 
 ```tsx
-<a
+<motion.a
   key={item.id}
   href={item.href}
   className={cn(
@@ -208,7 +223,9 @@ For each `<a>` element in `navItems.map(...)`:
 >
 ```
 
-2. Replace the `<span>` label inside each `<a>` with a `motion.span`:
+Close with `</motion.a>`.
+
+2. Replace the `<span>` label inside each `<motion.a>` with a `motion.span`:
 
 ```tsx
 <motion.span
@@ -220,13 +237,26 @@ For each `<a>` element in `navItems.map(...)`:
 </motion.span>
 ```
 
-- [ ] **Step 8: Convert Playground button label to motion.span, fix button transition**
+- [ ] **Step 9: Convert dropdown wrapper div to motion.div**
 
-1. Change `transition-all duration-500` on the Playground `<button>` to `transition-colors duration-200`:
+The `<div ref={dropdownRef} className="relative">` sits between the nav items `motion.div` wrapper and the Playground `<button>`, severing the variant propagation chain. Convert it to `motion.div` (the `dropdownRef` typed as `useRef<HTMLDivElement>` is compatible with `motion.div`'s ref):
 
 ```tsx
-<button
-  onClick={() => { ... }}
+<motion.div ref={dropdownRef} className="relative">
+```
+
+Close with `</motion.div>`. No `variants` or `animate` prop needed — it only needs to be a `motion.*` element so context flows through it.
+
+- [ ] **Step 10: Convert Playground `<button>` to `motion.button`, update label**
+
+1. Change `<button>` to `<motion.button>` and replace `transition-all duration-500` with `transition-colors duration-200`:
+
+```tsx
+<motion.button
+  onClick={() => {
+    setIsDropdownOpen((prev) => !prev);
+    if (isDropdownOpen) setSearchQuery("");
+  }}
   className={cn(
     "flex items-center gap-2 px-3 py-2 rounded-full transition-colors duration-200",
     isPlaygroundActive
@@ -235,6 +265,8 @@ For each `<a>` element in `navItems.map(...)`:
   )}
 >
 ```
+
+Close with `</motion.button>`.
 
 2. Replace the Playground `<span>` label with:
 
@@ -248,7 +280,7 @@ For each `<a>` element in `navItems.map(...)`:
 </motion.span>
 ```
 
-- [ ] **Step 9: Manually verify in browser**
+- [ ] **Step 11: Manually verify in browser**
 
 Run dev server:
 ```bash
@@ -256,15 +288,15 @@ npm run dev
 ```
 
 Check:
-1. Hover over navbar → brand label and nav labels cascade in left-to-right, smooth ease
-2. Brand label specifically animates in sync with the rest (not all-at-once or missing)
+1. Hover over navbar → brand label and all nav labels cascade in left-to-right, smooth ease
+2. Brand label specifically animates in sync with the stagger (not all-at-once or missing)
 3. Move mouse away → 0.5s pause, then all labels cascade out right-to-left, container shrinks
 4. Hover back in during collapse delay → collapse cancels, navbar stays/re-expands cleanly
 5. Active route highlights remain correct (orange)
 6. Playground dropdown still opens/closes correctly
 7. No layout jank or flash on page load
 
-- [ ] **Step 10: Commit**
+- [ ] **Step 12: Commit**
 
 ```bash
 git add app/components/layout/FloatingNav.tsx
