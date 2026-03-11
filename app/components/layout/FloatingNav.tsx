@@ -133,6 +133,7 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const navRef = useRef<HTMLElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const collapseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { tasks } = useTaskManager();
@@ -165,6 +166,13 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
     return () => document.removeEventListener("mousedown", handleMouseDown);
   }, []);
 
+  // Restore expanded state if mouse is already hovering on mount (e.g. after page navigation)
+  useEffect(() => {
+    if (navRef.current?.matches(":hover")) {
+      setIsExpanded(true);
+    }
+  }, []);
+
   // Cleanup collapse timer on unmount
   useEffect(() => {
     return () => {
@@ -190,6 +198,7 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
 
   return (
     <nav
+      ref={navRef}
       className="fixed top-0 left-1/2 -translate-x-1/2 z-50 px-10 pt-2 pb-8"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
