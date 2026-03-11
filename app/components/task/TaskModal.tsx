@@ -14,9 +14,9 @@ import {
   Task,
   TaskFormData,
 } from "@/app/types/task";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import DatePicker from "./DatePicker";
-import ReferenceLinks from "./ReferenceLinks";
+import ReferenceLinks, { type ReferenceLinksHandle } from "./ReferenceLinks";
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -86,6 +86,7 @@ function TaskModalContent({
 
   const [formData, setFormData] = useState<TaskFormData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const referenceLinksRef = useRef<ReferenceLinksHandle>(null);
 
   // Filter projects to only those whose timeframe contains the task's due date
   const availableProjects = useMemo(() => {
@@ -144,9 +145,20 @@ function TaskModalContent({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Auto-add any pending reference link before submitting
+    const pendingLink = referenceLinksRef.current?.flushPendingLink();
+    let dataToSubmit = formData;
+    if (pendingLink) {
+      dataToSubmit = {
+        ...formData,
+        referenceLinks: [...formData.referenceLinks, pendingLink],
+      };
+      setFormData(dataToSubmit);
+    }
+
     if (!validateForm()) return;
 
-    onSubmit(formData);
+    onSubmit(dataToSubmit);
     onClose();
   };
 
@@ -280,6 +292,7 @@ function TaskModalContent({
 
       {/* Reference Links */}
       <ReferenceLinks
+        ref={referenceLinksRef}
         label="Reference Links"
         links={formData.referenceLinks}
         onChange={(links) => updateFormData("referenceLinks", links)}

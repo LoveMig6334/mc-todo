@@ -2,7 +2,12 @@
 
 import Button from "@/app/components/ui/Button";
 import { cn } from "@/app/lib/utils";
-import { useState } from "react";
+import { forwardRef, useImperativeHandle, useState } from "react";
+
+export interface ReferenceLinksHandle {
+  /** Returns the pending URL (normalized) if valid, or null. Clears the input field. */
+  flushPendingLink: () => string | null;
+}
 
 interface ReferenceLinksProps {
   label?: string;
@@ -10,11 +15,8 @@ interface ReferenceLinksProps {
   onChange: (links: string[]) => void;
 }
 
-export default function ReferenceLinks({
-  label,
-  links,
-  onChange,
-}: ReferenceLinksProps) {
+const ReferenceLinks = forwardRef<ReferenceLinksHandle, ReferenceLinksProps>(
+  function ReferenceLinks({ label, links, onChange }, ref) {
   const [newLink, setNewLink] = useState("");
   const [error, setError] = useState("");
 
@@ -58,6 +60,29 @@ export default function ReferenceLinks({
     setNewLink("");
     setError("");
   };
+
+  // Expose flush method for parent to auto-add pending link on form submit
+  useImperativeHandle(ref, () => ({
+    flushPendingLink: () => {
+      const trimmedLink = newLink.trim();
+      if (!trimmedLink) return null;
+
+      let urlToAdd = trimmedLink;
+      if (
+        !trimmedLink.startsWith("http://") &&
+        !trimmedLink.startsWith("https://")
+      ) {
+        urlToAdd = "https://" + trimmedLink;
+      }
+
+      if (!validateUrl(urlToAdd)) return null;
+      if (links.includes(urlToAdd)) return null;
+
+      setNewLink("");
+      setError("");
+      return urlToAdd;
+    },
+  }));
 
   const handleRemoveLink = (index: number) => {
     onChange(links.filter((_, i) => i !== index));
@@ -178,4 +203,6 @@ export default function ReferenceLinks({
       )}
     </div>
   );
-}
+});
+
+export default ReferenceLinks;
