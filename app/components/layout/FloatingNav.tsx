@@ -82,6 +82,8 @@ const navItems: NavItem[] = [
   },
 ];
 
+const EASE_SMOOTH: [number, number, number, number] = [0.4, 0, 0.2, 1];
+
 const labelsContainerVariants = {
   expanded: {
     transition: {
@@ -102,24 +104,24 @@ const labelVariants = {
     opacity: 1,
     maxWidth: 120,
     marginLeft: 8,
-    transition: { duration: 0.35, ease: [0.4, 0, 0.2, 1] },
+    transition: { duration: 0.35, ease: EASE_SMOOTH },
   },
   collapsed: {
     opacity: 0,
     maxWidth: 0,
     marginLeft: 0,
-    transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
+    transition: { duration: 0.3, ease: EASE_SMOOTH },
   },
 };
 
 const dividerVariants = {
   expanded: {
     opacity: 1,
-    transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
+    transition: { duration: 0.3, ease: EASE_SMOOTH },
   },
   collapsed: {
     opacity: 0,
-    transition: { duration: 0.25, ease: [0.4, 0, 0.2, 1] },
+    transition: { duration: 0.25, ease: EASE_SMOOTH },
   },
 };
 
