@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Kodchasan } from "next/font/google";
 import "./globals.css";
+import FloatingNav from "@/app/components/layout/FloatingNav";
 
 const kodchasan = Kodchasan({
   weight: ["300", "400", "500", "600", "700"],
@@ -32,6 +33,7 @@ export default function RootLayout({
       <body
         className={`${kodchasan.className} ${kodchasan.variable} ${geistMono.variable} antialiased`}
       >
+        <FloatingNav />
         {children}
       </body>
     </html>

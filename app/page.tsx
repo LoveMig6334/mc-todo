@@ -1,6 +1,5 @@
 "use client";
 
-import FloatingNav from "@/app/components/layout/FloatingNav";
 import CategoryBoardView from "@/app/components/task/CategoryBoardView";
 import GreetingBanner from "@/app/components/task/GreetingBanner";
 import PriorityListView from "@/app/components/task/PriorityListView";
@@ -187,7 +186,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-zinc-900">
-      <FloatingNav currentPath="/" />
+
 
       <main
         className={`mx-auto px-4 pb-8 pt-24 ${viewMode === "board" ? "max-w-[80%]" : "max-w-[80%]"}`}

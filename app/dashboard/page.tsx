@@ -8,7 +8,6 @@ import StatusDonutChart from "@/app/components/dashboard/StatusDonutChart";
 import TimeManagementMatrix from "@/app/components/dashboard/TimeManagementMatrix";
 import TopSuggestedTasks from "@/app/components/dashboard/TopSuggestedTasks";
 import UpcomingDeadlines from "@/app/components/dashboard/UpcomingDeadlines";
-import FloatingNav from "@/app/components/layout/FloatingNav";
 import { useCategories } from "@/app/hooks/useCategories";
 import { useDashboardStats } from "@/app/hooks/useDashboardStats";
 import { useTaskManager } from "@/app/hooks/useTaskManager";
@@ -38,7 +37,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-zinc-900">
-      <FloatingNav currentPath="/dashboard" />
+
 
       <main className="mx-auto max-w-[70%] px-4 pb-12 pt-24">
         {/* Header */}

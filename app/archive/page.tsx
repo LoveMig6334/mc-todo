@@ -1,6 +1,5 @@
 "use client";
 
-import FloatingNav from "@/app/components/layout/FloatingNav";
 import { useAutoArchive } from "@/app/hooks/useAutoArchive";
 import { useTaskManager } from "@/app/hooks/useTaskManager";
 import { springSnappy } from "@/app/lib/animation";
@@ -34,7 +33,7 @@ export default function ArchivePage() {
 
   return (
     <div className="min-h-screen bg-zinc-900">
-      <FloatingNav currentPath="/archive" />
+
 
       <main className="mx-auto max-w-[80%] px-4 pb-8 pt-24">
         <div className="mb-6 flex items-center justify-between">

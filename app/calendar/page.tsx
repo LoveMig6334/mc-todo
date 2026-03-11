@@ -3,7 +3,6 @@
 import CalendarGrid from "@/app/components/calendar/CalendarGrid";
 import CalendarHeader from "@/app/components/calendar/CalendarHeader";
 import TrashDropZone from "@/app/components/calendar/TrashDropZone";
-import FloatingNav from "@/app/components/layout/FloatingNav";
 import TaskModal from "@/app/components/task/TaskModal";
 import { useCalendarGrid } from "@/app/hooks/useCalendarGrid";
 import { useCategories } from "@/app/hooks/useCategories";
@@ -159,7 +158,7 @@ export default function CalendarPage() {
 
   return (
     <div className="min-h-screen bg-zinc-900">
-      <FloatingNav currentPath="/calendar" />
+
 
       <main className="mx-auto max-w-[80%] px-4 pb-8 pt-24">
         {/* Header */}

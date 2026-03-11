@@ -4,6 +4,8 @@ import { cn, getPriorityLabel } from "@/app/lib/utils";
 import { useTaskManager } from "@/app/hooks/useTaskManager";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "motion/react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface NavItem {
   id: string;
@@ -125,15 +127,11 @@ const dividerVariants = {
   },
 };
 
-interface FloatingNavProps {
-  currentPath?: string;
-}
-
-export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
+export default function FloatingNav() {
+  const currentPath = usePathname();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const navRef = useRef<HTMLElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const collapseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { tasks } = useTaskManager();
@@ -166,13 +164,6 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
     return () => document.removeEventListener("mousedown", handleMouseDown);
   }, []);
 
-  // Restore expanded state if mouse is already hovering on mount (e.g. after page navigation)
-  useEffect(() => {
-    if (navRef.current?.matches(":hover")) {
-      setIsExpanded(true);
-    }
-  }, []);
-
   // Cleanup collapse timer on unmount
   useEffect(() => {
     return () => {
@@ -198,7 +189,6 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
 
   return (
     <nav
-      ref={navRef}
       className="fixed top-0 left-1/2 -translate-x-1/2 z-50 px-10 pt-2 pb-8"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -234,7 +224,7 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
           {navItems.map((item) => {
             const isActive = currentPath === item.href;
             return (
-              <motion.a
+              <Link
                 key={item.id}
                 href={item.href}
                 className={cn(
@@ -252,7 +242,7 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
                 >
                   {item.label}
                 </motion.span>
-              </motion.a>
+              </Link>
             );
           })}
 
@@ -332,7 +322,7 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
                       const isCurrentTask =
                         currentPath === `/playground/${task.id}`;
                       return (
-                        <a
+                        <Link
                           key={task.id}
                           href={`/playground/${task.id}`}
                           className={cn(
@@ -355,7 +345,7 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
                           <div className="text-xs text-zinc-500 mt-0.5">
                             {getPriorityLabel(task.priority)} priority
                           </div>
-                        </a>
+                        </Link>
                       );
                     })
                   )}
