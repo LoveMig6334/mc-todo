@@ -94,7 +94,7 @@ const labelsContainerVariants = {
   collapsed: {
     transition: {
       staggerChildren: 0.04,
-      staggerDirection: -1 as const,
+      staggerDirection: -1,
     },
   },
 };
@@ -196,11 +196,12 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
     >
       <motion.div
         className="flex items-center gap-1 rounded-full bg-zinc-900 border border-zinc-800 px-3 py-2 shadow-lg"
+        initial="collapsed"
         animate={isExpanded ? "expanded" : "collapsed"}
         variants={labelsContainerVariants}
       >
         {/* Logo/Brand */}
-        <motion.div className="flex items-center gap-2 px-2">
+        <div className="flex items-center gap-2 px-2">
           <div className="w-6 h-6 rounded-md bg-orange-500 flex items-center justify-center">
             <span className="text-white text-xs font-bold">M</span>
           </div>
@@ -211,7 +212,7 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
           >
             MC-Todo
           </motion.span>
-        </motion.div>
+        </div>
 
         {/* Divider */}
         <motion.div
@@ -220,7 +221,7 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
         />
 
         {/* Nav Items */}
-        <motion.div className="flex items-center gap-1">
+        <div className="flex items-center gap-1">
           {navItems.map((item) => {
             const isActive = currentPath === item.href;
             return (
@@ -353,7 +354,7 @@ export default function FloatingNav({ currentPath = "/" }: FloatingNavProps) {
               </div>
             )}
           </motion.div>
-        </motion.div>
+        </div>
       </motion.div>
     </nav>
   );
