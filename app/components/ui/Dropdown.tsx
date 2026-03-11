@@ -74,11 +74,21 @@ export default function Dropdown({
     } else if (e.key === "Escape") {
       setIsAdding(false);
       setNewItemName("");
+      e.stopPropagation();
     }
   };
 
   return (
-    <div className="w-full" ref={dropdownRef}>
+    <div 
+      className="w-full" 
+      ref={dropdownRef}
+      onKeyDown={(e) => {
+        if (e.key === "Escape" && isOpen) {
+          setIsOpen(false);
+          e.stopPropagation();
+        }
+      }}
+    >
       {label && (
         <label className="mb-1.5 block text-sm font-medium text-zinc-300">
           {label}

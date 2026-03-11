@@ -23,22 +23,18 @@ export default function Modal({
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
-
     if (isOpen) {
       document.body.style.overflow = "hidden";
-      document.addEventListener("keydown", handleKeyDown);
+      // Auto-focus the modal when it opens so it can catch keyboard events
+      requestAnimationFrame(() => {
+        modalRef.current?.focus();
+      });
     }
 
     return () => {
       document.body.style.overflow = "unset";
-      document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   return (
     <AnimatePresence>
@@ -54,12 +50,18 @@ export default function Modal({
         >
           <motion.div
             ref={modalRef}
+            tabIndex={-1}
             variants={scaleIn}
             initial="hidden"
             animate="visible"
             exit="exit"
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                onClose();
+              }
+            }}
             className={cn(
-              "relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-zinc-900 p-6 shadow-2xl",
+              "relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-zinc-900 p-6 shadow-2xl focus:outline-none",
               className,
             )}
           >
