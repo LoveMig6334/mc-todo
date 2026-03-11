@@ -89,14 +89,12 @@ const EASE_SMOOTH: [number, number, number, number] = [0.4, 0, 0.2, 1];
 const labelsContainerVariants = {
   expanded: {
     transition: {
-      staggerChildren: 0.06,
-      delayChildren: 0,
+      staggerChildren: 0,
     },
   },
   collapsed: {
     transition: {
-      staggerChildren: 0.04,
-      staggerDirection: -1,
+      staggerChildren: 0,
     },
   },
 };
