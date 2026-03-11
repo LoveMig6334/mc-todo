@@ -33,14 +33,11 @@ export default function Home() {
     updateTask,
     deleteTask,
     toggleComplete,
-    archiveTask,
     unlinkProjectTasks,
   } = useTaskManager();
   const { categories, addCategory } = useCategories();
   const { viewMode, setViewMode } = useViewPreference();
   const { projects, addProject, updateProject, deleteProject } = useProjects();
-
-
 
   const {
     searchQuery,
@@ -206,7 +203,7 @@ export default function Home() {
         </div>
 
         {/* Quick Stats */}
-        <div className="mb-4">
+        <div className="mb-20">
           <TaskPageStats
             total={stats.total}
             pending={stats.pending}
@@ -216,7 +213,7 @@ export default function Home() {
         </div>
 
         {/* Filter Bar + View Controls */}
-        <div className="mb-4 flex flex-col gap-3">
+        <div className="mb-6 flex flex-col gap-3">
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1">
               <TaskFilterBar
