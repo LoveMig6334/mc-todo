@@ -6,7 +6,7 @@
 
 ## Overview
 
-Improve the calendar page by adding a 4-tool selector in the header. Each tool changes the interaction mode of the calendar. Alongside this, redesign the task timeline appearance: gray body with category-colored end-caps, and a new per-task custom color stored in localStorage.
+Improve the calendar page by adding a 4-tool selector in the header. Each tool changes the interaction mode of the calendar. Alongside this, redesign the task timeline appearance: gray body with category-colored solid end-caps, and a new per-task custom color stored in localStorage.
 
 ---
 
@@ -19,132 +19,289 @@ calendarColor?: string  // hex string, e.g. "#22c55e" — set by Color Bucket to
 ```
 - Stored in existing `mc-todo-tasks` localStorage key via `updateTask`
 - No migration needed — existing tasks without the field default to gray (`#3f3f46`)
+- `TaskFormData` is `Omit<Task, "id" | "createdAt" | "updatedAt">` — `calendarColor` is automatically included. No changes to `useTaskManager` needed.
 
-### Task bar color logic
-| Part | Source |
-|------|--------|
-| Body color | `task.calendarColor ?? "#3f3f46"` |
-| Left end-cap | `category?.color ?? "#71717a"` |
-| Right end-cap | `category?.color ?? "#71717a"` |
+### `TaskModal` prop change
+Replace `prefilledDate?: string` with:
+```ts
+prefilledStart?: string   // YYYY-MM-DD
+prefilledEnd?: string     // YYYY-MM-DD
+```
+Update `getDefaultFormData` inside `TaskModal`:
+- If `prefilledProjectId` is provided and the project has its own `dueDate`, the project's dates take priority (existing behavior preserved)
+- Otherwise, use `prefilledStart` as `dueDate.start` and `prefilledEnd` as `dueDate.end` when provided
+- The old `prefilledDate` prop is fully removed — no backward-compat shim needed (`app/page.tsx` does not pass any date pre-fill)
 
-The Color Bucket tool changes only the body color. End-caps always reflect the category color and are never affected by the tool.
-
----
-
-## 2. Tool Selector State
-
-A `calendarTool` state lives in `app/calendar/page.tsx`:
+### Active tool state in `page.tsx`
 ```ts
 type CalendarTool = "normal" | "add" | "trim" | "color"
 const [activeTool, setActiveTool] = useState<CalendarTool>("normal")
 ```
 
-- Passed as a prop to `CalendarGrid` and `CalendarHeader`
-- The active tool gates which mouse event handlers respond
-- The calendar grid container applies a tool-specific CSS cursor class
+### `prefilledDateRange` state in `page.tsx`
+The existing `prefilledDate: string | undefined` state is replaced by:
+```ts
+const [prefilledDateRange, setPrefilledDateRange] = useState<
+  { start: string; end: string } | undefined
+>()
+```
+When the Add Task drag completes, `setPrefilledDateRange({ start, end })` is called and the modal opens. On modal close, `setPrefilledDateRange(undefined)`.
+
+### Task bar color logic
+| Part | Source |
+|------|--------|
+| Body color | `task.calendarColor ?? "#3f3f46"` |
+| Left end-cap (8px) | `category?.color ?? "#71717a"` |
+| Right end-cap (8px) | `category?.color ?? "#71717a"` |
+
+The Color Bucket tool changes only `calendarColor` (body). End-caps always reflect the category color and are never affected by the tool.
+
+---
+
+## 2. Prop Threading Summary
+
+```
+page.tsx
+  ├─→ CalendarHeader: activeTool, onToolChange
+  ├─→ CalendarGrid:   activeTool, onDragStart?, onDragHover?, onResizeStart?, onResizeHover?,
+  │                   onOpenColorPicker, onAddTaskStart, onAddTaskEnter, onAddTaskEnd
+  │     ├─→ CalendarWeekEvents: activeTool, onClickEvent, onOpenColorPicker,
+  │     │                       onDragStart?, onDragHover?, onResizeStart?, onResizeHover?
+  │     └─→ CalendarDayCell:    isInAddRange, onAddTaskMouseDown, onAddTaskMouseEnter
+  └─→ CalendarColorPickerPopover: openTaskId, anchorPosition, tasks, onClose, updateTask
+```
+
+**Drag/resize gating:** `page.tsx` passes `onDragStart`, `onDragHover`, `onResizeStart`, `onResizeHover` as `undefined` when `activeTool !== "trim"`. All four props become optional (`?`) in `CalendarGridProps`, `CalendarWeekEventsProps`, and `CalendarDayCellProps`. Components check `if (onDragStart)` / `if (onResizeStart)` before calling — same as the existing optional-callback pattern already used for `onDragStart?` in `CalendarGrid`.
 
 ---
 
 ## 3. Toolbar Component
 
 **File:** `app/components/calendar/CalendarToolbar.tsx`
+Must include `"use client"` directive.
 
-Renders inline inside `CalendarHeader`, to the right of the month navigation.
+Renders inside `CalendarHeader`, to the right of the month navigation. Toolbar buttons are plain `<button>` elements — not Motion-animated — so Tailwind color classes are safe here.
 
-| Tool | Lucide Icon | CSS Cursor | Label |
-|------|-------------|------------|-------|
+| Tool | Lucide Icon | CSS cursor (applied to CalendarGrid outer container) | Display label |
+|------|-------------|------------------------------------------------------|---------------|
 | Normal | `MousePointer2` | `cursor-default` | Normal |
 | Add Task | `Plus` | `cursor-crosshair` | Add Task |
-| Trim & Move | `Scissors` | custom scissors SVG cursor | Trim & Move |
-| Color | `PaintBucket` | custom bucket SVG cursor | Color |
+| Trim & Move | `Scissors` | `cursor-cell` | Trim & Move |
+| Color | `PaintBucket` | `cursor-cell` | Color |
 
-**Active tool styling:** `bg-orange-500/20 border border-orange-500 text-orange-400`
-**Inactive tool styling:** `bg-zinc-800 border border-zinc-700 text-zinc-400 hover:text-zinc-200`
+> The type literal for Trim & Move is `"trim"` but the display label is "Trim & Move".
 
-All button colors use `rgba()`/`rgb()` inline styles for Motion-animated elements per project rules.
+The cursor class is applied to the outermost container `<div>` in `CalendarGrid` via a lookup:
+```ts
+const cursorClass: Record<CalendarTool, string> = {
+  normal: "cursor-default",
+  add: "cursor-crosshair",
+  trim: "cursor-cell",
+  color: "cursor-cell",
+}
+```
+
+**Active tool:** `bg-orange-500/20 border border-orange-500 text-orange-400`
+**Inactive tool:** `bg-zinc-800 border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-600`
+
+### Updated `CalendarHeader` props
+```ts
+interface CalendarHeaderProps {
+  currentMonth: number
+  currentYear: number
+  onPrevMonth: () => void
+  onNextMonth: () => void
+  onToday: () => void
+  activeTool: CalendarTool              // NEW
+  onToolChange: (tool: CalendarTool) => void  // NEW
+}
+```
 
 ---
 
 ## 4. Tool Behaviors
 
 ### 4.1 Normal Tool (default)
-- **Hover:** Scale-up animation on task bar — Motion `whileHover={{ scale: 1.05 }}` with `transition={{ duration: 0.15 }}`
-- **Double-click:** Opens `TaskModal` in edit mode for the clicked task
-- **Drag/resize:** Disabled
+
+**Single-click on a task bar:** Opens `TaskModal` in edit mode (same as existing `handleClickEvent` behavior).
+
+**Double-click on a day cell:** Removed. `handleDoubleClickDay` is deleted from `page.tsx`. `onDoubleClickDay` is removed from `CalendarGridProps` and `CalendarDayCellProps` entirely. Task creation from the calendar is now exclusively done via the Add Task tool.
+
+**Hover animation:** The outer `motion.button` on each task bar retains Motion. The `whileHover` scale:
+```ts
+whileHover={{ scale: activeTool === "normal" && !isResizing && !isDragging ? 1.05 : 1 }}
+transition={{ duration: 0.15 }}
+```
+
+**Drag/resize:** `onDragStart` / `onResizeStart` are `undefined` in this mode (see §2 gating).
 
 ### 4.2 Add Task Tool
+
 **New hook:** `app/hooks/useAddTaskDrag.ts`
 
-State:
 ```ts
-{ isDragging: boolean, startDate: string | null, endDate: string | null }
+interface AddTaskDragState {
+  isDragging: boolean
+  startDate: string | null   // YYYY-MM-DD
+  endDate: string | null     // YYYY-MM-DD
+}
+
+// Hook signature:
+function useAddTaskDrag(
+  onComplete: (range: { start: string; end: string }) => void
+): {
+  dragState: AddTaskDragState
+  handleMouseDown: (date: string) => void
+  handleMouseEnter: (date: string) => void
+}
 ```
 
-Behavior:
-- `mousedown` on a day cell → records `startDate`
-- `mousemove` across cells → updates `endDate`; highlights selected range with orange overlay
-- `mouseup` → sorts start/end dates, opens `TaskModal` with `dueDate.start` and `dueDate.end` pre-filled
-- Dragging right (forward) or left (backward) both work — dates are always normalized before passing to modal
-- Uses the same ref-based update queue pattern as existing drag hooks
+The `onComplete` callback is called internally by the hook's global mouseup listener — the caller does not invoke any `handleMouseUp` manually.
+
+**Event routing:** Uses per-cell `onMouseDown` / `onMouseEnter` on `CalendarDayCell` — same approach as `useEventDrag`. New props on `CalendarDayCell`:
+```ts
+onAddTaskMouseDown?: (date: string) => void
+onAddTaskMouseEnter?: (date: string) => void
+```
+These are only passed (non-undefined) when `activeTool === "add"`.
+
+**Global mouseup:** A `window.addEventListener("mouseup", handleGlobalMouseUp)` listener registered in `useEffect` (with cleanup on unmount) handles mouse release outside the grid. The handler normalizes start/end (`start ≤ end`), calls `onComplete({ start, end })`, and resets drag state.
+
+**Behavior:**
+- `mousedown` on a day cell → `startDate = date`, `isDragging = true`
+- `onMouseEnter` while dragging → `endDate = date`
+- `mouseup` (global) → normalize, call `onComplete({ start, end })`, reset state
+  - In `page.tsx`, `onComplete` is: `(range) => { setPrefilledDateRange(range); setIsModalOpen(true) }`
+- Does not call `updateTask`. No ref-based update queue.
+
+**Range highlight:** `CalendarGrid` computes `addTaskPreviewDates: Set<string>` from hook state. Each cell receives `isInAddRange: boolean`. When true, render a semi-transparent orange overlay as an absolutely-positioned child `<div>` with `position: absolute`, `inset: 0`, `background: rgba(249, 115, 22, 0.15)`, `pointer-events: none`, `borderRadius: inherited`. The `pointer-events: none` ensures the overlay does not intercept `onMouseEnter` / `onMouseDown` events on the cell. This is an intentional UI feedback color — it is not glassmorphism.
 
 ### 4.3 Trim & Move Tool
-- Existing `useEventDrag` and `useEventResize` hooks, behavior unchanged
-- Previously active in all modes — now **exclusively** active when this tool is selected
-- No logic changes to the hooks themselves
+
+- Existing `useEventDrag` and `useEventResize` hooks — no logic changes
+- `onDragStart`, `onDragHover`, `onResizeStart`, `onResizeHover` are passed normally only when `activeTool === "trim"` (see §2 gating)
+- Hover scale returns to 1 in this mode (see §4.1 guard)
 
 ### 4.4 Color Bucket Tool
+
 **New hook:** `app/hooks/useTaskColorPicker.ts`
 
-State:
 ```ts
-{ openTaskId: string | null, anchorPosition: { x: number, y: number } | null }
+interface ColorPickerState {
+  openTaskId: string | null
+  anchorPosition: { x: number; y: number } | null
+}
+
+// Returns: { pickerState, openPicker, closePicker }
 ```
 
-Behavior:
-- `click` on a task → records `taskId` and mouse position, opens popover
-- Popover renders near the click position, with smart edge detection (flips left/up if near viewport edge)
-- Popover contains: HSV color map + hue slider + hex text input (using `react-colorful`)
-- Color selection → calls `updateTask(taskId, { calendarColor: hex })` immediately on change
-- Click outside popover → dismisses it
-- Category end-caps are unaffected — only `calendarColor` changes
+**Click routing in `CalendarWeekEvents`:** When `activeTool === "color"`, the task bar `onClick` handler branches:
+```ts
+onClick={(e) => {
+  if (activeTool === "color") {
+    onOpenColorPicker(task.id, { x: e.clientX, y: e.clientY })
+    return   // suppress normal onClickEvent
+  }
+  onClickEvent(task)
+}}
+```
+
+**Dismiss:** A full-screen transparent backdrop `<div>` inside `CalendarColorPickerPopover` (using `position: fixed`, `inset: 0`, z-index: 99) captures outside clicks and calls `onClose`.
+
+**Popover component:** `app/components/calendar/CalendarColorPickerPopover.tsx`
+Must include `"use client"` directive. Renders at `page.tsx` level (sibling to `CalendarGrid`) when `openTaskId !== null`.
+
+**Z-index:** Backdrop = 99. Popover panel = 100. This is above `CalendarEventPopover` (z-50) and `TrashDropZone`.
+
+**Popover dimensions:** 220px wide × ~260px tall.
+
+**Position logic (applied inside the popover using `anchorPosition` with `position: fixed`):**
+- Default: below and to the right of `anchorPosition`
+- If `anchorX + 220 > window.innerWidth - 16` → flip left
+- If `anchorY + 260 > window.innerHeight - 16` → flip up
+
+**Color picker UI:**
+- `HexColorPicker` from `react-colorful`
+- A controlled `<input type="text">` below for manual hex entry; validates hex format on blur
+- Flat styling: `bg-zinc-800 border border-zinc-700 rounded-lg p-3` — no glassmorphism
+- Color change → `updateTask(taskId, { calendarColor: hex })` immediately on change
 
 ---
 
 ## 5. Task Timeline Visual Design
 
-All 4 calendar event components are updated to the new structure.
+### Which components render task bars
 
-**Affected components:**
-- `CalendarEvent.tsx`
-- `CalendarWeekEvents.tsx`
-- `DragPreviewEvent.tsx`
-- `CalendarEventPopover.tsx`
+`CalendarGrid` always passes `hideEvents={true}` to `CalendarDayCell`, so `CalendarEvent.tsx` is not in the active render path — events render exclusively through `CalendarWeekEvents`. `CalendarEvent.tsx` is still updated for structural correctness.
 
-**New DOM structure:**
+### New DOM structure (primary: `CalendarWeekEvents`)
+
+The outer `motion.button` wrapper is **retained** for click semantics and Motion animation. The end-cap structure is nested inside it:
+
 ```tsx
-<div style={{ display: "flex", borderRadius: 4, overflow: "hidden", height: "100%" }}>
-  {/* Left end-cap — only on spanStart */}
-  {spanStart && (
-    <div style={{ width: 8, background: categoryColor, flexShrink: 0 }} />
-  )}
-  {/* Body */}
+<motion.button
+  whileHover={{ scale: activeTool === "normal" && !isResizing && !isDragging ? 1.05 : 1 }}
+  transition={{ duration: 0.15 }}
+  style={{ /* existing positioning */ }}
+  onClick={(e) => { /* see §4.4 click routing */ }}
+>
+  <div style={{ display: "flex", borderRadius: 4, overflow: "hidden",
+                height: "100%", width: "100%" }}>
+    {spanStart && (
+      <div style={{ width: 8, background: categoryColor, flexShrink: 0 }} />
+    )}
+    <div style={{ flex: 1, background: task.calendarColor ?? "#3f3f46",
+                  display: "flex", alignItems: "center", padding: "0 6px",
+                  position: "relative", overflow: "hidden" }}>
+      {activeTool === "trim" && <ResizeHandleStart ... />}
+      {activeTool === "trim" && <ResizeHandleEnd ... />}
+      <span style={{ color: "#e4e4e7", fontSize: 11, overflow: "hidden",
+                     whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+        {task.title}
+      </span>
+    </div>
+    {spanEnd && (
+      <div style={{ width: 8, background: categoryColor, flexShrink: 0 }} />
+    )}
+  </div>
+</motion.button>
+```
+
+**Resize handles:** `position: absolute` inside the body `<div>` (`position: relative`). Only rendered when `activeTool === "trim"`.
+
+**Multi-day spans:** End-caps only at true start/end. `spanMiddle` cells: body only, no caps.
+
+**Color values:** All `rgb()`/`rgba()` strings in inline styles.
+
+### `DragPreviewEvent` update
+
+The ghost preview adopts the same end-cap structure but without interactive elements:
+```tsx
+<div style={{ display: "flex", borderRadius: 4, overflow: "hidden",
+              height: "100%", opacity: 0.5 }}>
+  {spanStart && <div style={{ width: 8, background: categoryColor, flexShrink: 0 }} />}
+  <div style={{ flex: 1, background: task.calendarColor ?? "#3f3f46" }} />
+  {spanEnd && <div style={{ width: 8, background: categoryColor, flexShrink: 0 }} />}
+</div>
+```
+
+### `CalendarEventPopover` update
+
+Each event row inside the overflow popover list adopts the end-cap design:
+```tsx
+<div style={{ display: "flex", borderRadius: 3, overflow: "hidden", height: 20 }}>
+  <div style={{ width: 6, background: categoryColor, flexShrink: 0 }} />
   <div style={{ flex: 1, background: task.calendarColor ?? "#3f3f46",
-                display: "flex", alignItems: "center", padding: "0 6px" }}>
-    <span style={{ color: "#e4e4e7", fontSize: 11, overflow: "hidden",
+                display: "flex", alignItems: "center", padding: "0 5px" }}>
+    <span style={{ color: "#e4e4e7", fontSize: 10, overflow: "hidden",
                    whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
       {task.title}
     </span>
   </div>
-  {/* Right end-cap — only on spanEnd */}
-  {spanEnd && (
-    <div style={{ width: 8, background: categoryColor, flexShrink: 0 }} />
-  )}
+  <div style={{ width: 6, background: categoryColor, flexShrink: 0 }} />
 </div>
 ```
-
-**Multi-day spans:** End-caps render only at the true start/end of the event. Middle cells (`spanMiddle`) show body only, no caps — no visual interruption across week row boundaries.
-
-**Color values:** All hardcoded as `rgb()`/`rgba()` strings — no Tailwind color keywords on animated elements.
+No `activeTool` prop needed in `CalendarEventPopover` — resize handles are not shown there.
 
 ---
 
@@ -153,7 +310,8 @@ All 4 calendar event components are updated to the new structure.
 | File | Purpose |
 |------|---------|
 | `app/components/calendar/CalendarToolbar.tsx` | 4-tool selector UI component |
-| `app/hooks/useAddTaskDrag.ts` | Drag-to-create date range logic |
+| `app/components/calendar/CalendarColorPickerPopover.tsx` | Color picker popover with HexColorPicker + backdrop |
+| `app/hooks/useAddTaskDrag.ts` | Drag-to-create date range state + event handlers |
 | `app/hooks/useTaskColorPicker.ts` | Color picker open/close state + anchor position |
 
 ---
@@ -162,24 +320,27 @@ All 4 calendar event components are updated to the new structure.
 
 | File | Change |
 |------|--------|
-| `app/types/task.ts` | Add `calendarColor?: string` |
-| `app/calendar/page.tsx` | Add `activeTool` state; wire new hooks; pass tool down |
-| `app/components/calendar/CalendarHeader.tsx` | Embed `CalendarToolbar` |
-| `app/components/calendar/CalendarGrid.tsx` | Apply cursor class; gate drag/resize to Trim tool |
-| `app/components/calendar/CalendarWeekEvents.tsx` | New task bar structure; hover scale on Normal tool |
-| `app/components/calendar/CalendarEvent.tsx` | New task bar structure; hover scale on Normal tool |
-| `app/components/calendar/DragPreviewEvent.tsx` | New task bar structure |
-| `app/components/calendar/CalendarEventPopover.tsx` | New task bar structure |
-| `app/hooks/useEventDrag.ts` | No logic change — called only when Trim tool active |
-| `app/hooks/useEventResize.ts` | No logic change — called only when Trim tool active |
+| `app/types/task.ts` | Add `calendarColor?: string` to `Task` |
+| `app/components/task/TaskModal.tsx` | Replace `prefilledDate?` with `prefilledStart?` + `prefilledEnd?`; update `getDefaultFormData` |
+| `app/calendar/page.tsx` | Add `activeTool`, `prefilledDateRange`; wire new hooks; remove `handleDoubleClickDay`; gate drag/resize props to Trim mode; pass new props to header, grid, modal; render `CalendarColorPickerPopover` |
+| `app/components/calendar/CalendarHeader.tsx` | Add `activeTool` + `onToolChange` props; embed `CalendarToolbar` |
+| `app/components/calendar/CalendarGrid.tsx` | Add `activeTool`; remove `onDoubleClickDay`; apply cursor class; pass drag/resize props as `undefined` when not Trim; wire add-task handlers; compute `addTaskPreviewDates`; pass new props to cells and `CalendarWeekEvents` |
+| `app/components/calendar/CalendarDayCell.tsx` | Remove `onDoubleClick`; add `isInAddRange`, `onAddTaskMouseDown?`, `onAddTaskMouseEnter?` props; render orange overlay when `isInAddRange` |
+| `app/components/calendar/CalendarWeekEvents.tsx` | Add `activeTool` + `onOpenColorPicker` props; new end-cap task bar structure; `whileHover` scale guard; conditional resize handles; click routing for Color tool |
+| `app/components/calendar/CalendarEvent.tsx` | New end-cap task bar structure (structural update; not in active render path) |
+| `app/components/calendar/DragPreviewEvent.tsx` | New end-cap task bar structure (see §5) |
+| `app/components/calendar/CalendarEventPopover.tsx` | Each event row adopts end-cap design (see §5); no `activeTool` prop |
+| `app/hooks/useEventDrag.ts` | No logic change — caller controls when props are passed |
+| `app/hooks/useEventResize.ts` | No logic change — caller controls when props are passed |
 
 ---
 
 ## 8. New Dependency
 
-**`react-colorful`** — HSV/RGB color picker
-- ~2.8kb gzipped
-- Zero peer dependencies
+**`react-colorful`** — lightweight color picker
+- ~2.8kb gzipped, zero peer dependencies
+- Used component: `HexColorPicker`
+- `CalendarColorPickerPopover` must be a client component (`"use client"`)
 - Install: `npm install react-colorful`
 
 ---
@@ -190,3 +351,5 @@ All 4 calendar event components are updated to the new structure.
 - Undo/redo for color changes
 - Color presets or saved palette
 - Changing category color via the Color Bucket tool (explicitly excluded)
+- Right-click context menus
+- Double-click-on-day-cell to create tasks (removed; Add Task tool is the replacement)
