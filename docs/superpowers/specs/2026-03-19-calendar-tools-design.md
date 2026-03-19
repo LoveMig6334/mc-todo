@@ -61,15 +61,20 @@ The Color Bucket tool changes only `calendarColor` (body). End-caps always refle
 ## 2. Prop Threading Summary
 
 ```
-page.tsx
+page.tsx  (instantiates useAddTaskDrag, useTaskColorPicker)
   ├─→ CalendarHeader: activeTool, onToolChange
   ├─→ CalendarGrid:   activeTool, onDragStart?, onDragHover?, onResizeStart?, onResizeHover?,
-  │                   onOpenColorPicker, onAddTaskStart, onAddTaskEnter, onAddTaskEnd
+  │                   onOpenColorPicker,
+  │                   onAddTaskMouseDown?, onAddTaskMouseEnter?   ← from useAddTaskDrag in page.tsx
+  │                   addTaskPreviewDates                          ← Set<string> computed in page.tsx
   │     ├─→ CalendarWeekEvents: activeTool, onClickEvent, onOpenColorPicker,
   │     │                       onDragStart?, onDragHover?, onResizeStart?, onResizeHover?
-  │     └─→ CalendarDayCell:    isInAddRange, onAddTaskMouseDown, onAddTaskMouseEnter
+  │     └─→ CalendarDayCell:    isInAddRange,
+  │                             onAddTaskMouseDown?, onAddTaskMouseEnter?
   └─→ CalendarColorPickerPopover: openTaskId, anchorPosition, tasks, onClose, updateTask
 ```
+
+`useAddTaskDrag` is instantiated in `page.tsx`. Its `handleMouseDown` and `handleMouseEnter` are passed to `CalendarGrid` as `onAddTaskMouseDown?` and `onAddTaskMouseEnter?`, which then forwards them to each `CalendarDayCell`. `page.tsx` also computes `addTaskPreviewDates` (a `Set<string>` of all dates between the normalized start and end of the current drag) and passes it to `CalendarGrid` → each `CalendarDayCell` as `isInAddRange`.
 
 **Drag/resize gating:** `page.tsx` passes `onDragStart`, `onDragHover`, `onResizeStart`, `onResizeHover` as `undefined` when `activeTool !== "trim"`. All four props become optional (`?`) in `CalendarGridProps`, `CalendarWeekEventsProps`, and `CalendarDayCellProps`. Components check `if (onDragStart)` / `if (onResizeStart)` before calling — same as the existing optional-callback pattern already used for `onDragStart?` in `CalendarGrid`.
 
@@ -165,7 +170,15 @@ onAddTaskMouseEnter?: (date: string) => void
 ```
 These are only passed (non-undefined) when `activeTool === "add"`.
 
-**Global mouseup:** A `window.addEventListener("mouseup", handleGlobalMouseUp)` listener registered in `useEffect` (with cleanup on unmount) handles mouse release outside the grid. The handler normalizes start/end (`start ≤ end`), calls `onComplete({ start, end })`, and resets drag state.
+**Global mouseup:** A `window.addEventListener("mouseup", handleGlobalMouseUp)` listener is registered only while `isDragging === true`, via a `useEffect` that depends on `isDragging`:
+```ts
+useEffect(() => {
+  if (!isDragging) return
+  window.addEventListener("mouseup", handleGlobalMouseUp)
+  return () => window.removeEventListener("mouseup", handleGlobalMouseUp)
+}, [isDragging])
+```
+This ensures the listener is active only during an active drag — it does not fire on unrelated mouse releases elsewhere on the page. The handler normalizes start/end (`start ≤ end`), calls `onComplete({ start, end })`, and resets drag state.
 
 **Behavior:**
 - `mousedown` on a day cell → `startDate = date`, `isDragging = true`
@@ -174,7 +187,7 @@ These are only passed (non-undefined) when `activeTool === "add"`.
   - In `page.tsx`, `onComplete` is: `(range) => { setPrefilledDateRange(range); setIsModalOpen(true) }`
 - Does not call `updateTask`. No ref-based update queue.
 
-**Range highlight:** `CalendarGrid` computes `addTaskPreviewDates: Set<string>` from hook state. Each cell receives `isInAddRange: boolean`. When true, render a semi-transparent orange overlay as an absolutely-positioned child `<div>` with `position: absolute`, `inset: 0`, `background: rgba(249, 115, 22, 0.15)`, `pointer-events: none`, `borderRadius: inherited`. The `pointer-events: none` ensures the overlay does not intercept `onMouseEnter` / `onMouseDown` events on the cell. This is an intentional UI feedback color — it is not glassmorphism.
+**Range highlight:** `page.tsx` computes `addTaskPreviewDates: Set<string>` from the hook's `dragState` — it always uses the normalized range `[min(startDate, endDate), max(startDate, endDate)]`, so the highlight updates in real time and covers all dates between the two endpoints regardless of drag direction. Each cell receives `isInAddRange: boolean`. When true, render a semi-transparent orange overlay as an absolutely-positioned child `<div>` with `position: absolute`, `inset: 0`, `background: rgba(249, 115, 22, 0.15)`, `pointer-events: none`. The `pointer-events: none` ensures the overlay does not intercept `onMouseEnter` / `onMouseDown` events on the cell. This is an intentional UI feedback tint — it is not glassmorphism.
 
 ### 4.3 Trim & Move Tool
 
@@ -216,13 +229,13 @@ Must include `"use client"` directive. Renders at `page.tsx` level (sibling to `
 **Popover dimensions:** 220px wide × ~260px tall.
 
 **Position logic (applied inside the popover using `anchorPosition` with `position: fixed`):**
-- Default: below and to the right of `anchorPosition`
-- If `anchorX + 220 > window.innerWidth - 16` → flip left
-- If `anchorY + 260 > window.innerHeight - 16` → flip up
+- Default: `top = anchorY + 8`, `left = anchorX` (8px below the click point, left-aligned with it)
+- If `anchorX + 220 > window.innerWidth - 16` → flip: `left = anchorX - 220`
+- If `anchorY + 8 + 260 > window.innerHeight - 16` → flip: `top = anchorY - 260`
 
 **Color picker UI:**
 - `HexColorPicker` from `react-colorful`
-- A controlled `<input type="text">` below for manual hex entry; validates hex format on blur
+- A controlled `<input type="text">` below for manual hex entry; validates hex format (`/^#[0-9a-fA-F]{6}$/`) on blur — if invalid, the input silently reverts to the last valid hex value (no error state shown)
 - Flat styling: `bg-zinc-800 border border-zinc-700 rounded-lg p-3` — no glassmorphism
 - Color change → `updateTask(taskId, { calendarColor: hex })` immediately on change
 
