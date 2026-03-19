@@ -47,6 +47,7 @@ export interface Task {
   completed: boolean;
   completedAt: string | null; // ISO datetime when marked complete, null if not completed
   archived: boolean; // Whether the task has been auto-archived
+  calendarColor?: string; // Hex color set by Color Bucket tool on calendar page
   createdAt: string; // ISO datetime string
   updatedAt: string; // ISO datetime string
 }
