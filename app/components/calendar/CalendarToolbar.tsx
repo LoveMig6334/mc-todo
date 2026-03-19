@@ -1,6 +1,6 @@
 "use client";
 
-import { MousePointer2, Plus, Scissors, PaintBucket } from "lucide-react";
+import { LucideIcon, MousePointer2, Plus, Scissors, PaintBucket } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 
 export type CalendarTool = "normal" | "add" | "trim" | "color";
@@ -10,7 +10,7 @@ interface CalendarToolbarProps {
   onToolChange: (tool: CalendarTool) => void;
 }
 
-const TOOLS: { id: CalendarTool; label: string; Icon: React.FC<{ size?: number }> }[] = [
+const TOOLS: { id: CalendarTool; label: string; Icon: LucideIcon }[] = [
   { id: "normal", label: "Normal", Icon: MousePointer2 },
   { id: "add", label: "Add Task", Icon: Plus },
   { id: "trim", label: "Trim & Move", Icon: Scissors },
