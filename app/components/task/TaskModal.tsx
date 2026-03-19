@@ -25,23 +25,26 @@ interface TaskModalProps {
   categories: Category[];
   onAddCategory: (name: string) => Category;
   editingTask?: Task | null;
-  prefilledDate?: string;
+  prefilledStart?: string; // YYYY-MM-DD pre-fill for dueDate.start
+  prefilledEnd?: string;   // YYYY-MM-DD pre-fill for dueDate.end
   prefilledProjectId?: string;
   projects?: Project[];
 }
 
 const getDefaultFormData = (
-  prefilledDate?: string,
+  prefilledStart?: string,
+  prefilledEnd?: string,
   prefilledProjectId?: string,
   projects?: Project[],
 ): TaskFormData => {
   const today = new Date().toISOString().split("T")[0];
-  
+
   let defaultDueDate: DateRange = {
-    start: prefilledDate || today,
-    end: null,
+    start: prefilledStart || today,
+    end: prefilledEnd || null,
   };
 
+  // prefilledProjectId takes priority when project has its own due dates
   if (prefilledProjectId && projects) {
     const proj = projects.find((p) => p.id === prefilledProjectId);
     if (proj) {
@@ -71,7 +74,8 @@ function TaskModalContent({
   categories,
   onAddCategory,
   editingTask,
-  prefilledDate,
+  prefilledStart,
+  prefilledEnd,
   prefilledProjectId,
   projects,
 }: Omit<TaskModalProps, "isOpen">) {
@@ -81,19 +85,20 @@ function TaskModalContent({
         title: editingTask.title,
         details: editingTask.details,
         categoryId: editingTask.categoryId,
+        projectId: editingTask.projectId,
         priority: editingTask.priority,
         status: editingTask.status,
         dueDate: editingTask.dueDate,
-        subtasks: editingTask.subtasks ?? [],
+        subtasks: editingTask.subtasks,
         referenceLinks: editingTask.referenceLinks,
         completed: editingTask.completed,
         completedAt: editingTask.completedAt,
         archived: editingTask.archived,
-        projectId: editingTask.projectId,
+        calendarColor: editingTask.calendarColor,
       };
     }
-    return getDefaultFormData(prefilledDate, prefilledProjectId, projects);
-  }, [editingTask, prefilledDate, prefilledProjectId, projects]);
+    return getDefaultFormData(prefilledStart, prefilledEnd, prefilledProjectId, projects);
+  }, [editingTask, prefilledStart, prefilledEnd, prefilledProjectId, projects]);
 
   const [formData, setFormData] = useState<TaskFormData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -365,7 +370,8 @@ export default function TaskModal({
   categories,
   onAddCategory,
   editingTask,
-  prefilledDate,
+  prefilledStart,
+  prefilledEnd,
   prefilledProjectId,
   projects,
 }: TaskModalProps) {
@@ -388,7 +394,8 @@ export default function TaskModal({
         categories={categories}
         onAddCategory={onAddCategory}
         editingTask={editingTask}
-        prefilledDate={prefilledDate}
+        prefilledStart={prefilledStart}
+        prefilledEnd={prefilledEnd}
         prefilledProjectId={prefilledProjectId}
         projects={projects}
       />
