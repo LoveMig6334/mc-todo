@@ -1,9 +1,12 @@
 "use client";
 
+import CalendarColorPickerPopover from "@/app/components/calendar/CalendarColorPickerPopover";
 import CalendarGrid from "@/app/components/calendar/CalendarGrid";
 import CalendarHeader from "@/app/components/calendar/CalendarHeader";
+import { CalendarTool } from "@/app/components/calendar/CalendarToolbar";
 import TrashDropZone from "@/app/components/calendar/TrashDropZone";
 import TaskModal from "@/app/components/task/TaskModal";
+import { useAddTaskDrag } from "@/app/hooks/useAddTaskDrag";
 import { useCalendarGrid } from "@/app/hooks/useCalendarGrid";
 import { useCategories } from "@/app/hooks/useCategories";
 import { computePreviewDates, useEventDrag } from "@/app/hooks/useEventDrag";
@@ -12,6 +15,7 @@ import {
   useEventResize,
 } from "@/app/hooks/useEventResize";
 import { useProjects } from "@/app/hooks/useProjects";
+import { useTaskColorPicker } from "@/app/hooks/useTaskColorPicker";
 import { useTaskManager } from "@/app/hooks/useTaskManager";
 import { Task, TaskFormData } from "@/app/types/task";
 import { useMemo, useState } from "react";
@@ -28,11 +32,15 @@ export default function CalendarPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [prefilledDate, setPrefilledDate] = useState<string | undefined>();
+  const [prefilledDateRange, setPrefilledDateRange] = useState<
+    { start: string; end: string } | undefined
+  >();
   const [expandedDayKey, setExpandedDayKey] = useState<string | null>(null);
+  const [activeTool, setActiveTool] = useState<CalendarTool>("normal");
 
   const grid = useCalendarGrid(currentYear, currentMonth, tasks, categories);
 
+  // --- Hooks ---
   const { resizeState, startResize, updateResize } = useEventResize({
     updateTask,
     getTaskById,
@@ -45,6 +53,13 @@ export default function CalendarPage() {
     getTaskById,
     getProjectById,
   });
+
+  const addTaskDrag = useAddTaskDrag((range) => {
+    setPrefilledDateRange(range);
+    setIsModalOpen(true);
+  });
+
+  const { pickerState, openPicker, closePicker } = useTaskColorPicker();
 
   // Ensure resize and drag are mutually exclusive
   const isResizing = resizeState !== null;
@@ -79,6 +94,22 @@ export default function CalendarPage() {
   const previewTask = resizedTask ?? draggedTask;
   const previewCategory = resizedCategory ?? draggedCategory;
 
+  // Add Task tool: compute preview dates set
+  const addTaskPreviewDates = useMemo(() => {
+    const { isDragging: isAddDragging, startDate, endDate } = addTaskDrag.dragState;
+    if (!isAddDragging || !startDate || !endDate) return new Set<string>();
+    const s = startDate <= endDate ? startDate : endDate;
+    const e = startDate <= endDate ? endDate : startDate;
+    const dates = new Set<string>();
+    const current = new Date(s + "T00:00:00");
+    const endD = new Date(e + "T00:00:00");
+    while (current <= endD) {
+      dates.add(current.toISOString().slice(0, 10));
+      current.setDate(current.getDate() + 1);
+    }
+    return dates;
+  }, [addTaskDrag.dragState]);
+
   // --- Month Navigation ---
   const goToPrevMonth = () => {
     if (currentMonth === 0) {
@@ -104,22 +135,16 @@ export default function CalendarPage() {
   };
 
   // --- Modal Handlers ---
-  const handleDoubleClickDay = (date: string) => {
-    setEditingTask(null);
-    setPrefilledDate(date);
-    setIsModalOpen(true);
-  };
-
   const handleClickEvent = (task: Task) => {
     setEditingTask(task);
-    setPrefilledDate(undefined);
+    setPrefilledDateRange(undefined);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingTask(null);
-    setPrefilledDate(undefined);
+    setPrefilledDateRange(undefined);
   };
 
   const handleSubmitTask = (formData: TaskFormData) => {
@@ -158,15 +183,12 @@ export default function CalendarPage() {
 
   return (
     <div className="min-h-screen bg-zinc-900">
-
-
       <main className="mx-auto max-w-[80%] px-4 pb-8 pt-24">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-white">Calendar</h1>
           <p className="mt-1 text-sm text-zinc-400">
-            View and manage your tasks on the calendar. Double-click a day to
-            create a new task. Drag events to move them.
+            View and manage your tasks on the calendar. Use the toolbar to switch tools.
           </p>
         </div>
 
@@ -177,25 +199,31 @@ export default function CalendarPage() {
           onPrevMonth={goToPrevMonth}
           onNextMonth={goToNextMonth}
           onToday={goToToday}
+          activeTool={activeTool}
+          onToolChange={setActiveTool}
         />
 
         {/* Calendar Grid */}
         <CalendarGrid
           grid={grid}
-          onDoubleClickDay={handleDoubleClickDay}
+          activeTool={activeTool}
           onClickEvent={handleClickEvent}
           expandedDayKey={expandedDayKey}
           onExpandDay={setExpandedDayKey}
-          onResizeStart={handleResizeStart}
-          onResizeHover={handleResizeHover}
+          onResizeStart={activeTool === "trim" ? handleResizeStart : undefined}
+          onResizeHover={activeTool === "trim" ? handleResizeHover : undefined}
           resizeState={resizeState}
-          onDragStart={handleDragStart}
-          onDragHover={handleDragHover}
+          onDragStart={activeTool === "trim" ? handleDragStart : undefined}
+          onDragHover={activeTool === "trim" ? handleDragHover : undefined}
           dragState={dragState}
           previewDates={previewDates}
           draggedTask={previewTask}
           draggedCategory={previewCategory}
           projects={projects}
+          onOpenColorPicker={activeTool === "color" ? openPicker : undefined}
+          onAddTaskMouseDown={activeTool === "add" ? addTaskDrag.handleMouseDown : undefined}
+          onAddTaskMouseEnter={activeTool === "add" ? addTaskDrag.handleMouseEnter : undefined}
+          addTaskPreviewDates={activeTool === "add" ? addTaskPreviewDates : undefined}
         />
       </main>
 
@@ -207,7 +235,16 @@ export default function CalendarPage() {
         onHoverEnd={() => setOverTrash(false)}
       />
 
-      {/* Task Modal (reused from Feature 1) */}
+      {/* Color Picker Popover */}
+      <CalendarColorPickerPopover
+        openTaskId={pickerState.openTaskId}
+        anchorPosition={pickerState.anchorPosition}
+        tasks={tasks}
+        onClose={closePicker}
+        updateTask={updateTask}
+      />
+
+      {/* Task Modal */}
       <TaskModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
@@ -215,7 +252,8 @@ export default function CalendarPage() {
         categories={categories}
         onAddCategory={addCategory}
         editingTask={editingTask}
-        prefilledStart={prefilledDate}
+        prefilledStart={prefilledDateRange?.start}
+        prefilledEnd={prefilledDateRange?.end}
         projects={projects}
       />
     </div>

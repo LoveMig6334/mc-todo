@@ -9,13 +9,13 @@ const mockCategories: Category[] = [
 ];
 
 const mockHandlers = {
-  onDoubleClickDay: jest.fn(),
   onClickEvent: jest.fn(),
   onExpandDay: jest.fn(),
   onResizeStart: jest.fn(),
   onResizeHover: jest.fn(),
   onDragStart: jest.fn(),
   onDragHover: jest.fn(),
+  activeTool: "normal" as const,
 };
 
 function makeTask(overrides: Partial<Task> & { id: string }): Task {
@@ -26,8 +26,11 @@ function makeTask(overrides: Partial<Task> & { id: string }): Task {
     priority: 5,
     status: "pending",
     dueDate: { start: "2026-02-15", end: null },
+    subtasks: [],
     referenceLinks: [],
     completed: false,
+    completedAt: null,
+    archived: false,
     createdAt: "2026-01-01T00:00:00",
     updatedAt: "2026-01-01T00:00:00",
     ...overrides,
