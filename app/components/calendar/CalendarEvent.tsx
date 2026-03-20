@@ -70,18 +70,13 @@ export default function CalendarEvent({
       }}
       onMouseDown={handleDragMouseDown}
       title={task.title}
-      // Animation props
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{
         opacity: task.completed ? 0.5 : 1,
         scale: isDragTarget ? 1.05 : 1,
-        boxShadow: isDragTarget
-          ? "0 8px 25px rgba(0,0,0,0.3)"
-          : "0 1px 3px rgba(0,0,0,0.1)",
       }}
       whileHover={{
         scale: isResizing || isDragging ? 1 : 1.02,
-        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
       }}
       whileTap={{ scale: 0.98 }}
       transition={{
@@ -90,45 +85,65 @@ export default function CalendarEvent({
         damping: 25,
       }}
       className={cn(
-        "group/event relative flex w-full items-center overflow-hidden text-left text-[11px] leading-tight text-white cursor-grab z-10",
-        "h-6 px-1.5",
-        spanStart && !spanEnd && "rounded-l-md",
-        spanEnd && !spanStart && "rounded-r-md",
-        spanStart && spanEnd && "rounded-md",
-        spanMiddle && "rounded-none",
+        "group/event relative flex w-full items-center overflow-hidden text-left cursor-grab z-10",
+        "h-6",
         isResizing && "select-none",
         isDragTarget &&
           "ring-2 ring-orange-400 ring-offset-1 ring-offset-zinc-900",
       )}
-      style={{ backgroundColor: bgColor + "cc", ...spanStyles }}
+      style={spanStyles}
     >
-      {/* Left resize handle (on start edge) */}
-      {spanStart && onResizeStart && (
-        <motion.div
-          data-resize-handle="start"
-          className="absolute left-0 top-0 h-full w-1.5 cursor-col-resize opacity-0 group-hover/event:opacity-100 z-10"
-          style={{ backgroundColor: "rgba(0,0,0,0)" }}
-          onMouseDown={(e) => handleResizeMouseDown(e, "start")}
-          whileHover={{ backgroundColor: "rgba(255,255,255,0.4)" }}
-          transition={{ duration: 0.15 }}
-        />
-      )}
+      <div style={{ display: "flex", borderRadius: 4, overflow: "hidden", height: "100%", width: "100%" }}>
+        {spanStart && (
+          <div style={{ width: 8, background: bgColor, flexShrink: 0 }} />
+        )}
+        <div style={{
+          flex: 1,
+          background: task.calendarColor ?? "#3f3f46",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 6px",
+          position: "relative",
+          overflow: "hidden",
+        }}>
+          {spanStart && onResizeStart && (
+            <motion.div
+              data-resize-handle="start"
+              className="absolute left-0 top-0 h-full w-1.5 cursor-col-resize opacity-0 group-hover/event:opacity-100 z-10"
+              style={{ backgroundColor: "rgba(0,0,0,0)" }}
+              onMouseDown={(e) => handleResizeMouseDown(e, "start")}
+              whileHover={{ backgroundColor: "rgba(255,255,255,0.4)" }}
+              transition={{ duration: 0.15 }}
+            />
+          )}
 
-      <span className={cn("truncate", task.completed && "line-through")}>
-        {spanStart ? task.title : ""}
-      </span>
+          <span style={{
+            color: "#e4e4e7",
+            fontSize: 11,
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+            textOverflow: "ellipsis",
+          }}
+          className={cn(task.completed && "line-through")}
+          >
+            {spanStart ? task.title : ""}
+          </span>
 
-      {/* Right resize handle (on end edge) */}
-      {spanEnd && onResizeStart && (
-        <motion.div
-          data-resize-handle="end"
-          className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize opacity-0 group-hover/event:opacity-100 z-10"
-          style={{ backgroundColor: "rgba(0,0,0,0)" }}
-          onMouseDown={(e) => handleResizeMouseDown(e, "end")}
-          whileHover={{ backgroundColor: "rgba(255,255,255,0.4)" }}
-          transition={{ duration: 0.15 }}
-        />
-      )}
+          {spanEnd && onResizeStart && (
+            <motion.div
+              data-resize-handle="end"
+              className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize opacity-0 group-hover/event:opacity-100 z-10"
+              style={{ backgroundColor: "rgba(0,0,0,0)" }}
+              onMouseDown={(e) => handleResizeMouseDown(e, "end")}
+              whileHover={{ backgroundColor: "rgba(255,255,255,0.4)" }}
+              transition={{ duration: 0.15 }}
+            />
+          )}
+        </div>
+        {spanEnd && (
+          <div style={{ width: 8, background: bgColor, flexShrink: 0 }} />
+        )}
+      </div>
     </motion.button>
   );
 }

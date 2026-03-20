@@ -26,32 +26,49 @@ export default function CalendarEventPopover({
         All events
       </p>
       <div className="flex max-h-48 flex-col gap-1 overflow-y-auto">
-        {events.map((event) => (
-          <button
-            key={event.task.id}
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onClickEvent(event.task);
-            }}
-            className={cn(
-              "flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs text-zinc-200 hover:bg-zinc-700 transition-colors",
-              event.task.completed && "opacity-50",
-            )}
-          >
-            <div
-              className="h-2.5 w-2.5 shrink-0 rounded-sm"
-              style={{
-                backgroundColor: event.category?.color ?? "#71717a",
+        {events.map((event) => {
+          const categoryColor = event.category?.color ?? "#71717a";
+          const bodyColor = event.task.calendarColor ?? "#3f3f46";
+
+          return (
+            <button
+              key={event.task.id}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClickEvent(event.task);
               }}
-            />
-            <span
-              className={cn("truncate", event.task.completed && "line-through")}
+              className={cn(
+                "w-full rounded-md px-1 py-1 text-left hover:bg-zinc-700 transition-colors",
+                event.task.completed && "opacity-50",
+              )}
             >
-              {event.task.title}
-            </span>
-          </button>
-        ))}
+              <div style={{ display: "flex", borderRadius: 3, overflow: "hidden", height: 20 }}>
+                <div style={{ width: 6, background: categoryColor, flexShrink: 0 }} />
+                <div style={{
+                  flex: 1,
+                  background: bodyColor,
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "0 5px",
+                }}>
+                  <span style={{
+                    color: "#e4e4e7",
+                    fontSize: 10,
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                    textOverflow: "ellipsis",
+                  }}
+                  className={cn(event.task.completed && "line-through")}
+                  >
+                    {event.task.title}
+                  </span>
+                </div>
+                <div style={{ width: 6, background: categoryColor, flexShrink: 0 }} />
+              </div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

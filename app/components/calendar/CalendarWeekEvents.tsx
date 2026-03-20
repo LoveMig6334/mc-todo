@@ -4,6 +4,7 @@ import { cn } from "@/app/lib/utils";
 import { CalendarEventLayout, ResizeEdge } from "@/app/types/calendar";
 import { Category, Task } from "@/app/types/task";
 import { motion } from "motion/react";
+import { CalendarTool } from "./CalendarToolbar";
 
 interface WeekEventData {
   layout: CalendarEventLayout;
@@ -12,29 +13,19 @@ interface WeekEventData {
 }
 
 interface CalendarWeekEventsProps {
-  /** Week days in YYYY-MM-DD format */
   weekDays: string[];
-  /** All events for this week, pre-assigned to lanes */
   eventsByLane: Map<number, CalendarEventLayout[]>;
-  /** Maximum lanes to display */
   maxLanes: number;
-  /** Event click handler */
+  activeTool: CalendarTool;
   onClickEvent: (task: Task) => void;
-  /** Resize start handler */
+  onOpenColorPicker?: (taskId: string, position: { x: number; y: number }) => void;
   onResizeStart?: (taskId: string, edge: ResizeEdge, dateStr: string) => void;
-  /** Drag start handler */
   onDragStart?: (taskId: string, dateStr: string) => void;
-  /** Whether a resize is in progress */
   isResizing?: boolean;
-  /** Whether a drag is in progress */
   isDragging?: boolean;
-  /** Currently dragged task ID */
   draggedTaskId?: string;
-  /** Preview dates for drag/resize ghost (YYYY-MM-DD format) */
   previewDates?: string[];
-  /** Task being previewed */
   previewTask?: Task;
-  /** Category of the previewed task */
   previewCategory?: Category;
 }
 
@@ -46,7 +37,9 @@ export default function CalendarWeekEvents({
   weekDays,
   eventsByLane,
   maxLanes,
+  activeTool,
   onClickEvent,
+  onOpenColorPicker,
   onResizeStart,
   onDragStart,
   isResizing,
@@ -161,14 +154,15 @@ export default function CalendarWeekEvents({
     >
       {weekEvents.map((eventData) => {
         const { layout, startCol, endCol } = eventData;
-        const { task, category } = layout;
+        const { task, category, spanStart, spanEnd } = layout;
 
         // Hide the original event when a preview is active for it
         if (previewTask?.id === task.id) {
           return null;
         }
 
-        const bgColor = category?.color ?? "#71717a";
+        const categoryColor = category?.color ?? "#71717a";
+        const bodyColor = task.calendarColor ?? "#3f3f46";
         const isDragTarget = isDragging && task.id === draggedTaskId;
 
         return (
@@ -178,6 +172,10 @@ export default function CalendarWeekEvents({
             onClick={(e) => {
               if (isResizing || isDragging) return;
               e.stopPropagation();
+              if (activeTool === "color") {
+                onOpenColorPicker?.(task.id, { x: e.clientX, y: e.clientY });
+                return;
+              }
               onClickEvent(task);
             }}
             onMouseDown={(e) =>
@@ -185,15 +183,15 @@ export default function CalendarWeekEvents({
             }
             title={task.title}
             className={cn(
-              "group/event relative flex items-center text-left text-[11px] leading-tight text-white cursor-grab pointer-events-auto",
-              "h-6 px-1.5 rounded-md",
+              "group/event relative text-left pointer-events-auto",
+              "h-6",
+              activeTool === "trim" ? "cursor-cell" : activeTool === "color" ? "cursor-cell" : "cursor-grab",
               isResizing && "select-none",
               isDragTarget &&
                 "ring-2 ring-orange-400 ring-offset-1 ring-offset-zinc-900",
             )}
             style={{
               gridColumn: `${startCol} / ${endCol}`,
-              backgroundColor: bgColor + "cc",
             }}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{
@@ -201,79 +199,117 @@ export default function CalendarWeekEvents({
               scale: isDragTarget ? 1.02 : 1,
             }}
             whileHover={{
-              scale: isResizing || isDragging ? 1 : 1.01,
+              scale: activeTool === "normal" && !isResizing && !isDragging ? 1.05 : 1,
             }}
-            transition={{
-              type: "spring",
-              stiffness: 400,
-              damping: 25,
-            }}
+            transition={{ duration: 0.15 }}
           >
-            {/* Left resize handle */}
-            {onResizeStart && (
-              <motion.div
-                data-resize-handle="start"
-                className="absolute left-0 top-0 h-full w-1.5 cursor-col-resize opacity-0 group-hover/event:opacity-100 z-10"
-                style={{ backgroundColor: "rgba(0,0,0,0)" }}
-                onMouseDown={(e) =>
-                  handleResizeMouseDown(e, task.id, "start", task.dueDate.start)
-                }
-                whileHover={{ backgroundColor: "rgba(255,255,255,0.4)" }}
-                transition={{ duration: 0.15 }}
-              />
-            )}
+            <div style={{ display: "flex", borderRadius: 4, overflow: "hidden", height: "100%", width: "100%" }}>
+              {/* Left end-cap */}
+              {spanStart && (
+                <div style={{ width: 8, background: categoryColor, flexShrink: 0 }} />
+              )}
 
-            <span className={cn("truncate", task.completed && "line-through")}>
-              {task.title}
-            </span>
+              {/* Body */}
+              <div style={{
+                flex: 1,
+                background: bodyColor,
+                display: "flex",
+                alignItems: "center",
+                padding: "0 6px",
+                position: "relative",
+                overflow: "hidden",
+              }}>
+                {/* Left resize handle */}
+                {activeTool === "trim" && onResizeStart && (
+                  <motion.div
+                    data-resize-handle="start"
+                    className="absolute left-0 top-0 h-full w-1.5 cursor-col-resize opacity-0 group-hover/event:opacity-100 z-10"
+                    style={{ backgroundColor: "rgba(0,0,0,0)" }}
+                    onMouseDown={(e) =>
+                      handleResizeMouseDown(e, task.id, "start", task.dueDate.start)
+                    }
+                    whileHover={{ backgroundColor: "rgba(255,255,255,0.4)" }}
+                    transition={{ duration: 0.15 }}
+                  />
+                )}
 
-            {/* Right resize handle */}
-            {onResizeStart && (
-              <motion.div
-                data-resize-handle="end"
-                className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize opacity-0 group-hover/event:opacity-100 z-10"
-                style={{ backgroundColor: "rgba(0,0,0,0)" }}
-                onMouseDown={(e) =>
-                  handleResizeMouseDown(
-                    e,
-                    task.id,
-                    "end",
-                    task.dueDate.end ?? task.dueDate.start,
-                  )
-                }
-                whileHover={{ backgroundColor: "rgba(255,255,255,0.4)" }}
-                transition={{ duration: 0.15 }}
-              />
-            )}
+                <span style={{
+                  color: "#e4e4e7",
+                  fontSize: 11,
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                  textOverflow: "ellipsis",
+                }}
+                className={cn(task.completed && "line-through")}
+                >
+                  {task.title}
+                </span>
+
+                {/* Right resize handle */}
+                {activeTool === "trim" && onResizeStart && (
+                  <motion.div
+                    data-resize-handle="end"
+                    className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize opacity-0 group-hover/event:opacity-100 z-10"
+                    style={{ backgroundColor: "rgba(0,0,0,0)" }}
+                    onMouseDown={(e) =>
+                      handleResizeMouseDown(
+                        e,
+                        task.id,
+                        "end",
+                        task.dueDate.end ?? task.dueDate.start,
+                      )
+                    }
+                    whileHover={{ backgroundColor: "rgba(255,255,255,0.4)" }}
+                    transition={{ duration: 0.15 }}
+                  />
+                )}
+              </div>
+
+              {/* Right end-cap */}
+              {spanEnd && (
+                <div style={{ width: 8, background: categoryColor, flexShrink: 0 }} />
+              )}
+            </div>
           </motion.button>
         );
       })}
 
       {/* Ghost preview for drag/resize operations */}
-      {previewStartCol !== null && previewEndCol !== null && previewTask && (
-        <motion.div
-          data-testid="drag-preview"
-          className={cn(
-            "flex items-center text-left text-[11px] leading-tight text-white/70 pointer-events-none",
-            "h-6 px-1.5 rounded-md",
-            "border-2 border-dashed border-white/40",
-          )}
-          style={{
-            gridColumn: `${previewStartCol} / ${previewEndCol}`,
-            gridRow: 1, // Force preview onto same row as events to overlay
-            backgroundColor: (previewCategory?.color ?? "#71717a") + "66", // ~40% opacity
-          }}
-          initial={{ opacity: 1, scale: 1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            type: "spring",
-            stiffness: 500,
-            damping: 30,
-          }}
-        >
-          <span className="truncate">{previewTask.title}</span>
-        </motion.div>
-      )}
+      {previewStartCol !== null && previewEndCol !== null && previewTask && (() => {
+        const prevCategoryColor = previewCategory?.color ?? "#71717a";
+        const prevBodyColor = previewTask.calendarColor ?? "#3f3f46";
+        // Determine which ends are visible in this week
+        const prevSpanStart = previewDates ? previewDates[0] === weekDays[previewStartCol - 1] && previewDates[0] <= (previewDates[previewDates.length - 1] ?? previewDates[0]) : true;
+        const prevSpanEnd = previewDates ? previewDates[previewDates.length - 1] === weekDays[previewEndCol - 2] : true;
+
+        return (
+          <motion.div
+            data-testid="drag-preview"
+            className="pointer-events-none h-6"
+            style={{
+              gridColumn: `${previewStartCol} / ${previewEndCol}`,
+              gridRow: 1,
+            }}
+            initial={{ opacity: 0.5, scale: 1 }}
+            animate={{ opacity: 0.5, scale: 1 }}
+            transition={{
+              type: "spring",
+              stiffness: 500,
+              damping: 30,
+            }}
+          >
+            <div style={{ display: "flex", borderRadius: 4, overflow: "hidden", height: "100%", opacity: 0.5 }}>
+              {prevSpanStart && <div style={{ width: 8, background: prevCategoryColor, flexShrink: 0 }} />}
+              <div style={{ flex: 1, background: prevBodyColor, display: "flex", alignItems: "center", padding: "0 6px" }}>
+                <span style={{ color: "#e4e4e7", fontSize: 11, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                  {previewTask.title}
+                </span>
+              </div>
+              {prevSpanEnd && <div style={{ width: 8, background: prevCategoryColor, flexShrink: 0 }} />}
+            </div>
+          </motion.div>
+        );
+      })()}
     </div>
   );
 }

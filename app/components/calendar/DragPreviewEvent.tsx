@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/app/lib/utils";
 import { Category, Task } from "@/app/types/task";
 import { motion } from "motion/react";
 
@@ -21,39 +20,13 @@ export default function DragPreviewEvent({
   category,
   spanStart,
   spanEnd,
-  spanMiddle,
 }: DragPreviewEventProps) {
-  const bgColor = category?.color ?? "#71717a";
-
-  // Calculate span connection styles for multi-day events
-  // Each cell has a 1px border, so events need to extend ~5px to bridge gaps
-  const spanStyles: React.CSSProperties = {};
-  if (!spanEnd) {
-    // Extend past right edge to connect with next cell
-    spanStyles.marginRight = "-5px";
-    spanStyles.paddingRight = "5px";
-  }
-  if (!spanStart) {
-    // Pull in from left to connect with previous cell
-    spanStyles.marginLeft = "-5px";
-    spanStyles.paddingLeft = "5px";
-  }
+  const categoryColor = category?.color ?? "#71717a";
+  const bodyColor = task.calendarColor ?? "#3f3f46";
 
   return (
     <motion.div
-      className={cn(
-        "flex w-full items-center overflow-hidden text-left text-[11px] leading-tight text-white/70 pointer-events-none z-10",
-        "h-6 px-1.5",
-        spanStart && !spanEnd && "rounded-l-md",
-        spanEnd && !spanStart && "rounded-r-md",
-        spanStart && spanEnd && "rounded-md",
-        spanMiddle && "rounded-none",
-        "border-2 border-dashed border-white/40",
-      )}
-      style={{
-        backgroundColor: bgColor + "66", // ~40% opacity
-        ...spanStyles,
-      }}
+      className="w-full pointer-events-none z-10 h-6"
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{
@@ -62,7 +35,21 @@ export default function DragPreviewEvent({
         damping: 30,
       }}
     >
-      <span className="truncate">{spanStart ? task.title : ""}</span>
+      <div style={{ display: "flex", borderRadius: 4, overflow: "hidden", height: "100%", opacity: 0.5 }}>
+        {spanStart && <div style={{ width: 8, background: categoryColor, flexShrink: 0 }} />}
+        <div style={{ flex: 1, background: bodyColor, display: "flex", alignItems: "center", padding: "0 6px" }}>
+          <span style={{
+            color: "#e4e4e7",
+            fontSize: 11,
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+            textOverflow: "ellipsis",
+          }}>
+            {spanStart ? task.title : ""}
+          </span>
+        </div>
+        {spanEnd && <div style={{ width: 8, background: categoryColor, flexShrink: 0 }} />}
+      </div>
     </motion.div>
   );
 }
