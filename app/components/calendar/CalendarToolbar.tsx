@@ -1,7 +1,13 @@
 "use client";
 
-import { LucideIcon, MousePointer2, Plus, Scissors, PaintBucket } from "lucide-react";
 import { cn } from "@/app/lib/utils";
+import {
+  LucideIcon,
+  MousePointer2,
+  PaintBucket,
+  Plus,
+  Scissors,
+} from "lucide-react";
 
 export type CalendarTool = "normal" | "add" | "trim" | "color";
 
@@ -17,7 +23,10 @@ const TOOLS: { id: CalendarTool; label: string; Icon: LucideIcon }[] = [
   { id: "color", label: "Color", Icon: PaintBucket },
 ];
 
-export default function CalendarToolbar({ activeTool, onToolChange }: CalendarToolbarProps) {
+export default function CalendarToolbar({
+  activeTool,
+  onToolChange,
+}: CalendarToolbarProps) {
   return (
     <div className="flex items-center gap-1">
       {TOOLS.map(({ id, label, Icon }) => (

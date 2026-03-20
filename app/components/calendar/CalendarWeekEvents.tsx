@@ -18,7 +18,10 @@ interface CalendarWeekEventsProps {
   maxLanes: number;
   activeTool: CalendarTool;
   onClickEvent: (task: Task) => void;
-  onOpenColorPicker?: (taskId: string, position: { x: number; y: number }) => void;
+  onOpenColorPicker?: (
+    taskId: string,
+    position: { x: number; y: number },
+  ) => void;
   onResizeStart?: (taskId: string, edge: ResizeEdge, dateStr: string) => void;
   onDragStart?: (taskId: string, dateStr: string) => void;
   isResizing?: boolean;
@@ -185,7 +188,11 @@ export default function CalendarWeekEvents({
             className={cn(
               "group/event relative text-left pointer-events-auto",
               "h-6",
-              activeTool === "trim" ? "cursor-cell" : activeTool === "color" ? "cursor-cell" : "cursor-grab",
+              activeTool === "trim"
+                ? "cursor-cell"
+                : activeTool === "color"
+                  ? "cursor-cell"
+                  : "cursor-grab",
               isResizing && "select-none",
               isDragTarget &&
                 "ring-2 ring-orange-400 ring-offset-1 ring-offset-zinc-900",
@@ -199,26 +206,41 @@ export default function CalendarWeekEvents({
               scale: isDragTarget ? 1.02 : 1,
             }}
             whileHover={{
-              scale: activeTool === "normal" && !isResizing && !isDragging ? 1.05 : 1,
+              scale:
+                activeTool === "normal" && !isResizing && !isDragging
+                  ? 1.05
+                  : 1,
             }}
             transition={{ duration: 0.15 }}
           >
-            <div style={{ display: "flex", borderRadius: 4, overflow: "hidden", height: "100%", width: "100%" }}>
+            <div
+              style={{
+                display: "flex",
+                borderRadius: 4,
+                overflow: "hidden",
+                height: "100%",
+                width: "100%",
+              }}
+            >
               {/* Left end-cap */}
               {spanStart && (
-                <div style={{ width: 8, background: categoryColor, flexShrink: 0 }} />
+                <div
+                  style={{ width: 8, background: categoryColor, flexShrink: 0 }}
+                />
               )}
 
               {/* Body */}
-              <div style={{
-                flex: 1,
-                background: bodyColor,
-                display: "flex",
-                alignItems: "center",
-                padding: "0 6px",
-                position: "relative",
-                overflow: "hidden",
-              }}>
+              <div
+                style={{
+                  flex: 1,
+                  background: bodyColor,
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "0 6px",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+              >
                 {/* Left resize handle */}
                 {activeTool === "trim" && onResizeStart && (
                   <motion.div
@@ -226,21 +248,27 @@ export default function CalendarWeekEvents({
                     className="absolute left-0 top-0 h-full w-1.5 cursor-col-resize opacity-0 group-hover/event:opacity-100 z-10"
                     style={{ backgroundColor: "rgba(0,0,0,0)" }}
                     onMouseDown={(e) =>
-                      handleResizeMouseDown(e, task.id, "start", task.dueDate.start)
+                      handleResizeMouseDown(
+                        e,
+                        task.id,
+                        "start",
+                        task.dueDate.start,
+                      )
                     }
                     whileHover={{ backgroundColor: "rgba(255,255,255,0.4)" }}
                     transition={{ duration: 0.15 }}
                   />
                 )}
 
-                <span style={{
-                  color: "#e4e4e7",
-                  fontSize: 11,
-                  overflow: "hidden",
-                  whiteSpace: "nowrap",
-                  textOverflow: "ellipsis",
-                }}
-                className={cn(task.completed && "line-through")}
+                <span
+                  style={{
+                    color: "#e4e4e7",
+                    fontSize: 11,
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                    textOverflow: "ellipsis",
+                  }}
+                  className={cn(task.completed && "line-through")}
                 >
                   {task.title}
                 </span>
@@ -267,7 +295,9 @@ export default function CalendarWeekEvents({
 
               {/* Right end-cap */}
               {spanEnd && (
-                <div style={{ width: 8, background: categoryColor, flexShrink: 0 }} />
+                <div
+                  style={{ width: 8, background: categoryColor, flexShrink: 0 }}
+                />
               )}
             </div>
           </motion.button>
@@ -275,41 +305,91 @@ export default function CalendarWeekEvents({
       })}
 
       {/* Ghost preview for drag/resize operations */}
-      {previewStartCol !== null && previewEndCol !== null && previewTask && (() => {
-        const prevCategoryColor = previewCategory?.color ?? "#71717a";
-        const prevBodyColor = previewTask.calendarColor ?? "#3f3f46";
-        // Determine which ends are visible in this week
-        const prevSpanStart = previewDates ? previewDates[0] === weekDays[previewStartCol - 1] && previewDates[0] <= (previewDates[previewDates.length - 1] ?? previewDates[0]) : true;
-        const prevSpanEnd = previewDates ? previewDates[previewDates.length - 1] === weekDays[previewEndCol - 2] : true;
+      {previewStartCol !== null &&
+        previewEndCol !== null &&
+        previewTask &&
+        (() => {
+          const prevCategoryColor = previewCategory?.color ?? "#71717a";
+          const prevBodyColor = previewTask.calendarColor ?? "#3f3f46";
+          // Determine which ends are visible in this week
+          const prevSpanStart = previewDates
+            ? previewDates[0] === weekDays[previewStartCol - 1] &&
+              previewDates[0] <=
+                (previewDates[previewDates.length - 1] ?? previewDates[0])
+            : true;
+          const prevSpanEnd = previewDates
+            ? previewDates[previewDates.length - 1] ===
+              weekDays[previewEndCol - 2]
+            : true;
 
-        return (
-          <motion.div
-            data-testid="drag-preview"
-            className="pointer-events-none h-6"
-            style={{
-              gridColumn: `${previewStartCol} / ${previewEndCol}`,
-              gridRow: 1,
-            }}
-            initial={{ opacity: 0.5, scale: 1 }}
-            animate={{ opacity: 0.5, scale: 1 }}
-            transition={{
-              type: "spring",
-              stiffness: 500,
-              damping: 30,
-            }}
-          >
-            <div style={{ display: "flex", borderRadius: 4, overflow: "hidden", height: "100%", opacity: 0.5 }}>
-              {prevSpanStart && <div style={{ width: 8, background: prevCategoryColor, flexShrink: 0 }} />}
-              <div style={{ flex: 1, background: prevBodyColor, display: "flex", alignItems: "center", padding: "0 6px" }}>
-                <span style={{ color: "#e4e4e7", fontSize: 11, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
-                  {previewTask.title}
-                </span>
+          return (
+            <motion.div
+              data-testid="drag-preview"
+              className="pointer-events-none h-6"
+              style={{
+                gridColumn: `${previewStartCol} / ${previewEndCol}`,
+                gridRow: 1,
+              }}
+              initial={{ opacity: 0.5, scale: 1 }}
+              animate={{ opacity: 0.5, scale: 1 }}
+              transition={{
+                type: "spring",
+                stiffness: 500,
+                damping: 30,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  borderRadius: 4,
+                  overflow: "hidden",
+                  height: "100%",
+                  opacity: 0.5,
+                }}
+              >
+                {prevSpanStart && (
+                  <div
+                    style={{
+                      width: 8,
+                      background: prevCategoryColor,
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+                <div
+                  style={{
+                    flex: 1,
+                    background: prevBodyColor,
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 6px",
+                  }}
+                >
+                  <span
+                    style={{
+                      color: "#e4e4e7",
+                      fontSize: 11,
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {previewTask.title}
+                  </span>
+                </div>
+                {prevSpanEnd && (
+                  <div
+                    style={{
+                      width: 8,
+                      background: prevCategoryColor,
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
               </div>
-              {prevSpanEnd && <div style={{ width: 8, background: prevCategoryColor, flexShrink: 0 }} />}
-            </div>
-          </motion.div>
-        );
-      })()}
+            </motion.div>
+          );
+        })()}
     </div>
   );
 }

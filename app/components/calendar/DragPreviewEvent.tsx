@@ -35,20 +35,42 @@ export default function DragPreviewEvent({
         damping: 30,
       }}
     >
-      <div style={{ display: "flex", borderRadius: 4, overflow: "hidden", height: "100%", opacity: 0.5 }}>
-        {spanStart && <div style={{ width: 8, background: categoryColor, flexShrink: 0 }} />}
-        <div style={{ flex: 1, background: bodyColor, display: "flex", alignItems: "center", padding: "0 6px" }}>
-          <span style={{
-            color: "#e4e4e7",
-            fontSize: 11,
-            overflow: "hidden",
-            whiteSpace: "nowrap",
-            textOverflow: "ellipsis",
-          }}>
+      <div
+        style={{
+          display: "flex",
+          borderRadius: 4,
+          overflow: "hidden",
+          height: "100%",
+          opacity: 0.5,
+        }}
+      >
+        {spanStart && (
+          <div style={{ width: 8, background: categoryColor, flexShrink: 0 }} />
+        )}
+        <div
+          style={{
+            flex: 1,
+            background: bodyColor,
+            display: "flex",
+            alignItems: "center",
+            padding: "0 6px",
+          }}
+        >
+          <span
+            style={{
+              color: "#e4e4e7",
+              fontSize: 11,
+              overflow: "hidden",
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
+            }}
+          >
             {spanStart ? task.title : ""}
           </span>
         </div>
-        {spanEnd && <div style={{ width: 8, background: categoryColor, flexShrink: 0 }} />}
+        {spanEnd && (
+          <div style={{ width: 8, background: categoryColor, flexShrink: 0 }} />
+        )}
       </div>
     </motion.div>
   );
