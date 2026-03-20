@@ -93,19 +93,29 @@ export default function CalendarEvent({
       )}
       style={spanStyles}
     >
-      <div style={{ display: "flex", borderRadius: 4, overflow: "hidden", height: "100%", width: "100%" }}>
+      <div
+        style={{
+          display: "flex",
+          borderRadius: 4,
+          overflow: "hidden",
+          height: "100%",
+          width: "100%",
+        }}
+      >
         {spanStart && (
           <div style={{ width: 8, background: bgColor, flexShrink: 0 }} />
         )}
-        <div style={{
-          flex: 1,
-          background: task.calendarColor ?? "#3f3f46",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 6px",
-          position: "relative",
-          overflow: "hidden",
-        }}>
+        <div
+          style={{
+            flex: 1,
+            background: task.calendarColor ?? "#3f3f46",
+            display: "flex",
+            alignItems: "center",
+            padding: "0 6px",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
           {spanStart && onResizeStart && (
             <motion.div
               data-resize-handle="start"
@@ -117,14 +127,15 @@ export default function CalendarEvent({
             />
           )}
 
-          <span style={{
-            color: "#e4e4e7",
-            fontSize: 11,
-            overflow: "hidden",
-            whiteSpace: "nowrap",
-            textOverflow: "ellipsis",
-          }}
-          className={cn(task.completed && "line-through")}
+          <span
+            style={{
+              color: "#e4e4e7",
+              fontSize: 11,
+              overflow: "hidden",
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
+            }}
+            className={cn(task.completed && "line-through")}
           >
             {spanStart ? task.title : ""}
           </span>

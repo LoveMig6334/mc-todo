@@ -15,9 +15,9 @@ import {
 } from "@/app/types/calendar";
 import { Category, Project, Task } from "@/app/types/task";
 import { useMemo } from "react";
-import { CalendarTool } from "./CalendarToolbar";
 import CalendarDayCell from "./CalendarDayCell";
 import CalendarEventPopover from "./CalendarEventPopover";
+import { CalendarTool } from "./CalendarToolbar";
 import CalendarWeekEvents from "./CalendarWeekEvents";
 import ProjectOverlay from "./ProjectOverlay";
 
@@ -44,7 +44,10 @@ interface CalendarGridProps {
   draggedTask?: Task;
   draggedCategory?: Category;
   projects?: Project[];
-  onOpenColorPicker?: (taskId: string, position: { x: number; y: number }) => void;
+  onOpenColorPicker?: (
+    taskId: string,
+    position: { x: number; y: number },
+  ) => void;
   // Add Task tool
   onAddTaskMouseDown?: (date: string) => void;
   onAddTaskMouseEnter?: (date: string) => void;
@@ -105,7 +108,9 @@ export default function CalendarGrid({
     : null;
 
   return (
-    <div className={`overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900 ${cursorClass[activeTool]}`}>
+    <div
+      className={`overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900 ${cursorClass[activeTool]}`}
+    >
       {/* Day-of-week headers */}
       <div className="grid grid-cols-7 border-b border-zinc-700 bg-zinc-800">
         {DAYS_OF_WEEK.map((day) => (

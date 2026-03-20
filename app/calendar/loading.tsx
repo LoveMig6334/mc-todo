@@ -18,10 +18,7 @@ export default function Loading() {
         {/* Weekday headers */}
         <div className="mb-1 grid grid-cols-7 gap-1">
           {Array.from({ length: 7 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-6 rounded bg-zinc-800 animate-pulse"
-            />
+            <div key={i} className="h-6 rounded bg-zinc-800 animate-pulse" />
           ))}
         </div>
 

@@ -43,28 +43,42 @@ export default function CalendarEventPopover({
                 event.task.completed && "opacity-50",
               )}
             >
-              <div style={{ display: "flex", borderRadius: 3, overflow: "hidden", height: 20 }}>
-                <div style={{ width: 6, background: categoryColor, flexShrink: 0 }} />
-                <div style={{
-                  flex: 1,
-                  background: bodyColor,
+              <div
+                style={{
                   display: "flex",
-                  alignItems: "center",
-                  padding: "0 5px",
-                }}>
-                  <span style={{
-                    color: "#e4e4e7",
-                    fontSize: 10,
-                    overflow: "hidden",
-                    whiteSpace: "nowrap",
-                    textOverflow: "ellipsis",
+                  borderRadius: 3,
+                  overflow: "hidden",
+                  height: 20,
+                }}
+              >
+                <div
+                  style={{ width: 6, background: categoryColor, flexShrink: 0 }}
+                />
+                <div
+                  style={{
+                    flex: 1,
+                    background: bodyColor,
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 5px",
                   }}
-                  className={cn(event.task.completed && "line-through")}
+                >
+                  <span
+                    style={{
+                      color: "#e4e4e7",
+                      fontSize: 10,
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                    }}
+                    className={cn(event.task.completed && "line-through")}
                   >
                     {event.task.title}
                   </span>
                 </div>
-                <div style={{ width: 6, background: categoryColor, flexShrink: 0 }} />
+                <div
+                  style={{ width: 6, background: categoryColor, flexShrink: 0 }}
+                />
               </div>
             </button>
           );

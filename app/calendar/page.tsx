@@ -96,7 +96,11 @@ export default function CalendarPage() {
 
   // Add Task tool: compute preview dates set
   const addTaskPreviewDates = useMemo(() => {
-    const { isDragging: isAddDragging, startDate, endDate } = addTaskDrag.dragState;
+    const {
+      isDragging: isAddDragging,
+      startDate,
+      endDate,
+    } = addTaskDrag.dragState;
     if (!isAddDragging || !startDate || !endDate) return new Set<string>();
     const s = startDate <= endDate ? startDate : endDate;
     const e = startDate <= endDate ? endDate : startDate;
@@ -188,7 +192,8 @@ export default function CalendarPage() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-white">Calendar</h1>
           <p className="mt-1 text-sm text-zinc-400">
-            View and manage your tasks on the calendar. Use the toolbar to switch tools.
+            View and manage your tasks on the calendar. Use the toolbar to
+            switch tools.
           </p>
         </div>
 
@@ -221,9 +226,15 @@ export default function CalendarPage() {
           draggedCategory={previewCategory}
           projects={projects}
           onOpenColorPicker={activeTool === "color" ? openPicker : undefined}
-          onAddTaskMouseDown={activeTool === "add" ? addTaskDrag.handleMouseDown : undefined}
-          onAddTaskMouseEnter={activeTool === "add" ? addTaskDrag.handleMouseEnter : undefined}
-          addTaskPreviewDates={activeTool === "add" ? addTaskPreviewDates : undefined}
+          onAddTaskMouseDown={
+            activeTool === "add" ? addTaskDrag.handleMouseDown : undefined
+          }
+          onAddTaskMouseEnter={
+            activeTool === "add" ? addTaskDrag.handleMouseEnter : undefined
+          }
+          addTaskPreviewDates={
+            activeTool === "add" ? addTaskPreviewDates : undefined
+          }
         />
       </main>
 
