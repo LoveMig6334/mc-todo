@@ -15,33 +15,45 @@ import {
 } from "@/app/types/calendar";
 import { Category, Project, Task } from "@/app/types/task";
 import { useMemo } from "react";
+import { CalendarTool } from "./CalendarToolbar";
 import CalendarDayCell from "./CalendarDayCell";
 import CalendarEventPopover from "./CalendarEventPopover";
 import CalendarWeekEvents from "./CalendarWeekEvents";
 import ProjectOverlay from "./ProjectOverlay";
 
+const cursorClass: Record<CalendarTool, string> = {
+  normal: "cursor-default",
+  add: "cursor-crosshair",
+  trim: "cursor-cell",
+  color: "cursor-cell",
+};
+
 interface CalendarGridProps {
   grid: CalendarDay[][];
-  onDoubleClickDay: (date: string) => void;
+  activeTool: CalendarTool;
   onClickEvent: (task: Task) => void;
   expandedDayKey: string | null;
   onExpandDay: (dayKey: string | null) => void;
-  onResizeStart: (taskId: string, edge: ResizeEdge, dateStr: string) => void;
-  onResizeHover: (dateStr: string) => void;
+  onResizeStart?: (taskId: string, edge: ResizeEdge, dateStr: string) => void;
+  onResizeHover?: (dateStr: string) => void;
   resizeState: ResizeState | null;
   onDragStart?: (taskId: string, dateStr: string) => void;
   onDragHover?: (dateStr: string) => void;
   dragState?: DragState | null;
-  // Preview data for drag operation
   previewDates?: string[];
   draggedTask?: Task;
   draggedCategory?: Category;
   projects?: Project[];
+  onOpenColorPicker?: (taskId: string, position: { x: number; y: number }) => void;
+  // Add Task tool
+  onAddTaskMouseDown?: (date: string) => void;
+  onAddTaskMouseEnter?: (date: string) => void;
+  addTaskPreviewDates?: Set<string>;
 }
 
 export default function CalendarGrid({
   grid,
-  onDoubleClickDay,
+  activeTool,
   onClickEvent,
   expandedDayKey,
   onExpandDay,
@@ -55,6 +67,10 @@ export default function CalendarGrid({
   draggedTask,
   draggedCategory,
   projects = [],
+  onOpenColorPicker,
+  onAddTaskMouseDown,
+  onAddTaskMouseEnter,
+  addTaskPreviewDates,
 }: CalendarGridProps) {
   const isResizing = resizeState !== null;
   const isDragging = dragState !== null;
@@ -89,7 +105,7 @@ export default function CalendarGrid({
     : null;
 
   return (
-    <div className="overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
+    <div className={`overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900 ${cursorClass[activeTool]}`}>
       {/* Day-of-week headers */}
       <div className="grid grid-cols-7 border-b border-zinc-700 bg-zinc-800">
         {DAYS_OF_WEEK.map((day) => (
@@ -140,7 +156,9 @@ export default function CalendarGrid({
               weekDays={weekDays}
               eventsByLane={eventsByLane}
               maxLanes={MAX_VISIBLE_EVENTS}
+              activeTool={activeTool}
               onClickEvent={onClickEvent}
+              onOpenColorPicker={onOpenColorPicker}
               onResizeStart={onResizeStart}
               onDragStart={onDragStart}
               isResizing={isResizing}
@@ -157,7 +175,6 @@ export default function CalendarGrid({
                 <div key={day.date} className="relative">
                   <CalendarDayCell
                     day={day}
-                    onDoubleClickDay={onDoubleClickDay}
                     onClickEvent={onClickEvent}
                     isExpanded={expandedDayKey === day.date}
                     onExpandDay={onExpandDay}
@@ -176,6 +193,9 @@ export default function CalendarGrid({
                     draggedTaskId={dragState?.taskId}
                     previewData={previewMap.get(day.date)}
                     hideEvents={true}
+                    isInAddRange={addTaskPreviewDates?.has(day.date) ?? false}
+                    onAddTaskMouseDown={onAddTaskMouseDown}
+                    onAddTaskMouseEnter={onAddTaskMouseEnter}
                   />
                   {/* Popover for expanded day */}
                   {expandedDayKey === day.date &&

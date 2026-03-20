@@ -15,7 +15,6 @@ import DragPreviewEvent from "./DragPreviewEvent";
 
 interface CalendarDayCellProps {
   day: CalendarDay;
-  onDoubleClickDay: (date: string) => void;
   onClickEvent: (task: Task) => void;
   isExpanded: boolean;
   onExpandDay: (dayKey: string | null) => void;
@@ -31,11 +30,14 @@ interface CalendarDayCellProps {
   previewData?: DragPreviewData;
   /** When true, events are rendered in CalendarWeekEvents overlay instead */
   hideEvents?: boolean;
+  /** Add Task tool */
+  isInAddRange?: boolean;
+  onAddTaskMouseDown?: (date: string) => void;
+  onAddTaskMouseEnter?: (date: string) => void;
 }
 
 export default function CalendarDayCell({
   day,
-  onDoubleClickDay,
   onClickEvent,
   isExpanded,
   onExpandDay,
@@ -50,6 +52,9 @@ export default function CalendarDayCell({
   draggedTaskId,
   previewData,
   hideEvents = false,
+  isInAddRange = false,
+  onAddTaskMouseDown,
+  onAddTaskMouseEnter,
 }: CalendarDayCellProps) {
   const { date, dayOfMonth, isCurrentMonth, isToday, events } = day;
 
@@ -89,15 +94,16 @@ export default function CalendarDayCell({
         borderColor: isActiveTarget ? "rgb(249, 115, 22)" : "rgb(39, 39, 42)",
       }}
       transition={{ duration: 0.15 }}
-      onDoubleClick={() => {
-        if (isResizing || isDragging) return;
-        onDoubleClickDay(date);
+      onMouseDown={() => {
+        onAddTaskMouseDown?.(date);
       }}
       onMouseEnter={() => {
         if (isResizing) {
           onResizeHover?.(date);
         } else if (isDragging) {
           onDragHover?.(date);
+        } else if (onAddTaskMouseEnter) {
+          onAddTaskMouseEnter(date);
         } else if (hasOverflow) {
           onExpandDay(date);
         }
@@ -106,6 +112,18 @@ export default function CalendarDayCell({
         isExpanded && !isResizing && !isDragging && onExpandDay(null)
       }
     >
+      {/* Add Task range overlay */}
+      {isInAddRange && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "rgba(249, 115, 22, 0.15)",
+            pointerEvents: "none",
+          }}
+        />
+      )}
+
       {/* Day number */}
       <span
         className={cn(
