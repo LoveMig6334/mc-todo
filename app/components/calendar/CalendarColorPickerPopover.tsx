@@ -18,6 +18,59 @@ const MARGIN = 16;
 
 const HEX_REGEX = /^#[0-9a-fA-F]{6}$/;
 
+function ColorPickerInner({
+  task,
+  openTaskId,
+  updateTask,
+}: {
+  task: Task | undefined;
+  openTaskId: string;
+  updateTask: (taskId: string, data: Partial<Task>) => void;
+}) {
+  const currentColor = task?.calendarColor ?? "#3f3f46";
+  const [hexInput, setHexInput] = useState(currentColor);
+  const lastValidHex = useRef(currentColor);
+
+  const handleColorChange = useCallback(
+    (hex: string) => {
+      setHexInput(hex);
+      lastValidHex.current = hex;
+      updateTask(openTaskId, { calendarColor: hex });
+    },
+    [openTaskId, updateTask],
+  );
+
+  const handleHexInputBlur = useCallback(() => {
+    if (HEX_REGEX.test(hexInput)) {
+      lastValidHex.current = hexInput;
+      updateTask(openTaskId, { calendarColor: hexInput });
+    } else {
+      setHexInput(lastValidHex.current);
+    }
+  }, [hexInput, openTaskId, updateTask]);
+
+  return (
+    <>
+      <HexColorPicker
+        color={currentColor}
+        onChange={handleColorChange}
+        style={{ width: "100%" }}
+      />
+      <input
+        type="text"
+        value={hexInput}
+        onChange={(e) => setHexInput(e.target.value)}
+        onBlur={handleHexInputBlur}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleHexInputBlur();
+        }}
+        className="mt-2 w-full rounded-md border border-zinc-600 bg-zinc-700 px-2 py-1 text-xs text-zinc-200 outline-none focus:border-orange-500"
+        spellCheck={false}
+      />
+    </>
+  );
+}
+
 export default function CalendarColorPickerPopover({
   openTaskId,
   anchorPosition,
@@ -29,41 +82,6 @@ export default function CalendarColorPickerPopover({
     () => (openTaskId ? tasks.find((t) => t.id === openTaskId) : undefined),
     [openTaskId, tasks],
   );
-
-  const currentColor = task?.calendarColor ?? "#3f3f46";
-  const [hexInput, setHexInput] = useState(currentColor);
-  const lastValidHex = useRef(currentColor);
-
-  // Sync hexInput when task changes
-  const prevTaskIdRef = useRef(openTaskId);
-  if (prevTaskIdRef.current !== openTaskId) {
-    prevTaskIdRef.current = openTaskId;
-    const color = task?.calendarColor ?? "#3f3f46";
-    setHexInput(color);
-    lastValidHex.current = color;
-  }
-
-  const handleColorChange = useCallback(
-    (hex: string) => {
-      setHexInput(hex);
-      lastValidHex.current = hex;
-      if (openTaskId) {
-        updateTask(openTaskId, { calendarColor: hex });
-      }
-    },
-    [openTaskId, updateTask],
-  );
-
-  const handleHexInputBlur = useCallback(() => {
-    if (HEX_REGEX.test(hexInput)) {
-      lastValidHex.current = hexInput;
-      if (openTaskId) {
-        updateTask(openTaskId, { calendarColor: hexInput });
-      }
-    } else {
-      setHexInput(lastValidHex.current);
-    }
-  }, [hexInput, openTaskId, updateTask]);
 
   if (!openTaskId || !anchorPosition) return null;
 
@@ -100,21 +118,12 @@ export default function CalendarColorPickerPopover({
         }}
         className="rounded-lg border border-zinc-700 bg-zinc-800 p-3"
       >
-        <HexColorPicker
-          color={currentColor}
-          onChange={handleColorChange}
-          style={{ width: "100%" }}
-        />
-        <input
-          type="text"
-          value={hexInput}
-          onChange={(e) => setHexInput(e.target.value)}
-          onBlur={handleHexInputBlur}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleHexInputBlur();
-          }}
-          className="mt-2 w-full rounded-md border border-zinc-600 bg-zinc-700 px-2 py-1 text-xs text-zinc-200 outline-none focus:border-orange-500"
-          spellCheck={false}
+        {/* key resets state when switching tasks */}
+        <ColorPickerInner
+          key={openTaskId}
+          task={task}
+          openTaskId={openTaskId}
+          updateTask={updateTask}
         />
       </div>
     </>

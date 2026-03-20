@@ -23,7 +23,7 @@ export default function CalendarEvent({
   isDragging,
   isDragTarget,
 }: CalendarEventProps) {
-  const { task, category, spanStart, spanEnd, spanMiddle } = layout;
+  const { task, category, spanStart, spanEnd } = layout;
   const bgColor = category?.color ?? "#71717a";
 
   // Calculate span connection styles for multi-day events

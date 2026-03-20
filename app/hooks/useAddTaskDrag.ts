@@ -18,7 +18,9 @@ export function useAddTaskDrag(
   });
 
   const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete;
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  });
 
   const handleMouseDown = useCallback((date: string) => {
     setDragState({
@@ -42,7 +44,6 @@ export function useAddTaskDrag(
     const handleGlobalMouseUp = () => {
       const { startDate, endDate } = dragState;
       if (startDate && endDate) {
-        // Normalize so start <= end
         const start = startDate <= endDate ? startDate : endDate;
         const end = startDate <= endDate ? endDate : startDate;
         onCompleteRef.current({ start, end });
@@ -52,7 +53,7 @@ export function useAddTaskDrag(
 
     window.addEventListener("mouseup", handleGlobalMouseUp);
     return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
-  }, [dragState.isDragging, dragState.startDate, dragState.endDate]);
+  }, [dragState]);
 
   return {
     dragState,
