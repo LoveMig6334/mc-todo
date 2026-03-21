@@ -85,7 +85,7 @@ export default function CalendarEvent({
         damping: 25,
       }}
       className={cn(
-        "group/event relative flex w-full items-center overflow-hidden text-left cursor-grab z-10",
+        "group/event relative flex w-full items-center overflow-hidden text-left cursor-[inherit] z-10",
         "h-6",
         isResizing && "select-none",
         isDragTarget &&
