@@ -173,7 +173,7 @@ export default function CalendarWeekEvents({
             key={task.id}
             type="button"
             onClick={(e) => {
-              if (isResizing || isDragging) return;
+              if (isResizing || isDragging || activeTool === "add") return;
               e.stopPropagation();
               if (activeTool === "color") {
                 onOpenColorPicker?.(task.id, { x: e.clientX, y: e.clientY });
@@ -186,7 +186,8 @@ export default function CalendarWeekEvents({
             }
             title={task.title}
             className={cn(
-              "group/event relative text-left pointer-events-auto",
+              "group/event relative text-left",
+              activeTool === "add" ? "pointer-events-none" : "pointer-events-auto",
               "h-6",
               activeTool === "normal"
                 ? "cursor-pointer"
