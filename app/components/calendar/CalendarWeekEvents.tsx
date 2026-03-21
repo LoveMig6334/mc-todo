@@ -4,6 +4,7 @@ import { cn } from "@/app/lib/utils";
 import { CalendarEventLayout, ResizeEdge } from "@/app/types/calendar";
 import { Category, Task } from "@/app/types/task";
 import { motion } from "motion/react";
+import { PAINT_BUCKET_CURSOR } from "./CalendarGrid";
 import { CalendarTool } from "./CalendarToolbar";
 
 interface WeekEventData {
@@ -193,13 +194,16 @@ export default function CalendarWeekEvents({
                 ? "cursor-pointer"
                 : activeTool === "add"
                   ? "cursor-crosshair"
-                  : "cursor-grab",
+                  : activeTool === "color"
+                    ? ""
+                    : "cursor-grab",
               isResizing && "select-none",
               isDragTarget &&
                 "ring-2 ring-orange-400 ring-offset-1 ring-offset-zinc-900",
             )}
             style={{
               gridColumn: `${startCol} / ${endCol}`,
+              ...(activeTool === "color" ? { cursor: PAINT_BUCKET_CURSOR } : {}),
             }}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{

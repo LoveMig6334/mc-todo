@@ -21,11 +21,13 @@ import { CalendarTool } from "./CalendarToolbar";
 import CalendarWeekEvents from "./CalendarWeekEvents";
 import ProjectOverlay from "./ProjectOverlay";
 
+export const PAINT_BUCKET_CURSOR = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z'/%3E%3Cpath d='m5 2 5 5'/%3E%3Cpath d='M2 13h15'/%3E%3Cpath d='M22 20a2 2 0 1 1-4 0c0-1.6 2-3 2-3s2 1.4 2 3Z'/%3E%3C/svg%3E") 2 22, auto`;
+
 const cursorClass: Record<CalendarTool, string> = {
   normal: "cursor-default",
   add: "cursor-crosshair",
   trim: "cursor-default",
-  color: "cursor-default",
+  color: "",
 };
 
 interface CalendarGridProps {
@@ -110,6 +112,7 @@ export default function CalendarGrid({
   return (
     <div
       className={`overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900 ${cursorClass[activeTool]}`}
+      style={activeTool === "color" ? { cursor: PAINT_BUCKET_CURSOR } : undefined}
     >
       {/* Day-of-week headers */}
       <div className="grid grid-cols-7 border-b border-zinc-700 bg-zinc-800">
