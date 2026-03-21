@@ -2,7 +2,7 @@
 
 # MC-Todo
 
-Task management, calendar visualization, productivity analytics, and a per-task playground — all in one place.
+Task management, calendar visualization, and productivity analytics — all in one place.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.1.6-000?logo=nextdotjs)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.2.3-61DAFB?logo=react&logoColor=fff)](https://react.dev/)
@@ -29,7 +29,6 @@ graph TD
         R1["/ — Task Management"]
         R2["/calendar — Calendar View"]
         R3["/dashboard — Analytics"]
-        R4["/playground/:id — Playground"]
     end
 
     subgraph STATE["Shared State — localStorage"]
@@ -42,13 +41,11 @@ graph TD
         F1["Tasks + Projects\nColored cards · Indented child tasks\nCollapsible · Drag-to-reorder subtasks"]
         F2["Calendar Overlays\nProject color bands · Lane stacking\nDrag & resize constrained to project bounds"]
         F3["Analytics\nEisenhower matrix · Donut · Bar charts\nUpcoming deadlines · Top suggestions"]
-        F4["Canvas Playground\nNote · Todo · Flowchart blocks\nInfinite pan & zoom"]
     end
 
     R1 --> TM & UP & UC
     R2 --> UP
     R3 --> TM & UC
-    R4 --> TM
 
     UP -- "date constraints" --> R2
     TM <-- "child tasks" --> UP
@@ -58,7 +55,6 @@ graph TD
     R1 --- F1
     R2 --- F2
     R3 --- F3
-    R4 --- F4
 ```
 
 ---
@@ -107,13 +103,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - Eisenhower-style scatter plot (urgency × importance), donut chart, category & priority bar charts
 - Upcoming deadlines, top 3 suggested tasks, inline category editor
 
-### Playground `/playground/:taskId`
-- Infinite canvas with pan and zoom (0.25×–2×, cursor-centered)
-- **Note** — rich-text editor with formatting toolbar and 6 color themes
-- **Todo List** — checklist with drag-to-reorder and completion indicator
-- **Flowchart** — node/edge diagram with 3 shapes, 4 edge styles, labels, and auto port selection
-- All blocks: drag, resize, z-index, delete; debounced auto-save per task
-
 ---
 
 ## Tech Stack
@@ -141,13 +130,12 @@ app/
 │   │               # CalendarEventPopover · DragPreviewEvent · TrashDropZone
 │   ├── dashboard/  # StatCard · Charts · TimeManagementMatrix
 │   │               # UpcomingDeadlines · CategoryEditModal
-│   ├── playground/ # PlaygroundCanvas · NoteBlock · TodoListBlock · FlowchartBlock
 │   └── ui/         # Button · Dropdown · Input · Modal · Slider · Textarea
 ├── hooks/          # useTaskManager · useProjects · useCategories
 │                   # useEventDrag · useEventResize · useDashboardStats
-│                   # useLocalStorage · useTaskFilter · usePlayground
+│                   # useLocalStorage · useTaskFilter
 ├── lib/            # utils · calendarUtils · dashboardUtils
-├── types/          # task.ts · calendar.ts · playground.ts
+├── types/          # task.ts · calendar.ts
 └── __tests__/      # Jest test suite
 ```
 

@@ -1,6 +1,6 @@
 # MC-Todo Project
 
-A modern To-Do List app with Task Management, Calendar View, Dashboard Analytics, and a Playground.
+A modern To-Do List app with Task Management, Calendar View, and Dashboard Analytics.
 
 ## Tech Stack
 
@@ -57,13 +57,12 @@ Use `useSyncExternalStore` (not `useState` + `useEffect`) to avoid hydration mis
 
 ```
 app/
-├── components/{layout,task,calendar,dashboard,playground,ui}/
+├── components/{layout,task,calendar,dashboard,ui}/
 ├── hooks/              # useTaskManager, useCategories, useLocalStorage, etc.
 ├── lib/                # Utility functions
 ├── types/              # TypeScript definitions
 ├── calendar/           # /calendar route
 ├── dashboard/          # /dashboard route
-├── playground/[taskId] # /playground/[taskId] route
 └── __tests__/          # Jest tests
 ```
 
