@@ -1,11 +1,10 @@
 "use client";
 
-import { useTaskManager } from "@/app/hooks/useTaskManager";
-import { cn, getPriorityLabel } from "@/app/lib/utils";
+import { cn } from "@/app/lib/utils";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface NavItem {
   id: string;
@@ -130,39 +129,7 @@ const dividerVariants = {
 export default function FloatingNav() {
   const currentPath = usePathname();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const collapseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const { tasks } = useTaskManager();
-
-  const isPlaygroundActive = currentPath.startsWith("/playground");
-
-  const playgroundTasks = useMemo(
-    () => tasks.filter((t) => !t.completed && !t.archived),
-    [tasks],
-  );
-
-  const filteredTasks = useMemo(() => {
-    if (!searchQuery) return playgroundTasks;
-    const q = searchQuery.toLowerCase();
-    return playgroundTasks.filter((t) => t.title.toLowerCase().includes(q));
-  }, [playgroundTasks, searchQuery]);
-
-  // Close dropdown on click outside
-  useEffect(() => {
-    function handleMouseDown(e: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-        setSearchQuery("");
-      }
-    }
-    document.addEventListener("mousedown", handleMouseDown);
-    return () => document.removeEventListener("mousedown", handleMouseDown);
-  }, []);
 
   // Cleanup collapse timer on unmount
   useEffect(() => {
@@ -182,8 +149,6 @@ export default function FloatingNav() {
   function handleMouseLeave() {
     collapseTimer.current = setTimeout(() => {
       setIsExpanded(false);
-      setIsDropdownOpen(false);
-      setSearchQuery("");
     }, 500);
   }
 
@@ -245,112 +210,6 @@ export default function FloatingNav() {
               </Link>
             );
           })}
-
-          {/* Playground Nav Item with Dropdown */}
-          <motion.div ref={dropdownRef} className="relative">
-            <motion.button
-              onClick={() => {
-                setIsDropdownOpen((prev) => !prev);
-                if (isDropdownOpen) setSearchQuery("");
-              }}
-              className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-full transition-colors duration-200",
-                isPlaygroundActive
-                  ? "bg-zinc-800 text-orange-500"
-                  : "text-zinc-400 hover:text-white hover:bg-zinc-800",
-              )}
-            >
-              {/* 4-quadrant grid icon with dashed bottom-right */}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="3" y="3" width="7" height="7" />
-                <rect x="14" y="3" width="7" height="7" />
-                <rect x="3" y="14" width="7" height="7" />
-                <rect
-                  x="14"
-                  y="14"
-                  width="7"
-                  height="7"
-                  strokeDasharray="3 2"
-                />
-              </svg>
-              <motion.span
-                className="text-sm whitespace-nowrap"
-                style={{ overflow: "hidden", display: "inline-block" }}
-                variants={labelVariants}
-              >
-                Playground
-              </motion.span>
-            </motion.button>
-
-            {/* Dropdown */}
-            {isDropdownOpen && (
-              <div className="absolute top-full right-0 mt-2 w-72 bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl overflow-hidden">
-                {/* Search (only when > 5 tasks) */}
-                {playgroundTasks.length > 5 && (
-                  <div className="p-2 border-b border-zinc-800">
-                    <input
-                      type="text"
-                      autoFocus
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search tasks..."
-                      className="w-full bg-zinc-800 text-white text-sm rounded-lg px-3 py-1.5 outline-none placeholder:text-zinc-500 focus:ring-1 focus:ring-orange-500/50"
-                    />
-                  </div>
-                )}
-
-                {/* Task List */}
-                <div className="max-h-80 overflow-y-auto">
-                  {filteredTasks.length === 0 ? (
-                    <div className="px-4 py-6 text-center text-sm text-zinc-500">
-                      {searchQuery ? "No matching tasks" : "No active tasks"}
-                    </div>
-                  ) : (
-                    filteredTasks.map((task) => {
-                      const isCurrentTask =
-                        currentPath === `/playground/${task.id}`;
-                      return (
-                        <Link
-                          key={task.id}
-                          href={`/playground/${task.id}`}
-                          className={cn(
-                            "block px-4 py-2.5 transition-colors",
-                            isCurrentTask
-                              ? "bg-orange-500/10 border-l-2 border-orange-500"
-                              : "hover:bg-zinc-800 border-l-2 border-transparent",
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              "text-sm truncate",
-                              isCurrentTask
-                                ? "text-orange-500 font-medium"
-                                : "text-white",
-                            )}
-                          >
-                            {task.title}
-                          </div>
-                          <div className="text-xs text-zinc-500 mt-0.5">
-                            {getPriorityLabel(task.priority)} priority
-                          </div>
-                        </Link>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-            )}
-          </motion.div>
         </div>
       </motion.div>
     </nav>
