@@ -189,9 +189,9 @@ export default function CalendarWeekEvents({
               "group/event relative text-left pointer-events-auto",
               "h-6",
               activeTool === "normal"
-                ? "cursor-default"
-                : activeTool === "trim" || activeTool === "color"
-                  ? "cursor-cell"
+                ? "cursor-pointer"
+                : activeTool === "add"
+                  ? "cursor-crosshair"
                   : "cursor-grab",
               isResizing && "select-none",
               isDragTarget &&

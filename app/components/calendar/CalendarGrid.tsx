@@ -24,8 +24,8 @@ import ProjectOverlay from "./ProjectOverlay";
 const cursorClass: Record<CalendarTool, string> = {
   normal: "cursor-default",
   add: "cursor-crosshair",
-  trim: "cursor-cell",
-  color: "cursor-cell",
+  trim: "cursor-default",
+  color: "cursor-default",
 };
 
 interface CalendarGridProps {
