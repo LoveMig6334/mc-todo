@@ -37,9 +37,11 @@ export function useAddTaskDrag(
     });
   }, []);
 
-  // Global mouseup listener — only active while dragging
+  // Global mouseup + prevent text selection — only active while dragging
   useEffect(() => {
     if (!dragState.isDragging) return;
+
+    const preventSelect = (e: Event) => e.preventDefault();
 
     const handleGlobalMouseUp = () => {
       const { startDate, endDate } = dragState;
@@ -51,8 +53,12 @@ export function useAddTaskDrag(
       setDragState({ isDragging: false, startDate: null, endDate: null });
     };
 
+    document.addEventListener("selectstart", preventSelect);
     window.addEventListener("mouseup", handleGlobalMouseUp);
-    return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
+    return () => {
+      document.removeEventListener("selectstart", preventSelect);
+      window.removeEventListener("mouseup", handleGlobalMouseUp);
+    };
   }, [dragState]);
 
   return {
