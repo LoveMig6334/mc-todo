@@ -1,6 +1,7 @@
 "use client";
 
 import CalendarColorPickerPopover from "@/app/components/calendar/CalendarColorPickerPopover";
+import { formatDateString } from "@/app/lib/calendarUtils";
 import CalendarGrid from "@/app/components/calendar/CalendarGrid";
 import CalendarHeader from "@/app/components/calendar/CalendarHeader";
 import { CalendarTool } from "@/app/components/calendar/CalendarToolbar";
@@ -108,7 +109,13 @@ export default function CalendarPage() {
     const current = new Date(s + "T00:00:00");
     const endD = new Date(e + "T00:00:00");
     while (current <= endD) {
-      dates.add(current.toISOString().slice(0, 10));
+      dates.add(
+        formatDateString(
+          current.getFullYear(),
+          current.getMonth(),
+          current.getDate(),
+        ),
+      );
       current.setDate(current.getDate() + 1);
     }
     return dates;
