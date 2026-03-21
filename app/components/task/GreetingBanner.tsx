@@ -23,7 +23,6 @@ const TIPS = [
   "Completed tasks auto-archive so your list stays clean 🗂️",
   "Switch between Priority and Category views for a fresh perspective 🔄",
   "Add reference links to tasks to keep resources at your fingertips 🔗",
-  "Use the Playground to jot down quick notes and checklists 🎨",
   "Color-code your categories for instant visual recognition 🌈",
   "Set due date ranges for tasks that span multiple days 📆",
   "Review upcoming deadlines on the Dashboard to stay ahead ⏳",
