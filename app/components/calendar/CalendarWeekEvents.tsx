@@ -158,7 +158,7 @@ export default function CalendarWeekEvents({
     >
       {weekEvents.map((eventData) => {
         const { layout, startCol, endCol } = eventData;
-        const { task, category, spanStart, spanEnd } = layout;
+        const { task, category } = layout;
 
         // Hide the original event when a preview is active for it
         if (previewTask?.id === task.id) {
@@ -188,7 +188,9 @@ export default function CalendarWeekEvents({
             title={task.title}
             className={cn(
               "group/event relative text-left",
-              activeTool === "add" ? "pointer-events-none" : "pointer-events-auto",
+              activeTool === "add"
+                ? "pointer-events-none"
+                : "pointer-events-auto",
               "h-6",
               activeTool === "normal"
                 ? "cursor-pointer"
@@ -203,7 +205,9 @@ export default function CalendarWeekEvents({
             )}
             style={{
               gridColumn: `${startCol} / ${endCol}`,
-              ...(activeTool === "color" ? { cursor: PAINT_BUCKET_CURSOR } : {}),
+              ...(activeTool === "color"
+                ? { cursor: PAINT_BUCKET_CURSOR }
+                : {}),
             }}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{
@@ -227,12 +231,10 @@ export default function CalendarWeekEvents({
                 width: "100%",
               }}
             >
-              {/* Left end-cap */}
-              {spanStart && (
-                <div
-                  style={{ width: 8, background: categoryColor, flexShrink: 0 }}
-                />
-              )}
+              {/* Left end-cap — always visible for spanning bars */}
+              <div
+                style={{ width: 8, background: categoryColor, flexShrink: 0 }}
+              />
 
               {/* Body */}
               <div
@@ -298,12 +300,10 @@ export default function CalendarWeekEvents({
                 )}
               </div>
 
-              {/* Right end-cap */}
-              {spanEnd && (
-                <div
-                  style={{ width: 8, background: categoryColor, flexShrink: 0 }}
-                />
-              )}
+              {/* Right end-cap — always visible for spanning bars */}
+              <div
+                style={{ width: 8, background: categoryColor, flexShrink: 0 }}
+              />
             </div>
           </motion.button>
         );
