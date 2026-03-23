@@ -1,6 +1,53 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { Category, Project, Task } from "@/app/types/task";
+import { fireEvent, render, screen } from "@testing-library/react";
+
+// Mock motion/react so animate values get applied as inline styles
+jest.mock("motion/react", () => {
+  const strip = ({
+    children,
+    animate,
+    initial: _i,
+    transition: _t,
+    whileHover: _wh,
+    whileTap: _wt,
+    variants: _v,
+    exit: _e,
+    style,
+    ...rest
+  }: React.PropsWithChildren<Record<string, unknown>>) => ({
+    style: {
+      ...(style as React.CSSProperties),
+      ...(typeof animate === "object"
+        ? (animate as React.CSSProperties)
+        : {}),
+    },
+    children,
+    rest,
+  });
+  return {
+    motion: {
+      div: (props: React.PropsWithChildren<Record<string, unknown>>) => {
+        const { style, children, rest } = strip(props);
+        return <div style={style} {...rest}>{children}</div>;
+      },
+      button: (props: React.PropsWithChildren<Record<string, unknown>>) => {
+        const { style, children, rest } = strip(props);
+        return <button style={style} {...rest}>{children}</button>;
+      },
+      span: (props: React.PropsWithChildren<Record<string, unknown>>) => {
+        const { style, children, rest } = strip(props);
+        return <span style={style} {...rest}>{children}</span>;
+      },
+      svg: (props: React.PropsWithChildren<Record<string, unknown>>) => {
+        const { children, rest } = strip(props);
+        return <svg {...rest}>{children}</svg>;
+      },
+    },
+    AnimatePresence: ({ children }: React.PropsWithChildren) => children,
+  };
+});
+
 import ProjectItem from "@/app/components/task/ProjectItem";
-import { Project, Task, Category } from "@/app/types/task";
 
 const mockProject: Project = {
   id: "proj-1",
@@ -26,8 +73,11 @@ const mockTask: Task = {
   priority: 3,
   status: "pending",
   dueDate: { start: "2024-03-10", end: null },
+  subtasks: [],
   referenceLinks: [],
   completed: false,
+  completedAt: null,
+  archived: false,
   createdAt: "2024-01-01T00:00:00Z",
   updatedAt: "2024-01-01T00:00:00Z",
   projectId: "proj-1",
@@ -212,7 +262,8 @@ describe("ProjectItem", () => {
         />,
       );
       fireEvent.click(screen.getByLabelText("Collapse project"));
-      expect(screen.queryByText("Add task to project")).not.toBeInTheDocument();
+      // Content is hidden via motion animate (height: 0, opacity: 0)
+      expect(screen.queryByText("Add task to project")).not.toBeVisible();
     });
 
     it("expands again when toggle button clicked twice", () => {

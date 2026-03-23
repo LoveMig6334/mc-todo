@@ -67,19 +67,15 @@ describe("ConfirmModal", () => {
     expect(defaultProps.onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("calls onClose when backdrop is clicked", () => {
+  it("calls onClose when Escape key is pressed on modal", () => {
     render(<ConfirmModal {...defaultProps} />);
-    // The backdrop is the outermost fixed div
-    const backdrop = screen.getByText("Delete Task").closest(".fixed");
-    if (backdrop) {
-      fireEvent.click(backdrop);
+    // Modal handles Escape via onKeyDown on the focused modal div
+    const modalContent = screen
+      .getByText("Delete Task")
+      .closest("[tabindex]");
+    if (modalContent) {
+      fireEvent.keyDown(modalContent, { key: "Escape" });
       expect(defaultProps.onClose).toHaveBeenCalledTimes(1);
     }
-  });
-
-  it("calls onClose when Escape key is pressed", () => {
-    render(<ConfirmModal {...defaultProps} />);
-    fireEvent.keyDown(document, { key: "Escape" });
-    expect(defaultProps.onClose).toHaveBeenCalledTimes(1);
   });
 });

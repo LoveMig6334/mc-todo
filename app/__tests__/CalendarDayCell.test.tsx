@@ -1,6 +1,6 @@
-import { render, screen, fireEvent } from "@testing-library/react";
 import { CalendarDay, CalendarEventLayout } from "@/app/types/calendar";
 import { Category, Task } from "@/app/types/task";
+import { fireEvent, render, screen } from "@testing-library/react";
 
 // Mock motion/react to avoid animation issues in tests
 jest.mock("motion/react", () => ({
@@ -89,11 +89,7 @@ describe("CalendarDayCell", () => {
 
   it("renders the day number", () => {
     render(
-      <CalendarDayCell
-        day={makeDay()}
-        {...mockHandlers}
-        isExpanded={false}
-      />,
+      <CalendarDayCell day={makeDay()} {...mockHandlers} isExpanded={false} />,
     );
 
     expect(screen.getByText("15")).toBeInTheDocument();
@@ -105,13 +101,7 @@ describe("CalendarDayCell", () => {
       events: [makeEventLayout(task)],
     });
 
-    render(
-      <CalendarDayCell
-        day={day}
-        {...mockHandlers}
-        isExpanded={false}
-      />,
-    );
+    render(<CalendarDayCell day={day} {...mockHandlers} isExpanded={false} />);
 
     expect(screen.getByText("My Event")).toBeInTheDocument();
   });
@@ -122,13 +112,7 @@ describe("CalendarDayCell", () => {
       events: [makeEventLayout(task)],
     });
 
-    render(
-      <CalendarDayCell
-        day={day}
-        {...mockHandlers}
-        isExpanded={false}
-      />,
-    );
+    render(<CalendarDayCell day={day} {...mockHandlers} isExpanded={false} />);
 
     fireEvent.click(screen.getByText("Clickable Event"));
     expect(mockHandlers.onClickEvent).toHaveBeenCalledWith(task);
@@ -138,18 +122,10 @@ describe("CalendarDayCell", () => {
     const tasks = Array.from({ length: 5 }, (_, i) =>
       makeTask({ id: String(i), title: `Task ${i}` }),
     );
-    const events = tasks.map((task, i) =>
-      makeEventLayout(task, { row: i }),
-    );
+    const events = tasks.map((task, i) => makeEventLayout(task, { row: i }));
     const day = makeDay({ events });
 
-    render(
-      <CalendarDayCell
-        day={day}
-        {...mockHandlers}
-        isExpanded={false}
-      />,
-    );
+    render(<CalendarDayCell day={day} {...mockHandlers} isExpanded={false} />);
 
     // First 3 events shown as full bars
     expect(screen.getByText("Task 0")).toBeInTheDocument();
@@ -301,11 +277,7 @@ describe("CalendarDayCell", () => {
 
   it("collapses expanded day on mouse leave when not resizing or dragging", () => {
     const { container } = render(
-      <CalendarDayCell
-        day={makeDay()}
-        {...mockHandlers}
-        isExpanded={true}
-      />,
+      <CalendarDayCell day={makeDay()} {...mockHandlers} isExpanded={true} />,
     );
 
     const cell = container.firstElementChild!;

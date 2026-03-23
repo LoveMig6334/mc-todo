@@ -318,8 +318,13 @@ describe("CategoryEditModal", () => {
     const renameButtons = screen.getAllByTitle("Rename");
     fireEvent.click(renameButtons[0]);
 
-    // Close via Escape on document (handled by Modal)
-    fireEvent.keyDown(document, { key: "Escape" });
+    // Close via Escape on the focused modal div
+    const modalContent = screen
+      .getByText("Manage Categories")
+      .closest("[tabindex]");
+    if (modalContent) {
+      fireEvent.keyDown(modalContent, { key: "Escape" });
+    }
 
     expect(defaultProps.onClose).toHaveBeenCalledTimes(1);
   });

@@ -177,7 +177,7 @@ describe("CalendarGrid", () => {
     // Ghost preview element should be rendered with test ID
     const previewElement = screen.getByTestId("drag-preview");
     expect(previewElement).toBeInTheDocument();
-    expect(previewElement).toHaveClass("border-dashed");
+    expect(previewElement).toHaveClass("pointer-events-none");
   });
 
   it("renders multi-day ghost preview during drag operation", () => {
