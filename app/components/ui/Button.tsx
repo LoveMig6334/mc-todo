@@ -24,7 +24,7 @@ const variantStyles = {
     ring: "focus:ring-orange-500",
   },
   ghost: {
-    className: "text-zinc-300",
+    className: "text-zinc-300 hover:text-white",
     bg: "rgba(0, 0, 0, 0)",
     hoverBg: "rgb(39, 39, 42)",
     ring: "focus:ring-orange-500",
