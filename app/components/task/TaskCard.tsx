@@ -58,14 +58,22 @@ export default function TaskCard({
         <motion.button
           onClick={() => onToggleComplete(task.id)}
           whileTap={{ scale: 0.8 }}
+          whileHover={
+            !task.completed
+              ? { borderColor: "rgb(249, 115, 22)" }
+              : undefined
+          }
           transition={springBouncy}
           className={cn(
-            "mt-0.5 h-4 w-4 shrink-0 rounded border-2 transition-colors duration-200",
+            "mt-0.5 h-4 w-4 shrink-0 rounded border-2",
             "flex items-center justify-center",
-            task.completed
-              ? "border-orange-500 bg-orange-500"
-              : "border-zinc-500 hover:border-orange-500",
+            task.completed && "border-orange-500 bg-orange-500",
           )}
+          style={
+            !task.completed
+              ? { borderColor: "rgb(113, 113, 122)" }
+              : undefined
+          }
         >
           <AnimatePresence>
             {task.completed && (
