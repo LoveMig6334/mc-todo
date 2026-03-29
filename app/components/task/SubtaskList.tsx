@@ -167,13 +167,21 @@ export default function SubtaskList({
                   onClick={() => !readOnly && handleToggle(subtask.id)}
                   disabled={readOnly}
                   whileTap={!readOnly ? { scale: 0.75 } : undefined}
+                  whileHover={
+                    !subtask.completed && !readOnly
+                      ? { borderColor: "rgb(16, 185, 129)" }
+                      : undefined
+                  }
                   transition={springBouncy}
                   className={cn(
-                    "h-3.5 w-3.5 shrink-0 rounded border transition-colors duration-200 flex items-center justify-center",
-                    subtask.completed
-                      ? "border-emerald-500 bg-emerald-500"
-                      : "border-zinc-500 hover:border-emerald-500",
+                    "h-3.5 w-3.5 shrink-0 rounded border flex items-center justify-center",
+                    subtask.completed && "border-emerald-500 bg-emerald-500",
                   )}
+                  style={
+                    !subtask.completed
+                      ? { borderColor: "rgb(113, 113, 122)" }
+                      : undefined
+                  }
                 >
                   <AnimatePresence>
                     {subtask.completed && (
