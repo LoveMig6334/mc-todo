@@ -10,20 +10,40 @@ interface ButtonProps extends HTMLMotionProps<"button"> {
   size?: "sm" | "md" | "lg";
 }
 
+const variantStyles = {
+  primary: {
+    className: "text-white",
+    bg: "rgb(249, 115, 22)",
+    hoverBg: "rgb(234, 88, 12)",
+    ring: "focus:ring-orange-500",
+  },
+  secondary: {
+    className: "text-white",
+    bg: "rgb(63, 63, 70)",
+    hoverBg: "rgb(82, 82, 91)",
+    ring: "focus:ring-orange-500",
+  },
+  ghost: {
+    className: "text-zinc-300",
+    bg: "rgba(0, 0, 0, 0)",
+    hoverBg: "rgb(39, 39, 42)",
+    ring: "focus:ring-orange-500",
+  },
+  danger: {
+    className: "text-white",
+    bg: "rgb(220, 38, 38)",
+    hoverBg: "rgb(185, 28, 28)",
+    ring: "focus:ring-red-500",
+  },
+} as const;
+
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { className, variant = "primary", size = "md", children, ...props },
+    { className, variant = "primary", size = "md", children, style, ...props },
     ref,
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-zinc-900 disabled:opacity-50 disabled:pointer-events-none";
-
-    const variants = {
-      primary: "bg-orange-500 text-white hover:bg-orange-600",
-      secondary: "bg-zinc-700 text-white hover:bg-zinc-600",
-      ghost: "bg-transparent text-zinc-300 hover:bg-zinc-800 hover:text-white",
-      danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
-    };
+      "inline-flex items-center justify-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 disabled:opacity-50 disabled:pointer-events-none";
 
     const sizes = {
       sm: "h-8 px-3 text-sm rounded-md",
@@ -31,10 +51,14 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       lg: "h-12 px-6 text-base rounded-lg",
     };
 
+    const v = variantStyles[variant];
+
     return (
       <motion.button
         ref={ref}
-        className={cn(baseStyles, variants[variant], sizes[size], className)}
+        className={cn(baseStyles, v.ring, v.className, sizes[size], className)}
+        style={{ backgroundColor: v.bg, ...style }}
+        whileHover={{ backgroundColor: v.hoverBg }}
         whileTap={{ scale: 0.95 }}
         transition={springFast}
         {...props}
