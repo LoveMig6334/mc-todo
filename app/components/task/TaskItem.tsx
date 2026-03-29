@@ -59,14 +59,22 @@ export default function TaskItem({
         <motion.button
           onClick={() => onToggleComplete(task.id)}
           whileTap={{ scale: 0.8 }}
+          whileHover={
+            !task.completed
+              ? { borderColor: "rgb(249, 115, 22)" }
+              : undefined
+          }
           transition={springBouncy}
           className={cn(
-            "mt-1 h-5 w-5 shrink-0 rounded border-2 transition-colors duration-200",
+            "mt-1 h-5 w-5 shrink-0 rounded border-2",
             "flex items-center justify-center",
-            task.completed
-              ? "border-orange-500 bg-orange-500"
-              : "border-zinc-600 hover:border-orange-500",
+            task.completed && "border-orange-500 bg-orange-500",
           )}
+          style={
+            !task.completed
+              ? { borderColor: "rgb(82, 82, 91)" }
+              : undefined
+          }
         >
           <AnimatePresence>
             {task.completed && (
