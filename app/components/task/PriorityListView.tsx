@@ -56,11 +56,20 @@ export default function PriorityListView({
     return { projectTasksMap: byProject, standaloneTasks: standalone };
   }, [tasks, projectIdSet]);
 
-  // Sort standalone tasks: incomplete first, then by priority
+  // Sort standalone tasks: incomplete first, then by fewest remaining days, then priority
   const sortedStandaloneTasks = useMemo(() => {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const msPerDay = 86400000;
+
     return [...standaloneTasks].sort((a, b) => {
       if (a.completed !== b.completed) {
         return a.completed ? 1 : -1;
+      }
+      const aDays = Math.ceil((new Date(a.dueDate.start).getTime() - todayStart) / msPerDay);
+      const bDays = Math.ceil((new Date(b.dueDate.start).getTime() - todayStart) / msPerDay);
+      if (aDays !== bDays) {
+        return aDays - bDays;
       }
       return b.priority - a.priority;
     });

@@ -64,11 +64,20 @@ export default function CategoryBoardView({
       }
     });
 
-    // Sort tasks within each column: incomplete first, then by priority
+    // Sort tasks within each column: incomplete first, then by fewest remaining days, then priority
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const msPerDay = 86400000;
+
     const sortTasks = (taskList: Task[]) => {
       return taskList.sort((a, b) => {
         if (a.completed !== b.completed) {
           return a.completed ? 1 : -1;
+        }
+        const aDays = Math.ceil((new Date(a.dueDate.start).getTime() - todayStart) / msPerDay);
+        const bDays = Math.ceil((new Date(b.dueDate.start).getTime() - todayStart) / msPerDay);
+        if (aDays !== bDays) {
+          return aDays - bDays;
         }
         return b.priority - a.priority;
       });

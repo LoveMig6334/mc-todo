@@ -23,8 +23,8 @@ export default function ViewControls({
             ? "bg-orange-500 text-white"
             : "text-zinc-400 hover:bg-zinc-800 hover:text-white",
         )}
-        aria-label="Priority List View"
-        title="Priority List View"
+        aria-label="Due Date List View"
+        title="Due Date List View"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

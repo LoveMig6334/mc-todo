@@ -162,16 +162,20 @@ export function useTaskManager() {
   }, [activeTasks]);
 
   const sortedTasks = useMemo(() => {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const msPerDay = 86400000;
+
     return [...activeTasks].sort((a, b) => {
       // Completed tasks go to bottom
       if (a.completed !== b.completed) {
         return a.completed ? 1 : -1;
       }
-      // Sort by due date (earlier first)
-      const aTime = new Date(a.dueDate.start).getTime();
-      const bTime = new Date(b.dueDate.start).getTime();
-      if (aTime !== bTime) {
-        return aTime - bTime;
+      // Sort by fewest remaining days first
+      const aDays = Math.ceil((new Date(a.dueDate.start).getTime() - todayStart) / msPerDay);
+      const bDays = Math.ceil((new Date(b.dueDate.start).getTime() - todayStart) / msPerDay);
+      if (aDays !== bDays) {
+        return aDays - bDays;
       }
       // Then by priority (higher first) as tiebreaker
       return b.priority - a.priority;
