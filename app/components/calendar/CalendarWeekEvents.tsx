@@ -31,6 +31,8 @@ interface CalendarWeekEventsProps {
   previewDates?: string[];
   previewTask?: Task;
   previewCategory?: Category;
+  copiedTaskId?: string;
+  onCopySelect?: (task: Task) => void;
 }
 
 /**
@@ -52,6 +54,8 @@ export default function CalendarWeekEvents({
   previewDates,
   previewTask,
   previewCategory,
+  copiedTaskId,
+  onCopySelect,
 }: CalendarWeekEventsProps) {
   // Build week events with column positions
   const weekEvents: WeekEventData[] = [];
@@ -165,8 +169,9 @@ export default function CalendarWeekEvents({
           return null;
         }
 
+        const isCopied = copiedTaskId === task.id;
         const categoryColor = category?.color ?? "#71717a";
-        const bodyColor = task.calendarColor ?? "#3f3f46";
+        const bodyColor = isCopied ? "#f97316" : (task.calendarColor ?? "#3f3f46");
         const isDragTarget = isDragging && task.id === draggedTaskId;
 
         return (
@@ -178,6 +183,10 @@ export default function CalendarWeekEvents({
               e.stopPropagation();
               if (activeTool === "color") {
                 onOpenColorPicker?.(task.id, { x: e.clientX, y: e.clientY });
+                return;
+              }
+              if (activeTool === "copy") {
+                onCopySelect?.(task);
                 return;
               }
               onClickEvent(task);
@@ -194,11 +203,13 @@ export default function CalendarWeekEvents({
               "h-6",
               activeTool === "normal"
                 ? "cursor-pointer"
-                : activeTool === "add"
-                  ? "cursor-crosshair"
-                  : activeTool === "color"
-                    ? ""
-                    : "cursor-grab",
+                : activeTool === "copy"
+                  ? "cursor-copy"
+                  : activeTool === "add"
+                    ? "cursor-crosshair"
+                    : activeTool === "color"
+                      ? ""
+                      : "cursor-grab",
               isResizing && "select-none",
               isDragTarget &&
                 "ring-2 ring-orange-400 ring-offset-1 ring-offset-zinc-900",

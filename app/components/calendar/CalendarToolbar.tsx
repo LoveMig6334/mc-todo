@@ -2,6 +2,7 @@
 
 import { cn } from "@/app/lib/utils";
 import {
+  ClipboardCopy,
   LucideIcon,
   MousePointer2,
   PaintBucket,
@@ -9,7 +10,7 @@ import {
   Scissors,
 } from "lucide-react";
 
-export type CalendarTool = "normal" | "add" | "trim" | "color";
+export type CalendarTool = "normal" | "copy" | "add" | "trim" | "color";
 
 interface CalendarToolbarProps {
   activeTool: CalendarTool;
@@ -18,6 +19,7 @@ interface CalendarToolbarProps {
 
 const TOOLS: { id: CalendarTool; label: string; Icon: LucideIcon }[] = [
   { id: "normal", label: "Normal", Icon: MousePointer2 },
+  { id: "copy", label: "Copy & Paste", Icon: ClipboardCopy },
   { id: "add", label: "Add Task", Icon: Plus },
   { id: "trim", label: "Trim & Move", Icon: Scissors },
   { id: "color", label: "Color", Icon: PaintBucket },

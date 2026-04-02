@@ -25,6 +25,7 @@ export const PAINT_BUCKET_CURSOR = `url("data:image/svg+xml,%3Csvg xmlns='http:/
 
 const cursorClass: Record<CalendarTool, string> = {
   normal: "cursor-default",
+  copy: "cursor-copy",
   add: "cursor-crosshair",
   trim: "cursor-default",
   color: "",
@@ -54,6 +55,10 @@ interface CalendarGridProps {
   onAddTaskMouseDown?: (date: string) => void;
   onAddTaskMouseEnter?: (date: string) => void;
   addTaskPreviewDates?: Set<string>;
+  // Copy & Paste tool
+  copiedTaskId?: string;
+  onCopySelect?: (task: Task) => void;
+  onCopyPaste?: (date: string) => void;
 }
 
 export default function CalendarGrid({
@@ -76,6 +81,9 @@ export default function CalendarGrid({
   onAddTaskMouseDown,
   onAddTaskMouseEnter,
   addTaskPreviewDates,
+  copiedTaskId,
+  onCopySelect,
+  onCopyPaste,
 }: CalendarGridProps) {
   const isResizing = resizeState !== null;
   const isDragging = dragState !== null;
@@ -175,6 +183,8 @@ export default function CalendarGrid({
               previewDates={previewDates}
               previewTask={draggedTask}
               previewCategory={draggedCategory}
+              copiedTaskId={copiedTaskId}
+              onCopySelect={onCopySelect}
             />
 
             {/* Day cells (just backgrounds and date numbers) */}
@@ -204,6 +214,7 @@ export default function CalendarGrid({
                     isInAddRange={addTaskPreviewDates?.has(day.date) ?? false}
                     onAddTaskMouseDown={onAddTaskMouseDown}
                     onAddTaskMouseEnter={onAddTaskMouseEnter}
+                    onCopyPaste={onCopyPaste}
                   />
                   {/* Popover for expanded day */}
                   {expandedDayKey === day.date &&

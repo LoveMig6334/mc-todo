@@ -34,6 +34,8 @@ interface CalendarDayCellProps {
   isInAddRange?: boolean;
   onAddTaskMouseDown?: (date: string) => void;
   onAddTaskMouseEnter?: (date: string) => void;
+  /** Copy & Paste tool */
+  onCopyPaste?: (date: string) => void;
 }
 
 export default function CalendarDayCell({
@@ -55,6 +57,7 @@ export default function CalendarDayCell({
   isInAddRange = false,
   onAddTaskMouseDown,
   onAddTaskMouseEnter,
+  onCopyPaste,
 }: CalendarDayCellProps) {
   const { date, dayOfMonth, isCurrentMonth, isToday, events } = day;
 
@@ -95,6 +98,10 @@ export default function CalendarDayCell({
       }}
       transition={{ duration: 0.15 }}
       onMouseDown={() => {
+        if (onCopyPaste) {
+          onCopyPaste(date);
+          return;
+        }
         onAddTaskMouseDown?.(date);
       }}
       onMouseEnter={() => {

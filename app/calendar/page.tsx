@@ -19,7 +19,7 @@ import { useProjects } from "@/app/hooks/useProjects";
 import { useTaskColorPicker } from "@/app/hooks/useTaskColorPicker";
 import { useTaskManager } from "@/app/hooks/useTaskManager";
 import { Task, TaskFormData } from "@/app/types/task";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export default function CalendarPage() {
   const { tasks, addTask, updateTask, deleteTask, getTaskById } =
@@ -61,6 +61,70 @@ export default function CalendarPage() {
   });
 
   const { pickerState, openPicker, closePicker } = useTaskColorPicker();
+
+  // --- Copy & Paste Tool ---
+  const [copiedTask, setCopiedTask] = useState<Task | null>(null);
+  const [copyMousePos, setCopyMousePos] = useState<{ x: number; y: number } | null>(null);
+
+  const handleCopySelect = useCallback(
+    (task: Task) => {
+      setCopiedTask(task);
+    },
+    [],
+  );
+
+  const handleCopyPaste = useCallback(
+    (date: string) => {
+      if (!copiedTask) return;
+      const duration =
+        copiedTask.dueDate.end && copiedTask.dueDate.start !== copiedTask.dueDate.end
+          ? Math.round(
+              (new Date(copiedTask.dueDate.end + "T00:00:00").getTime() -
+                new Date(copiedTask.dueDate.start + "T00:00:00").getTime()) /
+                86400000,
+            )
+          : 0;
+      let endDate: string | null = null;
+      if (duration > 0) {
+        const end = new Date(date + "T00:00:00");
+        end.setDate(end.getDate() + duration);
+        const y = end.getFullYear();
+        const m = String(end.getMonth() + 1).padStart(2, "0");
+        const d = String(end.getDate()).padStart(2, "0");
+        endDate = `${y}-${m}-${d}`;
+      }
+      const { id: _id, createdAt: _c, updatedAt: _u, ...formData } = copiedTask;
+      addTask({
+        ...formData,
+        dueDate: { start: date, end: endDate },
+      });
+      setCopiedTask(null);
+      setCopyMousePos(null);
+    },
+    [copiedTask, addTask],
+  );
+
+  // Track mouse position for copy floating preview
+  useEffect(() => {
+    if (!copiedTask) return;
+    const handleMouseMove = (e: MouseEvent) => {
+      setCopyMousePos({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [copiedTask]);
+
+  // Clear copy state when switching away from copy tool
+  useEffect(() => {
+    if (activeTool !== "copy") {
+      setCopiedTask(null);
+      setCopyMousePos(null);
+    }
+  }, [activeTool]);
+
+  const copiedCategory = copiedTask
+    ? categories.find((c) => c.id === copiedTask.categoryId)
+    : undefined;
 
   // Ensure resize and drag are mutually exclusive
   const isResizing = resizeState !== null;
@@ -242,8 +306,72 @@ export default function CalendarPage() {
           addTaskPreviewDates={
             activeTool === "add" ? addTaskPreviewDates : undefined
           }
+          copiedTaskId={activeTool === "copy" ? copiedTask?.id : undefined}
+          onCopySelect={activeTool === "copy" ? handleCopySelect : undefined}
+          onCopyPaste={
+            activeTool === "copy" && copiedTask ? handleCopyPaste : undefined
+          }
         />
       </main>
+
+      {/* Copy & Paste floating preview */}
+      {copiedTask && copyMousePos && (
+        <div
+          className="pointer-events-none fixed z-50"
+          style={{
+            left: copyMousePos.x + 12,
+            top: copyMousePos.y - 12,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              borderRadius: 4,
+              overflow: "hidden",
+              height: 24,
+              width: 160,
+              opacity: 0.85,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+            }}
+          >
+            <div
+              style={{
+                width: 8,
+                background: copiedCategory?.color ?? "#71717a",
+                flexShrink: 0,
+              }}
+            />
+            <div
+              style={{
+                flex: 1,
+                background: copiedTask.calendarColor ?? "#3f3f46",
+                display: "flex",
+                alignItems: "center",
+                padding: "0 6px",
+              }}
+            >
+              <span
+                style={{
+                  color: "#e4e4e7",
+                  fontSize: 11,
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {copiedTask.title}
+              </span>
+            </div>
+            <div
+              style={{
+                width: 8,
+                background: copiedCategory?.color ?? "#71717a",
+                flexShrink: 0,
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Trash Drop Zone - appears during drag */}
       <TrashDropZone
