@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { MONTHS, THAI_MONTHS } from "@/app/lib/calendarUtils";
 import { AnimatePresence, motion } from "motion/react";
 import CalendarToolbar, { CalendarTool } from "./CalendarToolbar";
@@ -25,6 +26,7 @@ export default function CalendarHeader({
 }: CalendarHeaderProps) {
   const monthName = MONTHS[currentMonth];
   const thaiMonth = THAI_MONTHS[monthName];
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
     <div className="mb-4 flex items-center justify-between">
@@ -57,10 +59,37 @@ export default function CalendarHeader({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -6 }}
             transition={{ duration: 0.15 }}
-            className="text-xl font-semibold text-white min-w-50 text-center"
-            title={thaiMonth}
+            className="text-xl font-semibold text-white min-w-50 text-center overflow-hidden relative cursor-default"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
           >
-            {monthName} {currentYear}
+            <span className="inline-flex flex-col overflow-hidden" style={{ height: "1.5em" }}>
+              <AnimatePresence mode="wait" initial={false}>
+                {isHovered ? (
+                  <motion.span
+                    key="thai"
+                    initial={{ y: "100%" }}
+                    animate={{ y: 0 }}
+                    exit={{ y: "100%" }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    className="inline-block"
+                  >
+                    {thaiMonth} {currentYear}
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="english"
+                    initial={{ y: "-100%" }}
+                    animate={{ y: 0 }}
+                    exit={{ y: "-100%" }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    className="inline-block"
+                  >
+                    {monthName} {currentYear}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </span>
           </motion.h2>
         </AnimatePresence>
 
